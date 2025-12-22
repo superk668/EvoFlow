@@ -36,31 +36,31 @@ To be added (Under construction)
 ### 登陆与注册界面
 
 对于所有[.png],请根据路径将其复制（拖曳）至prompt输入栏内。所有截图均可在`manual_prompt/`目录下找到。
-Step 1. Web Constructor：构建网页UI前端
-Step 1.0 构建首页prompt：
+### Step 1. Web Constructor：构建网页UI前端
+#### Step 1.0 构建首页prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
 首页
 ```
-### Step 1.1 构建底边栏prompt：
+#### Step 1.1 构建底边栏prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_1\bottom_bar.png]
 实现底边栏，该模块需要在所有页面中被添加至最低端
 ```
-Step 1.2 构建登陆页prompt：
+#### Step 1.2 构建登陆页prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_core.png]
 登录界面
 ```
-Step 1.3 构建注册页第一步prompt：
+#### Step 1.3 构建注册页第一步prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core1.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core2.png]
 注册界面第一步
 ```
-Step 1.4 构建注册页第二步prompt：
+#### Step 1.4 构建注册页第二步prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core1.png]

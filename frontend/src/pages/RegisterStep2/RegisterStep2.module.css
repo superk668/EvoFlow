@@ -1,0 +1,201 @@
+.page {
+  background: #ffffff;
+}
+
+.container {
+  width: min(1180px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 38px 0 80px;
+}
+
+.progress {
+  width: 860px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #d0d5dd;
+}
+
+.dotDone {
+  background: #7ac143;
+}
+
+.dotActive {
+  background: #7ac143;
+}
+
+.dotMuted {
+  background: #d0d5dd;
+}
+
+.line {
+  height: 4px;
+  border-radius: 999px;
+  background: #e4e7ec;
+}
+
+.lineDone {
+  background: #7ac143;
+}
+
+.lineMuted {
+  background: #e4e7ec;
+}
+
+.stepLabel {
+  font-size: 14px;
+  line-height: 20px;
+  color: #98a2b3;
+}
+
+.stepLabelActive {
+  color: #7ac143;
+  font-weight: 700;
+}
+
+.stepLabelDone {
+  color: #7ac143;
+}
+
+.form {
+  width: 700px;
+  margin: 44px auto 0;
+}
+
+.registeredLine {
+  padding-left: 120px;
+  color: #101828;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.registeredLabel {
+  color: #101828;
+  margin-right: 14px;
+}
+
+.registeredValue {
+  color: #101828;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 86px 1fr 180px;
+  align-items: center;
+  column-gap: 18px;
+  padding: 14px 0;
+}
+
+.label {
+  text-align: right;
+  font-size: 14px;
+  color: #344054;
+}
+
+.inputWithIcon {
+  height: 44px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  border-radius: 4px;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.placeholder {
+  padding: 0 12px;
+  color: #c0c6d0;
+  font-size: 14px;
+}
+
+.eye {
+  width: 18px;
+  height: 18px;
+  justify-self: center;
+  opacity: 0.75;
+}
+
+.strength {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: 22px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strengthItem {
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  color: #ffffff;
+}
+
+.weak {
+  background: #f04438;
+}
+
+.mid {
+  background: #f79009;
+}
+
+.strong {
+  background: #12b76a;
+}
+
+.strengthSpacer {
+  height: 22px;
+}
+
+.doneBtn {
+  margin-top: 28px;
+  margin-left: 104px;
+  width: 360px;
+  height: 50px;
+  border-radius: 4px;
+  background: #ff7a00;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.help {
+  margin-top: 12px;
+  margin-left: 104px;
+  font-size: 14px;
+  color: #0b63ce;
+  font-weight: 700;
+}
+
+.back {
+  margin-top: 44px;
+  margin-left: 104px;
+  font-size: 14px;
+  color: #667085;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backArrow {
+  font-size: 14px;
+  color: #667085;
+}
+

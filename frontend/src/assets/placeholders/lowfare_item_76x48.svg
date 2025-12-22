@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="76" height="48" viewBox="0 0 76 48">
+  <rect width="76" height="48" rx="8" fill="#e5e7eb" />
+  <rect x="8" y="10" width="60" height="8" rx="4" fill="#d1d5db" />
+  <rect x="8" y="24" width="40" height="8" rx="4" fill="#d1d5db" />
+  <text x="38" y="43" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system" font-size="9" fill="#9ca3af">占位</text>
+</svg>
+

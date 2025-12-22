@@ -1,0 +1,120 @@
+- type: Frontend
+  id: UI-LoginPage
+  description: 登录页面（账号密码登录与验证码登录切换），负责输入、校验与提交。
+  properties:
+    - name: onLoginSuccess
+      type: function
+      description: "登录成功后的回调（例如跳转首页或返回原页面）。"
+  state:
+    - activeTab
+    - account
+    - password
+    - phoneNumber
+    - code
+    - agreeTerms
+    - isRequestingCode
+    - resendCountdown
+    - isSubmitting
+    - errorMessage
+    - fieldErrors
+  dependencies:
+    - API-POST-AuthSmsSend
+    - API-POST-AuthLoginPassword
+    - API-POST-AuthLoginSms
+  acceptanceCriteria:
+    - 默认展示“账号密码登录”Tab。
+    - 展示“忘记密码”链接与第三方登录入口区域。
+    - 点击“发送验证码”时调用 API-POST-AuthSmsSend(type=login)，成功后开始 60 秒倒计时。
+    - 账号密码登录成功后应触发 onLoginSuccess。
+    - 账号或密码为空时，分别显示“请输入用户名”“请输入密码”。
+    - 未勾选服务协议时，显示“请阅读并同意服务协议”并阻止提交。
+    - 账号密码不正确时显示“用户名或密码不正确”。
+    - 验证码错误时显示“验证码不正确”。
+    - 手机号未注册的验证码登录，显示“该手机号未注册，请先注册”。
+    - 点击“免费注册”应导航至注册流程页（URL Hash 为 `#/register/step1`）。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+    - date: "2025-12-20"
+      description: "补充忘记密码与第三方登录入口的验收标准，并同步倒计时状态命名。"
+
+- type: Frontend
+  id: UI-RegisterStep1Page
+  description: 注册流程步骤1（验证手机），负责手机号与验证码输入、协议勾选与下一步。
+  properties:
+    - name: onVerified
+      type: function
+      description: "校验通过后的回调（携带 verificationToken 与手机号进入步骤2）。"
+  state:
+    - phoneNumber
+    - code
+    - agreeTerms
+    - isRequestingCode
+    - resendCountdown
+    - isSubmitting
+    - errorMessage
+    - fieldErrors
+  dependencies:
+    - API-POST-AuthSmsSend
+    - API-POST-AuthRegisterVerifyPhone
+  acceptanceCriteria:
+    - 点击“发送验证码”时调用 API-POST-AuthSmsSend(type=register)，成功后开始 60 秒倒计时。
+    - 手机号格式不正确时，显示“手机号格式不正确，请重新输入”，并保持在步骤1。
+    - 验证码错误时，在验证码输入框下方显示“验证码错误”。
+    - 当手机号已注册时，显示“该手机号已注册，请直接登录”。
+    - 验证通过后调用 onVerified 并导航到步骤2（URL Hash 为 `#/register/step2`）。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+    - date: "2025-12-20"
+      description: "同步倒计时状态命名。"
+
+- type: Frontend
+  id: UI-RegisterStep2Page
+  description: 注册流程步骤2（设置密码），负责密码强度展示、二次确认与完成注册。
+  properties:
+    - name: onRegisterSuccess
+      type: function
+      description: "注册成功后的回调（例如跳转登录页或直接进入首页）。"
+  state:
+    - phoneNumberMasked
+    - password
+    - confirmPassword
+    - passwordStrength
+    - showPassword
+    - showConfirmPassword
+    - isSubmitting
+    - fieldErrors
+    - errorMessage
+  dependencies:
+    - API-POST-AuthRegisterComplete
+  acceptanceCriteria:
+    - 手机号显示栏需按前三位、四位星号、后四位格式展示。
+    - 密码不符合 8-20 位字母、数字和符号组合时显示“密码需为8-20位字母、数字和符号的组合”，并禁用“完成”。
+    - 两次输入密码不一致时显示“两次输入密码不一致”，并禁用“完成”。
+    - 点击眼睛按钮可切换明文/密文显示。
+    - 点击“完成”调用 API-POST-AuthRegisterComplete，成功后触发 onRegisterSuccess 并导航到登录页（URL Hash 为 `#/login`）。
+    - 当手机号已注册时，显示“该手机号已注册”并阻止注册。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+    - date: "2025-12-20"
+      description: "补充手机号显示栏掩码规则验收标准。"
+
+- type: Frontend
+  id: UI-TopHeaderAuthNav
+  description: 顶部导航中“登录/注册”入口，负责跳转到登录与注册流程。
+  properties:
+    - name: onNavigate
+      type: function
+      description: "点击登录/注册后的导航回调（可选）。"
+  state:
+    - none
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 点击“登录”应导航至 `#/login`。
+    - 点击“注册”应导航至 `#/register/step1`。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"

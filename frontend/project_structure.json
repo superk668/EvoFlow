@@ -1,0 +1,70 @@
+{
+  "frontend": {
+    "public": [
+      "vite.svg"
+    ],
+    "src": {
+      "pages": {
+        "Home": [
+          "Home.jsx",
+          "Home.module.css"
+        ],
+        "Login": [
+          "Login.jsx",
+          "Login.module.css"
+        ],
+        "RegisterStep1": [
+          "RegisterStep1.jsx",
+          "RegisterStep1.module.css"
+        ],
+        "RegisterStep2": [
+          "RegisterStep2.jsx",
+          "RegisterStep2.module.css"
+        ]
+      },
+      "components": {
+        "BottomBar": [
+          "BottomBar.jsx",
+          "BottomBar.module.css"
+        ],
+        "SideNav": [
+          "SideNav.jsx",
+          "SideNav.module.css"
+        ],
+        "TopHeader": [
+          "TopHeader.jsx",
+          "TopHeader.module.css"
+        ]
+      },
+      "layouts": [
+        "AuthLayout.jsx",
+        "authLayout.module.css",
+        "MainLayout.jsx",
+        "layout.module.css"
+      ],
+      "styles": [
+        "tokens.css",
+        "reset.css",
+        "typography.css",
+        "globals.css"
+      ],
+      "assets": {
+        "placeholders": [
+          "home_banner_805x180.svg",
+          "footer_qr_90x90.svg",
+          "icon_eye_18x18.svg",
+          "login_hero_1180x360.svg",
+          "lowfare_item_76x48.svg"
+        ],
+        "files": [
+          "image_mapping.json"
+        ]
+      },
+      "root": [
+        "App.jsx",
+        "index.jsx",
+        "router.jsx"
+      ]
+    }
+  }
+}

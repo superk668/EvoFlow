@@ -1,0 +1,200 @@
+- type: Backend
+  id: API-POST-AuthSmsSend
+  route: POST /api/v1/auth/sms/send
+  description: 向指定手机号发送6位数字验证码，用于登录或注册。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      type: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        message: "验证码已发送"
+        code: "123456"
+        expiresIn: 60
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "手机号格式不正确"
+      - statusCode: 429
+        body:
+          success: false
+          message: "请求过于频繁，请稍后再试"
+  dependencies:
+    - DB-CheckSmsRateLimit
+    - DB-UpsertSmsCode
+  acceptanceCriteria:
+    - 当 phoneNumber 格式非法时，返回 400。
+    - 当请求频率超限时，返回 429。
+    - 成功时返回 200，并返回 code（开发联调用）与 expiresIn=60 供前端倒计时。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+    - date: "2025-12-20"
+      description: "成功响应增加 code 字段，并补充频控依赖。"
+
+- type: Backend
+  id: API-POST-AuthLoginPassword
+  route: POST /api/v1/auth/login/password
+  description: 用户使用账号（手机号/邮箱/用户名）和密码登录。
+  input:
+    type: JSON
+    body:
+      account: string
+      password: string
+      agreeTerms: boolean
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        token: "jwt"
+        user:
+          id: "string"
+          nickname: "string"
+          avatar: "string"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "请阅读并同意服务协议"
+      - statusCode: 401
+        body:
+          success: false
+          message: "用户名或密码不正确"
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 当 agreeTerms 为 false 时，返回 400。
+    - 当账号或密码不正确时，返回 401。
+    - 当账号与密码匹配时，返回 200 并返回 token 与 user。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthLoginSms
+  route: POST /api/v1/auth/login/sms
+  description: 用户使用手机号与短信验证码登录。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      code: string
+      agreeTerms: boolean
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        token: "jwt"
+        user:
+          id: "string"
+          nickname: "string"
+          avatar: "string"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "验证码不正确"
+      - statusCode: 404
+        body:
+          success: false
+          message: "该手机号未注册，请先注册"
+  dependencies:
+    - DB-FindUserByPhone
+    - DB-GetActiveSmsCode
+    - DB-ConsumeSmsCode
+  acceptanceCriteria:
+    - 当 agreeTerms 为 false 时，返回 400 且 message 为服务协议相关提示。
+    - 当手机号未注册时，返回 404。
+    - 当验证码错误或过期时，返回 400。
+    - 当手机号与验证码匹配时，返回 200 并返回 token 与 user。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthRegisterVerifyPhone
+  route: POST /api/v1/auth/register/verify-phone
+  description: 注册第一步：验证手机号与短信验证码，生成临时凭证。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      code: string
+      agreeTerms: boolean
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        verificationToken: "string"
+        message: "验证成功"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "验证码错误"
+      - statusCode: 409
+        body:
+          success: false
+          message: "该手机号已注册，请直接登录"
+  dependencies:
+    - DB-FindUserByPhone
+    - DB-GetActiveSmsCode
+    - DB-ConsumeSmsCode
+    - DB-CreateRegisterVerificationToken
+  acceptanceCriteria:
+    - 当手机号已注册时，返回 409。
+    - 当验证码错误或过期时，返回 400。
+    - 当验证通过时，返回 200 并返回 verificationToken。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthRegisterComplete
+  route: POST /api/v1/auth/register/complete
+  description: 注册第二步：提交密码完成注册并返回登录态。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      verificationToken: string
+      password: string
+  output:
+    success:
+      statusCode: 201
+      body:
+        success: true
+        token: "jwt"
+        user:
+          id: "string"
+          nickname: "string"
+          avatar: "string"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "密码格式不符合要求"
+      - statusCode: 409
+        body:
+          success: false
+          message: "该手机号已注册"
+  dependencies:
+    - DB-VerifyRegisterVerificationToken
+    - DB-FindUserByPhone
+    - DB-CreateUser
+  acceptanceCriteria:
+    - 当 verificationToken 无效或过期时，返回 400。
+    - 当 password 不符合 8-20 位规则时，返回 400。
+    - 当手机号已注册时，返回 409。
+    - 当注册成功时，返回 201 并返回 token 与 user。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"

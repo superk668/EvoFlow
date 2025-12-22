@@ -1,0 +1,112 @@
+- type: Database
+  id: DB-FindUserByAccount
+  description: 根据账号（手机号/邮箱/用户名）查询用户。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当账号存在时，返回包含用户基础信息与 passwordHash 的记录。
+    - 当账号不存在时，返回空结果。
+    - 查询应支持手机号、邮箱与用户名三种账号类型。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-FindUserByPhone
+  description: 根据手机号查询用户。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当手机号存在时，返回用户记录。
+    - 当手机号不存在时，返回空结果。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateUser
+  description: 创建新用户记录。
+  dependencies:
+    - DB-FindUserByPhone
+  acceptanceCriteria:
+    - 成功执行后 users 表新增一条记录，并返回 userId。
+    - 当手机号已存在时，操作失败并触发唯一性冲突。
+    - 密码不以明文存储，应保存 passwordHash。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpsertSmsCode
+  description: 写入或更新短信验证码记录（按手机号与业务类型）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 保存 phoneNumber、type、code、expiresAt、createdAt、lastSentAt。
+    - 同一手机号与 type 只保留最新一条有效验证码信息。
+    - 写入应可用于后续频率控制与过期校验。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CheckSmsRateLimit
+  description: 校验短信验证码发送频率是否超限。
+  dependencies:
+    - DB-GetActiveSmsCode
+  acceptanceCriteria:
+    - 以 phoneNumber 与 type 为维度做频率控制。
+    - 当距离上次发送小于 60 秒时，返回超限。
+    - 当不存在历史发送记录或已超过 60 秒时，返回未超限。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetActiveSmsCode
+  description: 获取未过期的短信验证码记录。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 仅返回 expiresAt 大于当前时间且未被消耗的验证码记录。
+    - 当不存在可用验证码时，返回空结果。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ConsumeSmsCode
+  description: 将短信验证码标记为已使用。
+  dependencies:
+    - DB-GetActiveSmsCode
+  acceptanceCriteria:
+    - 成功执行后验证码不可再次被验证通过。
+    - 对不存在或已过期的验证码执行消耗操作应无副作用。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateRegisterVerificationToken
+  description: 创建注册第一步的临时凭证（verificationToken）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 保存 phoneNumber、verificationToken、expiresAt。
+    - verificationToken 需要具备唯一性。
+    - 过期后不可用于完成注册。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-VerifyRegisterVerificationToken
+  description: 校验注册第一步临时凭证与手机号的匹配关系与有效期。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当 token 与手机号匹配且未过期时，返回有效。
+    - 当 token 不存在、手机号不匹配或已过期时，返回无效。
+  changeLog:
+    - date: "2025-12-20"
+      description: "初始创建。"

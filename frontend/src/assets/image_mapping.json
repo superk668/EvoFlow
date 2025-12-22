@@ -1,0 +1,39 @@
+{
+  "placeholders": [
+    {
+      "id": "home_banner_805x180",
+      "file": "src/assets/placeholders/home_banner_805x180.svg",
+      "width": 805,
+      "height": 180,
+      "usage": "首页轮播 Banner"
+    },
+    {
+      "id": "lowfare_item_76x48",
+      "file": "src/assets/placeholders/lowfare_item_76x48.svg",
+      "width": 76,
+      "height": 48,
+      "usage": "低价速报列表缩略图"
+    },
+    {
+      "id": "footer_qr_90x90",
+      "file": "src/assets/placeholders/footer_qr_90x90.svg",
+      "width": 90,
+      "height": 90,
+      "usage": "底边栏二维码占位"
+    },
+    {
+      "id": "login_hero_1180x360",
+      "file": "src/assets/placeholders/login_hero_1180x360.svg",
+      "width": 1180,
+      "height": 360,
+      "usage": "登录页主视觉背景"
+    },
+    {
+      "id": "icon_eye_18x18",
+      "file": "src/assets/placeholders/icon_eye_18x18.svg",
+      "width": 18,
+      "height": 18,
+      "usage": "密码输入框眼睛图标占位"
+    }
+  ]
+}

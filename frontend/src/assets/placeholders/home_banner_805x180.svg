@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="805" height="180" viewBox="0 0 805 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9eef5" />
+      <stop offset="1" stop-color="#dde6f2" />
+    </linearGradient>
+  </defs>
+  <rect width="805" height="180" rx="12" fill="url(#bg)" />
+  <rect x="26" y="26" width="240" height="32" rx="10" fill="#cfd8e6" />
+  <rect x="26" y="72" width="360" height="18" rx="8" fill="#cfd8e6" />
+  <rect x="26" y="100" width="300" height="18" rx="8" fill="#cfd8e6" />
+  <rect x="26" y="128" width="220" height="18" rx="8" fill="#cfd8e6" />
+  <rect x="560" y="44" width="210" height="92" rx="14" fill="#c7d7f2" />
+  <text x="402.5" y="92" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system" font-size="16" fill="#6b7280">占位 / 首页 Banner</text>
+</svg>
+

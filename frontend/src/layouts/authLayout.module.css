@@ -1,0 +1,9 @@
+.shell {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.main {
+  min-height: calc(100vh - 56px);
+}
+
