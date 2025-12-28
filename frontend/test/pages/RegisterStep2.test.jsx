@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
+import AppRouter from '../../src/router.jsx'
 import RegisterStep2 from '../../src/pages/RegisterStep2/RegisterStep2.jsx'
 
 describe('UI-RegisterStep2Page', () => {
@@ -10,6 +11,21 @@ describe('UI-RegisterStep2Page', () => {
     vi.clearAllMocks()
     if (globalThis.fetch?.mockReset) globalThis.fetch.mockReset()
     window.location.hash = '#/register/step2'
+
+    sessionStorage.clear()
+    sessionStorage.setItem('registerPhoneNumber', '13900139000')
+    sessionStorage.setItem('registerVerificationToken', 't1')
+  })
+
+  test('未完成步骤1时访问步骤2，自动返回步骤1并提示', async () => {
+    sessionStorage.clear()
+    window.location.hash = '#/register/step2'
+
+    render(<AppRouter />)
+
+    expect(await screen.findByText('验证手机')).toBeInTheDocument()
+    expect(await screen.findByText('请先完成手机验证')).toBeInTheDocument()
+    expect(window.location.hash).toBe('#/register/step1')
   })
 
   test('密码不符合规则时显示提示，并禁用“完成”', async () => {
@@ -93,6 +109,8 @@ describe('UI-RegisterStep2Page', () => {
     )
     expect(onRegisterSuccess).toHaveBeenCalledTimes(1)
     expect(window.location.hash).toBe('#/login')
+    expect(sessionStorage.getItem('registerPhoneNumber')).toBeNull()
+    expect(sessionStorage.getItem('registerVerificationToken')).toBeNull()
   })
 
   test('当手机号已注册时，显示“该手机号已注册”并阻止注册', async () => {

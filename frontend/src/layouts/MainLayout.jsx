@@ -7,13 +7,15 @@ import styles from './layout.module.css'
 export default function MainLayout() {
   return (
     <div className={styles.shell}>
-      <SideNav />
-      <div className={styles.mainCol}>
-        <TopHeader />
-        <main className={styles.main}>
-          <Outlet />
-        </main>
-        <BottomBar />
+      <TopHeader />
+      <div className={styles.contentRow}>
+        <SideNav />
+        <div className={styles.mainCol}>
+          <main className={styles.main}>
+            <Outlet />
+          </main>
+          <BottomBar />
+        </div>
       </div>
     </div>
   )

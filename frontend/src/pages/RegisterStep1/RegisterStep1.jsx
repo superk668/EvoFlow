@@ -17,7 +17,12 @@ export default function RegisterStep1({ onVerified } = {}) {
 
   const [lastSmsCode, setLastSmsCode] = useState('')
 
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState(() => {
+    const msg = sessionStorage.getItem('registerFlowError')
+    if (!msg) return ''
+    sessionStorage.removeItem('registerFlowError')
+    return msg
+  })
   const [fieldErrors, setFieldErrors] = useState({})
 
   const canResend = !isRequestingCode && resendCountdown <= 0
@@ -106,8 +111,12 @@ export default function RegisterStep1({ onVerified } = {}) {
     if (shouldReturn) return
 
     const verificationToken = result.data?.verificationToken
+    if (!verificationToken) {
+      setErrorMessage('验证失败')
+      return
+    }
     sessionStorage.setItem('registerPhoneNumber', phoneNumber)
-    sessionStorage.setItem('registerVerificationToken', verificationToken)
+    sessionStorage.setItem('registerVerificationToken', String(verificationToken))
 
     if (typeof onVerified === 'function') {
       onVerified({ phoneNumber, verificationToken })

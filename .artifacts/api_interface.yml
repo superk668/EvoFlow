@@ -198,3 +198,307 @@
   changeLog:
     - date: "2025-12-20"
       description: "初始创建。"
+
+- type: Backend
+  id: API-GET-Orders
+  route: GET /api/v1/orders
+  description: 获取当前登录用户的订单列表，支持状态/类型筛选与分页。
+  input:
+    type: Query
+    query:
+      status: string
+      productType: string
+      page: number
+      pageSize: number
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        page: 1
+        pageSize: 10
+        totalCount: 0
+        items:
+          - orderId: "string"
+            createdAt: "ISO-8601"
+            status: "pending_payment"
+            productType: "flight"
+            title: "上海—北京"
+            departAt: "ISO-8601"
+            passengers: ["string"]
+            totalAmount: 798
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 400
+        body:
+          success: false
+          message: "参数不合法"
+  dependencies:
+    - DB-ListOrdersByUser
+    - DB-CountOrdersByUser
+  acceptanceCriteria:
+    - 默认按创建时间倒序返回订单列表。
+    - 支持 status=all/pending_travel/pending_payment/pending_review 与 productType=flight/train/hotel。
+    - 当 page 超出范围时，应返回最后一页或第一页且不报错。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrderDetail
+  route: GET /api/v1/orders/:orderId
+  description: 获取当前登录用户的订单详情。
+  input:
+    type: Params
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        order:
+          orderId: "string"
+          createdAt: "ISO-8601"
+          status: "cancelled"
+          productType: "flight"
+          title: "上海→北京"
+          segments:
+            - departTime: "ISO-8601"
+              arriveTime: "ISO-8601"
+              durationText: "2h30m"
+              departCity: "上海"
+              departAirport: "浦东机场T2"
+              arriveCity: "北京"
+              arriveAirport: "首都机场T2"
+              airlineText: "海南航空 HU7612"
+              cabinText: "惠选经济舱"
+              aircraftText: "波音738(中)"
+              mealText: "有餐食"
+          passengers:
+            - name: "string"
+              idType: "身份证"
+              idNumberMasked: "string"
+          contact:
+            phoneMasked: "string"
+            emailMasked: "string"
+          payment:
+            currency: "CNY"
+            totalAmount: 798
+            items:
+              - name: "成人"
+                amount: 750
+                qtyText: "×1人"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限查看"
+      - statusCode: 500
+        body:
+          success: false
+          message: "订单详情加载失败，请稍后重试"
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - 仅允许访问归属当前用户的订单详情。
+    - 当 orderId 不存在或不归属当前用户时，返回 404 且 message 为权限提示。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrderCancel
+  route: POST /api/v1/orders/:orderId/cancel
+  description: 取消当前登录用户的订单。
+  input:
+    type: JSON
+    params:
+      orderId: string
+    body:
+      reason: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        message: "订单取消成功"
+        order:
+          orderId: "string"
+          status: "cancelled"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限查看"
+      - statusCode: 409
+        body:
+          success: false
+          message: "订单当前状态不支持取消"
+      - statusCode: 500
+        body:
+          success: false
+          message: "取消失败"
+  dependencies:
+    - DB-CancelOrderForUser
+  acceptanceCriteria:
+    - 取消前需二次确认（由前端触发浏览器确认框）。
+    - 当订单状态不支持取消时，返回 409。
+    - 取消成功后返回 200，并在后续详情查询中体现为 cancelled。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrderDownloadTxt
+  route: GET /api/v1/orders/:orderId/download
+  description: 生成并返回单笔订单的 TXT 下载内容。
+  input:
+    type: Params
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "order-1128144831159754.txt"
+        content: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限查看"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - TXT 内容至少包含订单号、状态、金额与关键行程信息。
+    - 不应包含未脱敏的证件号与手机号。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrdersBatchDownloadTxt
+  route: POST /api/v1/orders/download
+  description: 生成并返回多笔订单的 TXT 下载内容（用于批量下载）。
+  input:
+    type: JSON
+    body:
+      orderIds: ["string"]
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "orders-2025-12-28.txt"
+        content: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 400
+        body:
+          success: false
+          message: "orderIds 不能为空"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-GetOrdersByIdsForUser
+  acceptanceCriteria:
+    - 仅导出归属当前用户的订单，忽略不归属的订单号。
+    - TXT 内容按订单分段拼接，至少包含订单号、状态、金额。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrdersDownloadAllTxt
+  route: GET /api/v1/orders/download/all
+  description: 生成并返回当前用户历史订单的 TXT 下载内容（页面右上角下载历史所有订单）。
+  input:
+    type: Query
+    query:
+      scope: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "orders-all.txt"
+        content: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-ListOrdersByUser
+  acceptanceCriteria:
+    - 默认导出近一年订单；当 scope=all 时可导出全部历史订单。
+    - 生成失败时返回 500 并提示下载失败。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrderRebook
+  route: POST /api/v1/orders/:orderId/rebook
+  description: 根据订单信息生成重新下单的跳转链接与预填参数。
+  input:
+    type: Params
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        redirectUrl: "/flights/list?dcity=...&acity=...&date=..."
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限查看"
+      - statusCode: 500
+        body:
+          success: false
+          message: "跳转失败"
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - 成功时返回可用于前端跳转的 redirectUrl。
+    - 当搜索服务不可用或生成失败时返回 500。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"

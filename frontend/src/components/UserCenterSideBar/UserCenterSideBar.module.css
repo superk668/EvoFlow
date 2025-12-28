@@ -1,0 +1,57 @@
+.sidebar {
+  width: 230px;
+}
+
+.card {
+  border: 1px solid rgba(11, 99, 206, 0.22);
+  background: #ffffff;
+}
+
+.titleRow {
+  padding: 18px 18px 10px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 800;
+  color: #101828;
+}
+
+.row {
+  height: 44px;
+  padding: 0 14px 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #101828;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.rowText {
+  min-width: 0;
+}
+
+.active {
+  position: relative;
+  color: #0b63ce;
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: #0b63ce;
+}
+
+.chevron {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(16, 24, 40, 0.46);
+  border-bottom: 2px solid rgba(16, 24, 40, 0.46);
+  transform: rotate(45deg);
+  margin-right: 2px;
+}

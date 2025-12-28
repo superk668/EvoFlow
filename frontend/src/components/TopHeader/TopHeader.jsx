@@ -1,4 +1,5 @@
 import styles from './TopHeader.module.css'
+import { Link } from 'react-router-dom'
 
 export default function TopHeader() {
   return (
@@ -18,11 +19,17 @@ export default function TopHeader() {
         </div>
 
         <div className={styles.right}>
-          <div className={styles.link}>登录</div>
+          <Link className={styles.link} to="/login">
+            登录
+          </Link>
           <div className={styles.sep} />
-          <div className={styles.link}>注册</div>
+          <Link className={styles.link} to="/register/step1">
+            注册
+          </Link>
           <div className={styles.sep} />
-          <div className={styles.link}>我的订单</div>
+          <Link className={styles.link} to="/user/orders">
+            我的订单
+          </Link>
           <div className={styles.sep} />
           <div className={styles.link}>客服中心</div>
         </div>
@@ -30,4 +37,3 @@ export default function TopHeader() {
     </header>
   )
 }
-

@@ -112,6 +112,15 @@ export default function Login({ onLoginSuccess } = {}) {
         return
       }
 
+      try {
+        const token = result.data?.token
+        if (token) localStorage.setItem('authToken', String(token))
+        const user = result.data?.user
+        if (user) localStorage.setItem('authUser', JSON.stringify(user))
+      } catch {
+        void 0
+      }
+
       if (typeof onLoginSuccess === 'function') {
         onLoginSuccess(result.data)
         return
@@ -141,6 +150,15 @@ export default function Login({ onLoginSuccess } = {}) {
     if (!result.ok) {
       setErrorMessage(result.data?.message || '登录失败')
       return
+    }
+
+    try {
+      const token = result.data?.token
+      if (token) localStorage.setItem('authToken', String(token))
+      const user = result.data?.user
+      if (user) localStorage.setItem('authUser', JSON.stringify(user))
+    } catch {
+      void 0
     }
 
     if (typeof onLoginSuccess === 'function') {

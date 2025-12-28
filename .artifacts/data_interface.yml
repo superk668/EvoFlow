@@ -110,3 +110,67 @@
   changeLog:
     - date: "2025-12-20"
       description: "初始创建。"
+
+- type: Database
+  id: DB-ListOrdersByUser
+  description: 按用户维度分页查询订单列表，支持状态与产品类型筛选。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 支持按 userId 查询订单，默认按 createdAt 倒序。
+    - 支持筛选 productType（flight/train/hotel）与 status（all/pending_travel/pending_payment/pending_review）。
+    - 返回结果包含 orderId、createdAt、status、productType、title、departAt、passengers、totalAmount。
+    - page 与 pageSize 非法时应使用默认值并保证查询不报错。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CountOrdersByUser
+  description: 按用户维度统计订单数量，用于分页。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 统计维度与 DB-ListOrdersByUser 的筛选条件一致。
+    - 返回 totalCount（非负整数）。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetOrderDetailByIdForUser
+  description: 查询指定用户的单个订单详情（含行程、乘机人、联系信息、支付明细）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 仅当 orderId 归属 userId 时返回详情，否则返回空结果。
+    - 返回字段包含基础信息、行程段信息、旅客信息（证件号脱敏）、联系信息（手机号/邮箱脱敏）与价格明细。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CancelOrderForUser
+  description: 取消指定用户的订单，并写入取消原因。
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - 仅允许取消状态为 pending_payment 或 pending_travel 的订单。
+    - 成功取消后订单状态更新为 cancelled，并记录 cancelledAt 与 cancelReason。
+    - 当订单不存在或不属于用户时，应不做更新并返回空结果。
+    - 当订单状态不允许取消时，返回不可取消标识以便上层返回错误。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetOrdersByIdsForUser
+  description: 批量查询指定用户的订单，用于批量下载。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 仅返回属于 userId 的订单记录，忽略不归属的 orderId。
+    - 返回字段至少包含 orderId、status、productType、title、departAt、totalAmount。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"

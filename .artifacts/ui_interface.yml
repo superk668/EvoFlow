@@ -103,7 +103,7 @@
 
 - type: Frontend
   id: UI-TopHeaderAuthNav
-  description: 顶部导航中“登录/注册”入口，负责跳转到登录与注册流程。
+  description: 顶部导航中的登录/注册/我的订单入口，负责跳转到对应页面。
   properties:
     - name: onNavigate
       type: function
@@ -115,6 +115,72 @@
   acceptanceCriteria:
     - 点击“登录”应导航至 `#/login`。
     - 点击“注册”应导航至 `#/register/step1`。
+    - 点击“我的订单”应导航至 `#/user/orders`。
   changeLog:
     - date: "2025-12-20"
+      description: "初始创建。"
+    - date: "2025-12-28"
+      description: "增加“我的订单”入口导航验收标准，并扩展组件描述。"
+
+- type: Frontend
+  id: UI-OrderManagementPage
+  description: 订单管理列表页（个人中心-订单），负责加载、筛选、分页、批量下载与跳转详情。
+  properties:
+    - name: onNavigateOrderDetail
+      type: function
+      description: "点击订单详情后的导航回调（可选）。"
+  state:
+    - activeTab
+    - productType
+    - page
+    - pageSize
+    - selectedOrderIds
+    - isLoading
+    - errorMessage
+    - items
+    - totalCount
+  dependencies:
+    - API-GET-Orders
+    - API-GET-OrdersDownloadAllTxt
+    - API-POST-OrdersBatchDownloadTxt
+    - API-GET-OrderDownloadTxt
+  acceptanceCriteria:
+    - 默认激活“全部订单”标签，并发起列表加载请求。
+    - 数据加载时显示 Loading Indicator。
+    - 加载失败时显示错误提示与“重试”按钮。
+    - 无订单时显示空状态提示“您还没有相关订单哦”。
+    - 切换“未出行/待支付/待点评”标签时应重新请求并刷新列表。
+    - 选择订单后点击“下载”应触发批量下载接口。
+    - 点击“下载历史所有订单”应触发全量导出接口。
+    - 点击订单的“查看详情”应导航到 `#/user/orders/:orderId`。
+  changeLog:
+    - date: "2025-12-28"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-OrderDetailPage
+  description: 订单详情页，展示订单状态、行程信息、旅客与联系信息、价格明细，并支持取消与重新下单。
+  properties:
+    - name: orderId
+      type: string
+      description: "路由参数中的订单号。"
+  state:
+    - isLoading
+    - errorMessage
+    - order
+    - isCancelling
+    - isRebooking
+  dependencies:
+    - API-GET-OrderDetail
+    - API-POST-OrderCancel
+    - API-POST-OrderRebook
+  acceptanceCriteria:
+    - 页面加载时应请求订单详情并显示 Loading Indicator。
+    - 当订单不存在或无权限时，应显示“订单不存在或您没有权限查看”。
+    - 当订单为已取消或已完成时，不应展示“取消订单”按钮。
+    - 当订单为待支付或待出行时，点击“取消订单”需弹出浏览器确认框。
+    - 确认取消成功后提示“订单取消成功”，并刷新状态为“已取消”。
+    - 点击“重新下单”时应调用重下单接口并按返回 redirectUrl 跳转。
+  changeLog:
+    - date: "2025-12-28"
       description: "初始创建。"

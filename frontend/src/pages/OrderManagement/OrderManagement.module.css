@@ -1,0 +1,398 @@
+.page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.notice {
+  width: 100%;
+  height: 44px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+.noticeIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #0b63ce;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.noticeIcon::after {
+  content: 'i';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+.noticeText {
+  font-size: 14px;
+  line-height: 18px;
+  color: #101828;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.noticeAction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.downloadIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(11, 99, 206, 0.55);
+  background: rgba(11, 99, 206, 0.12);
+  position: relative;
+}
+
+.downloadIcon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid rgba(11, 99, 206, 0.9);
+  border-bottom: 2px solid rgba(11, 99, 206, 0.9);
+  transform: rotate(-45deg);
+}
+
+.noticeLink {
+  font-size: 14px;
+  line-height: 18px;
+  color: #0b63ce;
+}
+
+.tabsWrap {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding-left: 0;
+  position: relative;
+}
+
+.tabsWrap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #0b63ce;
+}
+
+.tab {
+  width: 200px;
+  height: 58px;
+  background: #ffffff;
+  border: 2px solid rgba(16, 24, 40, 0.22);
+  border-bottom: 0;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  color: rgba(16, 24, 40, 0.55);
+}
+
+.tabActive {
+  border-color: #0b63ce;
+  color: #0b63ce;
+  position: relative;
+}
+
+.tabActive::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  bottom: 0;
+  width: 6px;
+  background: #0b63ce;
+}
+
+.filters {
+  background: #f2f2f2;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterLabel {
+  font-size: 16px;
+  line-height: 20px;
+  color: #101828;
+}
+
+.select {
+  width: 240px;
+  height: 44px;
+  border: 1px solid rgba(16, 24, 40, 0.25);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+
+.selectText {
+  font-size: 16px;
+  line-height: 20px;
+  color: #101828;
+}
+
+.selectArrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #0b63ce;
+}
+
+.moreFilters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #101828;
+}
+
+.moreText {
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.moreArrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #0b63ce;
+}
+
+.list {
+  padding: 18px 0 0;
+}
+
+.orderCard {
+  background: #ffffff;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+}
+
+.orderMeta {
+  height: 44px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 16px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(16, 24, 40, 0.35);
+  background: #ffffff;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.metaText {
+  font-size: 16px;
+  line-height: 20px;
+  color: #101828;
+}
+
+.orderNo {
+  color: #0b63ce;
+}
+
+.orderBody {
+  padding: 22px 22px 26px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.orderLeft {
+  min-width: 0;
+}
+
+.routeTitle {
+  font-size: 34px;
+  line-height: 42px;
+  font-weight: 800;
+  color: #101828;
+}
+
+.line {
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 24px;
+  color: #101828;
+}
+
+.orderRight {
+  text-align: right;
+  min-width: 120px;
+}
+
+.status {
+  font-size: 20px;
+  line-height: 26px;
+  color: #0b63ce;
+  font-weight: 700;
+}
+
+.price {
+  margin-top: 10px;
+  font-size: 30px;
+  line-height: 36px;
+  color: #101828;
+  font-weight: 800;
+}
+
+.footerBar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 0;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #101828;
+}
+
+.footerText {
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.footerSep {
+  width: 14px;
+}
+
+.footerAction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerDownloadIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid rgba(11, 99, 206, 0.55);
+  background: rgba(11, 99, 206, 0.12);
+  position: relative;
+}
+
+.footerDownloadIcon::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid rgba(11, 99, 206, 0.9);
+  border-bottom: 2px solid rgba(11, 99, 206, 0.9);
+  transform: rotate(-45deg);
+}
+
+.footerLink {
+  font-size: 16px;
+  line-height: 20px;
+  color: #0b63ce;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pageBtn {
+  width: 44px;
+  height: 36px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  color: rgba(16, 24, 40, 0.50);
+}
+
+.pageBtnDisabled {
+  background: #f2f4f7;
+  color: rgba(16, 24, 40, 0.30);
+}
+
+.pageNum {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 20px;
+  color: #101828;
+}
+
+.pageNumActive {
+  background: #0b63ce;
+  color: #ffffff;
+  border-color: #0b63ce;
+}
+
+.pageNext {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(16, 24, 40, 0.65);
+}
+
+.nextText {
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.nextArrow {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 7px solid rgba(16, 24, 40, 0.45);
+}

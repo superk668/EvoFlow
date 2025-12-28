@@ -202,9 +202,17 @@ describe('Auth API', () => {
 
   test('POST /api/v1/auth/register/complete returns 400 when password format is invalid', async () => {
     const app = createApp()
+
+    const verifyRes = await request(app).post('/api/v1/auth/register/verify-phone').send({
+      phoneNumber: '13900139000',
+      code: '123456',
+      agreeTerms: true,
+    })
+    expect(verifyRes.statusCode).toBe(200)
+
     const res = await request(app).post('/api/v1/auth/register/complete').send({
       phoneNumber: '13900139000',
-      verificationToken: 'validTokenFromVerifyStep',
+      verificationToken: verifyRes.body.verificationToken,
       password: 'short',
     })
 
@@ -216,7 +224,7 @@ describe('Auth API', () => {
     const app = createApp()
     const res = await request(app).post('/api/v1/auth/register/complete').send({
       phoneNumber: '13800138000',
-      verificationToken: 'validTokenFromVerifyStep',
+      verificationToken: 'invalid',
       password: 'Valid#12345',
     })
 
@@ -226,9 +234,17 @@ describe('Auth API', () => {
 
   test('POST /api/v1/auth/register/complete returns 201 with token and user on success', async () => {
     const app = createApp()
+
+    const verifyRes = await request(app).post('/api/v1/auth/register/verify-phone').send({
+      phoneNumber: '13900139000',
+      code: '123456',
+      agreeTerms: true,
+    })
+    expect(verifyRes.statusCode).toBe(200)
+
     const res = await request(app).post('/api/v1/auth/register/complete').send({
       phoneNumber: '13900139000',
-      verificationToken: 'validTokenFromVerifyStep',
+      verificationToken: verifyRes.body.verificationToken,
       password: 'Valid#12345',
     })
 

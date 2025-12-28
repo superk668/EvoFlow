@@ -1,6 +1,6 @@
 import styles from './RegisterStep2.module.css'
 import eyeIcon from '../../assets/placeholders/icon_eye_18x18.svg'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function RegisterStep2({ onRegisterSuccess } = {}) {
@@ -16,9 +16,30 @@ export default function RegisterStep2({ onRegisterSuccess } = {}) {
   const [errorMessage, setErrorMessage] = useState('')
   const [submitTouched, setSubmitTouched] = useState(false)
 
-  const phoneNumber = sessionStorage.getItem('registerPhoneNumber') || '13900139000'
-  const verificationToken =
-    sessionStorage.getItem('registerVerificationToken') || 'validTokenFromVerifyStep'
+  const [registerFlow] = useState(() => {
+    return {
+      phoneNumber: sessionStorage.getItem('registerPhoneNumber') || '',
+      verificationToken: sessionStorage.getItem('registerVerificationToken') || '',
+    }
+  })
+
+  const phoneNumber = registerFlow.phoneNumber
+  const verificationToken = registerFlow.verificationToken
+
+  const prereqOk = useMemo(() => {
+    const pn = String(phoneNumber || '')
+    const token = String(verificationToken || '')
+    if (!/^1\d{10}$/.test(pn)) return false
+    if (!token) return false
+    if (token === 'undefined' || token === 'null') return false
+    return true
+  }, [phoneNumber, verificationToken])
+
+  useEffect(() => {
+    if (prereqOk) return
+    sessionStorage.setItem('registerFlowError', '请先完成手机验证')
+    navigate('/register/step1', { replace: true })
+  }, [navigate, prereqOk])
 
   const phoneNumberMasked = useMemo(() => {
     const pn = String(phoneNumber || '')
@@ -42,7 +63,7 @@ export default function RegisterStep2({ onRegisterSuccess } = {}) {
     return password === confirmPassword
   }, [password, confirmPassword])
 
-  const shouldDisableSubmit = !passwordFormatOk || !passwordsMatch || isSubmitting
+  const shouldDisableSubmit = !prereqOk || !passwordFormatOk || !passwordsMatch || isSubmitting
 
   const passwordStrength = useMemo(() => {
     if (!passwordFormatOk) return 'none'
@@ -106,13 +127,23 @@ export default function RegisterStep2({ onRegisterSuccess } = {}) {
     }
 
     if (!result.ok) {
-      setErrorMessage(result?.data?.message || '注册失败')
+      const msg = result?.data?.message || '注册失败'
+      if (msg === '验证已失效') {
+        sessionStorage.removeItem('registerPhoneNumber')
+        sessionStorage.removeItem('registerVerificationToken')
+        sessionStorage.setItem('registerFlowError', '验证已失效，请重新验证手机号')
+        navigate('/register/step1', { replace: true })
+        return
+      }
+      setErrorMessage(msg)
       return
     }
 
     if (typeof onRegisterSuccess === 'function') {
       onRegisterSuccess(result.data)
     }
+    sessionStorage.removeItem('registerPhoneNumber')
+    sessionStorage.removeItem('registerVerificationToken')
     navigate('/login')
   }
 

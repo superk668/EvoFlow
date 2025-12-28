@@ -13,6 +13,14 @@
           "Login.jsx",
           "Login.module.css"
         ],
+        "OrderManagement": [
+          "OrderManagement.jsx",
+          "OrderManagement.module.css"
+        ],
+        "OrderDetail": [
+          "OrderDetail.jsx",
+          "OrderDetail.module.css"
+        ],
         "RegisterStep1": [
           "RegisterStep1.jsx",
           "RegisterStep1.module.css"
@@ -34,13 +42,19 @@
         "TopHeader": [
           "TopHeader.jsx",
           "TopHeader.module.css"
+        ],
+        "UserCenterSideBar": [
+          "UserCenterSideBar.jsx",
+          "UserCenterSideBar.module.css"
         ]
       },
       "layouts": [
         "AuthLayout.jsx",
         "authLayout.module.css",
         "MainLayout.jsx",
-        "layout.module.css"
+        "layout.module.css",
+        "UserCenterLayout.jsx",
+        "userCenterLayout.module.css"
       ],
       "styles": [
         "tokens.css",
