@@ -1,5 +1,10 @@
-# EvoFlow
-This is EvoFlow, a self-evolving multi-agent web development workflow.
+<p align="center">
+  <img src="assets/logo.png" alt="EvoFlow Logo" width="360" />
+</p>
+
+<h1 align="center">EvoFlow</h1>
+
+<p align="center">A self-evolving multi-agent web development workflow.</p>
 
 Detailed description to be added here.
 

@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EvoFlow · GUIDE</title>
+    <meta name="description" content="A Step-by-Step Guide to reproduce the Ctrip-Replica Project" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #ffffff;
+        --surface: #f6f8fb;
+        --surface-2: #eef3ff;
+        --card: #ffffff;
+        --text: #101828;
+        --muted: #475467;
+        --muted-2: #667085;
+        --border: #e4e7ec;
+        --shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
+        --shadow-2: 0 6px 18px rgba(16, 24, 40, 0.08);
+        --brand: #155eef;
+        --brand-2: #7a5af8;
+        --ok: #12b76a;
+        --warn: #f79009;
+        --danger: #f04438;
+        --radius: 14px;
+        --radius-sm: 10px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background:
+          radial-gradient(1200px 520px at 20% -10%, rgba(21, 94, 239, 0.16), transparent 60%),
+          radial-gradient(900px 480px at 80% -15%, rgba(122, 90, 248, 0.16), transparent 60%),
+          linear-gradient(#ffffff, #ffffff);
+      }
+
+      a {
+        color: var(--brand);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 18px 64px;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 26px 14px 18px;
+      }
+
+      .hero-logo {
+        width: min(360px, 78vw);
+        height: auto;
+        display: inline-block;
+        filter: drop-shadow(0 18px 18px rgba(16, 24, 40, 0.14));
+        user-select: none;
+      }
+
+      .hero-title {
+        font-size: clamp(28px, 3.2vw, 44px);
+        letter-spacing: -0.02em;
+        margin: 14px 0 10px;
+        font-weight: 800;
+      }
+
+      .hero-rule {
+        width: min(720px, 92vw);
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(16, 24, 40, 0.18), transparent);
+        margin: 14px auto 14px;
+      }
+
+      .hero-subtitle {
+        margin: 0 auto;
+        max-width: 900px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .badges {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-2);
+      }
+
+      .badge img {
+        height: 20px;
+        width: auto;
+        display: block;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 22px;
+        align-items: start;
+        margin-top: 10px;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .toc {
+        position: sticky;
+        top: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius);
+        padding: 14px 14px 12px;
+        box-shadow: var(--shadow-2);
+      }
+
+      .toc-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        margin: 2px 0 10px;
+      }
+
+      .toc ul {
+        padding-left: 18px;
+        margin: 10px 0 0;
+        color: var(--muted-2);
+      }
+
+      .toc li {
+        margin: 7px 0;
+        line-height: 1.45;
+      }
+
+      .toc a {
+        color: var(--muted);
+      }
+
+      .toc a:hover {
+        color: var(--brand);
+        text-decoration: none;
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px 18px 16px;
+      }
+
+      .card h2 {
+        margin: 2px 0 10px;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+
+      .card h3 {
+        margin: 16px 0 8px;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+
+      .card h4 {
+        margin: 14px 0 6px;
+        font-size: 15px;
+      }
+
+      .card p {
+        margin: 10px 0;
+        color: var(--muted);
+        line-height: 1.75;
+        font-size: 14.5px;
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(16, 24, 40, 0.14), transparent);
+        margin: 16px 0 10px;
+      }
+
+      .callout {
+        border-radius: var(--radius-sm);
+        padding: 14px 14px 12px;
+        border: 1px solid transparent;
+        margin: 12px 0;
+        display: grid;
+        grid-template-columns: 22px 1fr;
+        gap: 10px;
+      }
+
+      .callout strong {
+        color: var(--text);
+      }
+
+      .callout p {
+        margin: 0;
+      }
+
+      .callout.info {
+        background: #eaf2ff;
+        border-color: #c7dcff;
+      }
+
+      .callout.tip {
+        background: #e8fbf2;
+        border-color: #bff0d6;
+      }
+
+      .callout.warn {
+        background: #fff4e6;
+        border-color: #fed7aa;
+      }
+
+      .icon {
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+      }
+
+      .icon.info {
+        background: rgba(21, 94, 239, 0.12);
+        color: var(--brand);
+      }
+
+      .icon.tip {
+        background: rgba(18, 183, 106, 0.12);
+        color: var(--ok);
+      }
+
+      .icon.warn {
+        background: rgba(247, 144, 9, 0.12);
+        color: var(--warn);
+      }
+
+      .icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 12px;
+        color: var(--muted);
+        line-height: 1.75;
+        font-size: 14.5px;
+      }
+
+      code {
+        font-family: var(--mono);
+        font-size: 0.95em;
+      }
+
+      .inline-code {
+        padding: 2px 6px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: #1d2939;
+      }
+
+      pre {
+        margin: 12px 0;
+        background: #0b1220;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #e6eaff;
+        border-radius: var(--radius-sm);
+        padding: 12px 12px 12px;
+        overflow: auto;
+        box-shadow: 0 10px 18px rgba(16, 24, 40, 0.12);
+        position: relative;
+      }
+
+      pre code {
+        font-size: 12.8px;
+        line-height: 1.65;
+        display: block;
+        white-space: pre;
+      }
+
+      .copy {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+        padding: 6px 9px;
+        border-radius: 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .copy:active {
+        transform: translateY(1px);
+      }
+
+      .footer {
+        margin-top: 28px;
+        text-align: center;
+        color: var(--muted-2);
+        font-size: 12.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <img class="hero-logo" src="assets/logo.png" alt="EvoFlow Logo" />
+        <div class="hero-title">A Step-by-Step Guide</div>
+        <div class="hero-rule"></div>
+        <p class="hero-subtitle">reproduce the Ctrip-Replica Project · EvoFlow 工作流复现指南</p>
+        <div class="badges" aria-label="badges">
+          <a class="badge" href="https://img.shields.io/badge/GitHub%20Pages-passing-brightgreen" target="_blank" rel="noreferrer">
+            <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-passing-brightgreen" />
+          </a>
+          <a class="badge" href="https://img.shields.io/badge/license-MulanPSL--2.0-blue" target="_blank" rel="noreferrer">
+            <img alt="License" src="https://img.shields.io/badge/license-MulanPSL--2.0-blue" />
+          </a>
+          <a class="badge" href="https://img.shields.io/badge/release-v23.03.1-blue" target="_blank" rel="noreferrer">
+            <img alt="Release" src="https://img.shields.io/badge/release-v23.03.1-blue" />
+          </a>
+        </div>
+      </header>
+
+      <div class="layout">
+        <nav class="toc" aria-label="Table of contents">
+          <div class="toc-title">
+            <span class="icon info" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                <path
+                  d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+              </svg>
+            </span>
+            目录
+          </div>
+          <ul>
+            <li><a href="#intro">概览</a></li>
+            <li><a href="#workflow">关于我们的工作流</a></li>
+            <li><a href="#reproduce">开始复现</a></li>
+            <li><a href="#login-register">登陆与注册界面</a></li>
+            <li><a href="#workflow-refiner">Workflow Refiner</a></li>
+          </ul>
+        </nav>
+
+        <main class="content">
+          <section class="card" id="intro">
+            <h2>概览</h2>
+            <div class="callout info">
+              <div class="icon info" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>
+                本仓库作为 <span class="inline-code">https://github.com/superk668/Ctrip-Replica</span> 的子仓库，旨在提供一个标准化的 multi-agent 工作流，
+                用于完全复现我们的工作。
+              </p>
+            </div>
+          </section>
+
+          <section class="card" id="workflow">
+            <h2>关于我们的工作流</h2>
+            <h3>工作流介绍</h3>
+            <div class="callout tip">
+              <div class="icon tip" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2a7 7 0 0 0-4 12.75V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.25A7 7 0 0 0 12 2Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path d="M10 22h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <p>该部分可继续扩展：建议在此补充工作流总览图、角色分工和输入输出约定。</p>
+            </div>
+
+            <h3>帮助我们改进工作流</h3>
+            <div class="callout warn">
+              <div class="icon warn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 9v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>如果你在复现过程中遇到问题，建议记录：错误信息、发生步骤、复现输入（prompt/截图路径）与环境信息。</p>
+            </div>
+          </section>
+
+          <section class="card" id="reproduce">
+            <h2>开始复现</h2>
+            <h3>准备工作</h3>
+            <p>
+              本工作流使用 Trae 作为 multi-agent 平台，你可以通过以下方式导入 agent：
+            </p>
+
+            <div class="divider"></div>
+
+            <h4>1. 导入 agent</h4>
+            <p><strong>方式 1：</strong>通过 Trae 链接导入 agent（Under construction）</p>
+            <pre><button class="copy" type="button">复制</button><code>To be added (Under construction)</code></pre>
+
+            <p><strong>方式 2：</strong>手动添加</p>
+            <ul>
+              <li>所有 agent 的 prompt 均可在 <span class="inline-code">agent_prompt/</span> 目录下找到。</li>
+              <li>注意：请在 agent 创建界面打开所有工具的权限复选框，确保 agent 可以使用所有功能。</li>
+            </ul>
+
+            <h4>2. 准备文件</h4>
+            <p>在本仓库中，已为你准备好所有复现需要的文件（文件树可在此处补充）。</p>
+
+            <h4>3. 额外说明</h4>
+            <div class="callout info">
+              <div class="icon info" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>
+                对于所有 agent，我们均使用 <span class="inline-code">GPT-5.2</span> 作为模型，不对其他模型的性能做出保证。
+              </p>
+            </div>
+            <div class="callout warn">
+              <div class="icon warn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 9v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>
+                在 agent 运行过程中请保持关注：当 agent 自主运行 <span class="inline-code">npm test</span> 时，终端可能无法正常退出。
+                请在运行完成后手动点击跳过键，或在终端中键入 <span class="inline-code">q</span> 退出。
+              </p>
+            </div>
+          </section>
+
+          <section class="card" id="login-register">
+            <h2>登陆与注册界面</h2>
+            <div class="callout info">
+              <div class="icon info" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>
+                对于所有 <span class="inline-code">.png</span>，请根据路径将其复制（拖曳）至 prompt 输入栏内。所有截图均可在
+                <span class="inline-code">manual_prompt/</span> 目录下找到。
+              </p>
+            </div>
+
+            <h3>Step 1. Web Constructor：构建网页 UI 前端</h3>
+            <p><strong>Step 1.0</strong> 构建首页 prompt：</p>
+            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
+首页</code></pre>
+
+            <p><strong>Step 1.1</strong> 构建底边栏 prompt：</p>
+            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_1\bottom_bar.png]
+实现底边栏，该模块需要在所有页面中被添加至最低端</code></pre>
+
+            <p><strong>Step 1.2</strong> 构建登陆页 prompt：</p>
+            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_overview.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_core.png]
+登录界面</code></pre>
+
+            <p><strong>Step 1.3</strong> 构建注册页第一步 prompt：</p>
+            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_overview.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core1.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core2.png]
+注册界面第一步</code></pre>
+
+            <p><strong>Step 1.4</strong> 构建注册页第二步 prompt：</p>
+            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_overview.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core1.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core2.png]
+注册界面第二步</code></pre>
+
+            <div class="divider"></div>
+
+            <h3>Step 2. Interface Designer：生成接口</h3>
+            <pre><button class="copy" type="button">复制</button><code>请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计登录与注册部分的接口</code></pre>
+
+            <h3>Step 3. Test Generator：生成测试用例</h3>
+            <pre><button class="copy" type="button">复制</button><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试代码</code></pre>
+
+            <h3>Step 4. Developer：实现接口补全代码</h3>
+            <pre><button class="copy" type="button">复制</button><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成代码</code></pre>
+
+            <h3>Step 5. Test Runner：运行测试用例</h3>
+            <pre><button class="copy" type="button">复制</button><code>运行测试</code></pre>
+
+            <h3>Step 6. 验证功能</h3>
+            <p>现在可以对登录与注册功能进行验证。</p>
+            <p><strong>启动后端</strong></p>
+            <pre><button class="copy" type="button">复制</button><code>cd backend
+npm start</code></pre>
+            <p><strong>启动前端</strong></p>
+            <pre><button class="copy" type="button">复制</button><code>cd frontend
+npm run dev</code></pre>
+            <p>进行测试</p>
+
+            <div class="divider"></div>
+
+            <h3>用于最终提交 Step 7. AutoDebugger（未实现）</h3>
+            <div class="callout tip">
+              <div class="icon tip" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2a7 7 0 0 0-4 12.75V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.25A7 7 0 0 0 12 2Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path d="M10 22h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <p>该模块尚未实现，可作为后续迭代方向。</p>
+            </div>
+          </section>
+
+          <section class="card" id="workflow-refiner">
+            <h2>用于小组调试改进：Step 7. Workflow Refiner</h2>
+            <p>
+              这是一个用于改进工作流的 agent。它了解整个工作流的所有步骤，并根据用户反馈和错误信息，自动调整工作流，使得下一次从零生成时能够避免该错误再次发生。
+            </p>
+
+            <h3>prompt</h3>
+            <pre><button class="copy" type="button">复制</button><code>{错误信息}+ “请你debug并改进工作流”</code></pre>
+
+            <h3>职责</h3>
+            <div class="callout info">
+              <div class="icon info" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>下面四个步骤形成一个闭环：先修复问题，再分析根因，进化需求与提示词，并用测试永久覆盖。</p>
+            </div>
+
+            <h4>步骤 1：代码层面的修复（Immediate Fix）</h4>
+            <ul>
+              <li><strong>动作</strong>：分析报错信息或 Bug 描述，直接修改项目代码以修复当前问题。</li>
+              <li><strong>标准</strong>：确保修改后的代码能通过现有测试，并解决报告的 Bug。</li>
+            </ul>
+
+            <h4>步骤 2：根因分析（Root Cause Analysis）</h4>
+            <ul>
+              <li><strong>动作</strong>：深度思考为什么之前的工作流没能避免这个 Bug。</li>
+              <li><strong>分析维度</strong>：</li>
+            </ul>
+            <ul>
+              <li><strong>需求模糊</strong>：<span class="inline-code">requirements.md</span> 是否缺少了对该边缘情况或逻辑的描述？</li>
+              <li><strong>提示词缺陷</strong>：某个 Agent 的 Prompt 是否不够明确？</li>
+              <li>例如：Developer 忘记了做输入验证，可能是 <span class="inline-code">developer_prompt.md</span> 缺少了“必须验证所有输入”的强指令。</li>
+              <li>例如：Test Generator 漏测了该场景，可能是 <span class="inline-code">test_generator_prompt.md</span> 缺乏对边界条件生成的指导。</li>
+            </ul>
+
+            <h4>步骤 3：系统进化（Evolution for Reproducibility）</h4>
+            <div class="callout warn">
+              <div class="icon warn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 9v5"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p><strong>最关键步骤</strong>：确保重新从头运行工作流时，这个 Bug 绝对不会再次发生。</p>
+            </div>
+            <ul>
+              <li><strong>目标</strong>：确保如果其他人拿着修改后的 <span class="inline-code">requirements.md</span> 和 <span class="inline-code">agent_prompts/</span> 重新从头运行工作流，这个 Bug 绝对不会再次发生。</li>
+              <li><strong>动作</strong>：</li>
+            </ul>
+            <ul>
+              <li><strong>修改需求</strong>：如果是业务逻辑缺失，更新 <span class="inline-code">requirements.md</span>。</li>
+              <li><strong>优化 Prompt</strong>：如果是 Agent 的能力或执行力问题，修改 <span class="inline-code">agent_prompts/</span> 下对应的 <span class="inline-code">.md</span> 文件。</li>
+              <li><strong>策略</strong>：增加特定的约束、示例或负面约束，帮助 Agent 稳定执行。</li>
+            </ul>
+
+            <h4>步骤 4：测试闭环（Test Coverage &amp; Synchronization）</h4>
+            <ol>
+              <li>在 <span class="inline-code">requirements.md</span> 中添加或修改对应的测试场景（自然语言）。</li>
+              <li>编写或更新对应的自动化测试代码，确保该 Bug 被永久覆盖。</li>
+            </ol>
+            <div class="callout info">
+              <div class="icon info" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <p>约束：必须保持 <span class="inline-code">requirements.md</span> 中的描述与实际测试代码的一一对应关系。</p>
+            </div>
+          </section>
+
+          <div class="footer">Generated for EvoFlow · GUIDE.html（单文件，无需构建）</div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const copyButtons = Array.from(document.querySelectorAll("button.copy"));
+      const setCopyState = (button, label) => {
+        button.textContent = label;
+        window.setTimeout(() => {
+          button.textContent = "复制";
+        }, 900);
+      };
+
+      for (const button of copyButtons) {
+        button.addEventListener("click", async () => {
+          const pre = button.closest("pre");
+          const code = pre ? pre.querySelector("code") : null;
+          const text = code ? code.textContent : "";
+          try {
+            await navigator.clipboard.writeText(text);
+            setCopyState(button, "已复制");
+          } catch {
+            try {
+              const textarea = document.createElement("textarea");
+              textarea.value = text;
+              textarea.style.position = "fixed";
+              textarea.style.left = "-9999px";
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textarea);
+              setCopyState(button, "已复制");
+            } catch {
+              setCopyState(button, "复制失败");
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
