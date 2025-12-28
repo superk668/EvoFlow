@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="EvoFlow Logo" width="360" />
+  <img src="assets/evoflow_logo.png" alt="EvoFlow Logo" width="360" />
 </p>
 
 <h1 align="center">EvoFlow</h1>
