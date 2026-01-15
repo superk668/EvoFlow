@@ -7,7 +7,7 @@ import styles from './userCenterLayout.module.css'
 export default function UserCenterLayout() {
   return (
     <div className={styles.shell}>
-      <TopHeader />
+      <TopHeader variant="authed" />
       <div className={styles.body}>
         <div className={styles.container}>
           <UserCenterSideBar />
@@ -20,4 +20,3 @@ export default function UserCenterLayout() {
     </div>
   )
 }
-

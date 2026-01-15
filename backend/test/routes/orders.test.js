@@ -179,5 +179,53 @@ describe('Order APIs', () => {
     expect(res.statusCode).toBe(200)
     expect(res.body).toMatchObject({ success: true, redirectUrl: expect.any(String) })
   })
-})
 
+  test('POST /api/v1/orders/:orderId/pay returns 401 when not logged in', async () => {
+    const app = createApp()
+    const res = await request(app).post('/api/v1/orders/o_owned_1/pay').send({ paymentMethod: 'default' })
+
+    expect(res.statusCode).toBe(401)
+    expect(res.body).toEqual({ success: false, message: '未登录' })
+  })
+
+  test('POST /api/v1/orders/:orderId/pay pays pending_payment order and returns pending_review with paidAt', async () => {
+    const app = createApp()
+    const res = await request(app)
+      .post('/api/v1/orders/o_owned_1/pay')
+      .set('Authorization', 'Bearer test_token')
+      .send({ paymentMethod: 'default' })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toMatchObject({
+      success: true,
+      message: '支付成功',
+      order: {
+        orderId: 'o_owned_1',
+        status: 'pending_review',
+        paidAt: expect.any(String),
+      },
+    })
+  })
+
+  test('POST /api/v1/orders/:orderId/pay returns 404 for non-owned order', async () => {
+    const app = createApp()
+    const res = await request(app)
+      .post('/api/v1/orders/o_not_owned/pay')
+      .set('Authorization', 'Bearer test_token')
+      .send({ paymentMethod: 'default' })
+
+    expect(res.statusCode).toBe(404)
+    expect(res.body).toEqual({ success: false, message: '订单不存在或您没有权限支付' })
+  })
+
+  test('POST /api/v1/orders/:orderId/pay returns 409 when status does not allow pay', async () => {
+    const app = createApp()
+    const res = await request(app)
+      .post('/api/v1/orders/o_mask_demo/pay')
+      .set('Authorization', 'Bearer test_token')
+      .send({ paymentMethod: 'default' })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.body).toEqual({ success: false, message: '订单当前状态不支持支付' })
+  })
+})

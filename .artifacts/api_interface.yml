@@ -502,3 +502,360 @@
   changeLog:
     - date: "2025-12-28"
       description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrderPay
+  route: POST /api/v1/orders/:orderId/pay
+  description: 支付当前登录用户的待支付订单，并将订单状态更新为待点评。
+  input:
+    type: JSON
+    params:
+      orderId: string
+    body:
+      paymentMethod: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        message: "支付成功"
+        order:
+          orderId: "string"
+          status: "pending_review"
+          paidAt: "ISO-8601"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限支付"
+      - statusCode: 409
+        body:
+          success: false
+          message: "订单当前状态不支持支付"
+      - statusCode: 500
+        body:
+          success: false
+          message: "支付失败"
+  dependencies:
+    - DB-PayOrderForUser
+  acceptanceCriteria:
+    - 仅允许支付归属当前用户的 pending_payment 订单。
+    - 支付成功后订单状态应更新为 pending_review。
+    - 当订单状态不支持支付时，返回 409。
+  changeLog:
+    - date: "2026-01-14"
+      description: "初始创建：支持待支付订单支付后转为待点评。"
+
+- type: Backend
+  id: API-GET-UserProfile
+  route: GET /api/v1/user/profile
+  description: 获取当前登录用户的个人信息。
+  input:
+    type: none
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        profile:
+          userId: "string"
+          name: "string"
+          phoneNumber: "string"
+          email: "string"
+          countryRegion: "string"
+          documentType: "string"
+          documentNumberMasked: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "个人信息加载失败"
+  dependencies:
+    - DB-GetUserProfileById
+  acceptanceCriteria:
+    - 未登录时返回 401。
+    - 返回信息不应包含未脱敏的证件号。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-PUT-UserProfile
+  route: PUT /api/v1/user/profile
+  description: 更新当前登录用户的个人信息。
+  input:
+    type: JSON
+    body:
+      name: string
+      phoneNumber: string
+      email: string
+      countryRegion: string
+      documentType: string
+      documentNumber: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        message: "个人信息已更新"
+        profile:
+          userId: "string"
+          name: "string"
+          phoneNumber: "string"
+          email: "string"
+          countryRegion: "string"
+          documentType: "string"
+          documentNumberMasked: "string"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "请输入正确的个人信息"
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "保存失败"
+  dependencies:
+    - DB-UpdateUserProfileById
+  acceptanceCriteria:
+    - 仅允许更新当前登录用户信息。
+    - 输入无效时返回 400 且不保存。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-CommonTravelers
+  route: GET /api/v1/user/common-travelers
+  description: 获取当前登录用户的常用旅客列表，支持按姓名或手机号关键词搜索。
+  input:
+    type: Query
+    query:
+      keyword: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        items:
+          - travelerId: "string"
+            name: "string"
+            phoneNumber: "string"
+            documentType: "string"
+            documentNumberMasked: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "常用旅客加载失败"
+  dependencies:
+    - DB-ListCommonTravelersByUser
+    - DB-SearchCommonTravelersByUser
+  acceptanceCriteria:
+    - 未登录时返回 401。
+    - keyword 为空时返回全部旅客；不为空时返回匹配结果。
+    - 返回信息不应包含未脱敏的证件号。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-CommonTraveler
+  route: POST /api/v1/user/common-travelers
+  description: 为当前登录用户新增常用旅客。
+  input:
+    type: JSON
+    body:
+      name: string
+      phoneNumber: string
+      documentType: string
+      documentNumber: string
+  output:
+    success:
+      statusCode: 201
+      body:
+        success: true
+        message: "常用旅客信息已更新"
+        traveler:
+          travelerId: "string"
+          name: "string"
+          phoneNumber: "string"
+          documentType: "string"
+          documentNumberMasked: "string"
+    error:
+      - statusCode: 400
+        body:
+          success: false
+          message: "请输入正确的常用旅客相关信息"
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "保存失败"
+  dependencies:
+    - DB-CreateCommonTraveler
+  acceptanceCriteria:
+    - 输入无效时返回 400 且不保存。
+    - 创建成功返回 201 并返回旅客信息（证件号脱敏）。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-DELETE-CommonTraveler
+  route: DELETE /api/v1/user/common-travelers/:travelerId
+  description: 删除当前登录用户的常用旅客。
+  input:
+    type: Params
+    params:
+      travelerId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        message: "常用旅客信息已删除"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "常用旅客不存在"
+      - statusCode: 500
+        body:
+          success: false
+          message: "删除失败"
+  dependencies:
+    - DB-DeleteCommonTraveler
+  acceptanceCriteria:
+    - 仅允许删除归属当前登录用户的旅客。
+    - 旅客不存在时返回 404。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrderDownloadPdf
+  route: GET /api/v1/orders/:orderId/download/pdf
+  description: 生成并返回单笔订单的 PDF 下载内容。
+  input:
+    type: Params
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "order-1128144831159754.pdf"
+        contentBase64: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 404
+        body:
+          success: false
+          message: "订单不存在或您没有权限查看"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - PDF 内容不应包含未脱敏的证件号与手机号。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrdersBatchDownloadPdf
+  route: POST /api/v1/orders/download/pdf
+  description: 生成并返回多笔订单的 PDF 下载内容（用于批量下载）。
+  input:
+    type: JSON
+    body:
+      orderIds: ["string"]
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "orders-2026-01-15.pdf"
+        contentBase64: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 400
+        body:
+          success: false
+          message: "orderIds 不能为空"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-GetOrdersByIdsForUser
+  acceptanceCriteria:
+    - 仅导出归属当前用户的订单，忽略不归属的订单号。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrdersDownloadAllPdf
+  route: GET /api/v1/orders/download/all/pdf
+  description: 生成并返回当前用户历史订单的 PDF 下载内容。
+  input:
+    type: Query
+    query:
+      scope: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        success: true
+        fileName: "orders-all.pdf"
+        contentBase64: "string"
+    error:
+      - statusCode: 401
+        body:
+          success: false
+          message: "未登录"
+      - statusCode: 500
+        body:
+          success: false
+          message: "下载失败"
+  dependencies:
+    - DB-ListOrdersByUser
+  acceptanceCriteria:
+    - 默认导出近一年订单；当 scope=all 时可导出全部历史订单。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"

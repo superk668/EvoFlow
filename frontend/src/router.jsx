@@ -4,8 +4,11 @@ import MainLayout from './layouts/MainLayout.jsx'
 import UserCenterLayout from './layouts/UserCenterLayout.jsx'
 import Home from './pages/Home/Home.jsx'
 import Login from './pages/Login/Login.jsx'
+import CommonTraveler from './pages/CommonTraveler/CommonTraveler.jsx'
 import OrderDetail from './pages/OrderDetail/OrderDetail.jsx'
 import OrderManagement from './pages/OrderManagement/OrderManagement.jsx'
+import PersonalCenter from './pages/PersonalCenter/PersonalCenter.jsx'
+import SetInformation from './pages/SetInformation/SetInformation.jsx'
 import RegisterStep1 from './pages/RegisterStep1/RegisterStep1.jsx'
 import RegisterStep2 from './pages/RegisterStep2/RegisterStep2.jsx'
 
@@ -46,7 +49,13 @@ export default function AppRouter() {
           <Route path="/booking/payment/:orderId" element={<PaymentPage />} />
           <Route path="/flights/list" element={<FlightsListPage />} />
         </Route>
+        <Route element={<MainLayout headerVariant="authed" />}>
+          <Route path="/logined" element={<Home />} />
+        </Route>
         <Route element={<UserCenterLayout />}>
+          <Route path="/user" element={<PersonalCenter />} />
+          <Route path="/user/common-traveler" element={<CommonTraveler />} />
+          <Route path="/user/set-information" element={<SetInformation />} />
           <Route path="/user/orders" element={<OrderManagement />} />
           <Route path="/user/orders/:orderId" element={<OrderDetail />} />
         </Route>

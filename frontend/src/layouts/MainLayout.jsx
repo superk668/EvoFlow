@@ -4,10 +4,10 @@ import TopHeader from '../components/TopHeader/TopHeader.jsx'
 import BottomBar from '../components/BottomBar/BottomBar.jsx'
 import styles from './layout.module.css'
 
-export default function MainLayout() {
+export default function MainLayout({ headerVariant } = {}) {
   return (
     <div className={styles.shell}>
-      <TopHeader />
+      <TopHeader variant={headerVariant} />
       <div className={styles.contentRow}>
         <SideNav />
         <div className={styles.mainCol}>

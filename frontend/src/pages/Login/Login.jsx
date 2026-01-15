@@ -125,7 +125,7 @@ export default function Login({ onLoginSuccess } = {}) {
         onLoginSuccess(result.data)
         return
       }
-      navigate('/')
+      navigate('/logined')
       return
     }
 
@@ -165,7 +165,7 @@ export default function Login({ onLoginSuccess } = {}) {
       onLoginSuccess(result.data)
       return
     }
-    navigate('/')
+    navigate('/logined')
   }
 
   return (

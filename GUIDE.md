@@ -39,8 +39,15 @@ To be added (Under construction)
 ### Step 1. Web Constructor：构建网页UI前端
 #### Step 1.0 构建首页prompt：
 ```
+
 [EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
 首页
+先做完上面这一步，再用对应的提示词完成下面这一步
+
+[EvoFlow\manual_prompt\login_register\web_constructor_step_0\logined_homepage.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_0\Dropdown_menu.png]
+已构建好首页，现在构建登录后的首页,只用在原先首页上将登陆注册替换为登录后账号信息及对应下拉菜单即可
+
 ```
 #### Step 1.1 构建底边栏prompt：
 ```
@@ -67,20 +74,36 @@ To be added (Under construction)
 [EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core2.png]
 注册界面第二步
 ```
+### 个人信息中心
+#### Step 1.1 构建个人信息中心页面（默认个人信息页面为首页）prompt:
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_1\personal_center_page.png]
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_1\Dropdown_menu.png]
+构建个人信息中心页面，默认以个人信息页面为首页，同时包含下拉菜单
+
+#### Step 1.2 构建常用信息页面prompt:
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_2\Common_information_page.png]
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_2\Dropdown_menu.png]
+构建常用信息界面，默认用常用旅客信息界面，包含下拉菜单
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_2\set_information.png]
+构建填写信息界面
+
+#### Step 1.3 构建订单信息页面prompt:
+[EvoFlow\manual_prompt\Personal_information_center\web_constructor_step_3\order_management_page.png]
+订单信息页面
 
 ### Step 2. Interface Designer：生成接口
 ```
-请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计登录与注册部分的接口
+请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计项目的接口
 ```
 
 ### Step 3. Test Generator：生成测试用例
 ```
-请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试代码
+请你根据需求文档#EvoFlow\requirement.md，实现与Scenario一一对应的测试用例及测试代码
 ```
 
 ### Step 4. Developer：实现接口补全代码
 ```
-请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成代码
+请你根据需求文档#EvoFlow\requirement.md，实现接口完成代码
 ```
 
 ### Step 5. Test Runner：运行测试用例

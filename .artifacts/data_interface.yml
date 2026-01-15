@@ -174,3 +174,90 @@
   changeLog:
     - date: "2025-12-28"
       description: "初始创建。"
+
+- type: Database
+  id: DB-PayOrderForUser
+  description: 处理指定用户的订单支付并更新订单状态。
+  dependencies:
+    - DB-GetOrderDetailByIdForUser
+  acceptanceCriteria:
+    - 仅允许支付归属当前 userId 的订单，否则不做更新并返回空结果。
+    - 仅允许支付状态为 pending_payment 的订单，否则返回不可支付标识以便上层返回错误。
+    - 支付成功后应将订单状态更新为 pending_review，并写入 paidAt。
+    - 返回更新后的订单基础信息（orderId、status、paidAt）。
+  changeLog:
+    - date: "2026-01-14"
+      description: "初始创建：支持待支付订单支付后转为待点评。"
+
+- type: Database
+  id: DB-GetUserProfileById
+  description: 根据 userId 查询用户个人信息（用于个人信息设置页）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回字段包含 userId、name、phoneNumber、email、countryRegion、documentType、documentNumber。
+    - 不应在上层展示未脱敏的 documentNumber（由 API 层脱敏）。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateUserProfileById
+  description: 更新指定 userId 的用户个人信息。
+  dependencies:
+    - DB-GetUserProfileById
+  acceptanceCriteria:
+    - 仅允许更新归属该 userId 的记录。
+    - 输入校验不通过时不写入变更并返回失败标识。
+    - 更新成功后可返回更新后的个人信息记录。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListCommonTravelersByUser
+  description: 获取指定 userId 的常用旅客列表。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回 travelerId、name、phoneNumber、documentType、documentNumber。
+    - 默认按创建时间倒序返回。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-SearchCommonTravelersByUser
+  description: 按关键词（姓名或手机号）搜索指定 userId 的常用旅客。
+  dependencies:
+    - DB-ListCommonTravelersByUser
+  acceptanceCriteria:
+    - keyword 为空时等同 DB-ListCommonTravelersByUser。
+    - keyword 非空时按姓名包含或手机号包含匹配。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateCommonTraveler
+  description: 为指定 userId 新增常用旅客记录。
+  dependencies:
+    - DB-ListCommonTravelersByUser
+  acceptanceCriteria:
+    - 成功创建后返回 travelerId。
+    - 输入无效时返回失败标识且不创建。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-DeleteCommonTraveler
+  description: 删除指定 userId 的常用旅客记录。
+  dependencies:
+    - DB-ListCommonTravelersByUser
+  acceptanceCriteria:
+    - 仅允许删除归属当前 userId 的 travelerId。
+    - travelerId 不存在或不归属该 userId 时返回空结果。
+  changeLog:
+    - date: "2026-01-15"
+      description: "初始创建。"

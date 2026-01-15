@@ -5,6 +5,10 @@
     ],
     "src": {
       "pages": {
+        "CommonTraveler": [
+          "CommonTraveler.jsx",
+          "CommonTraveler.module.css"
+        ],
         "Home": [
           "Home.jsx",
           "Home.module.css"
@@ -20,6 +24,14 @@
         "OrderDetail": [
           "OrderDetail.jsx",
           "OrderDetail.module.css"
+        ],
+        "PersonalCenter": [
+          "PersonalCenter.jsx",
+          "PersonalCenter.module.css"
+        ],
+        "SetInformation": [
+          "SetInformation.jsx",
+          "SetInformation.module.css"
         ],
         "RegisterStep1": [
           "RegisterStep1.jsx",

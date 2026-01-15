@@ -10,6 +10,11 @@ describe('UI-LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     if (globalThis.fetch?.mockReset) globalThis.fetch.mockReset()
+    try {
+      localStorage.clear()
+    } catch {
+      void 0
+    }
     window.location.hash = '#/login'
   })
 
@@ -71,6 +76,30 @@ describe('UI-LoginPage', () => {
     await user.click(screen.getByRole('button', { name: '登 录' }))
 
     expect(onLoginSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  test('账号密码登录成功后跳转至登录后的首页', async () => {
+    const user = userEvent.setup()
+
+    globalThis.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        token: 'jwt',
+        user: { id: 'u1', nickname: 'n1', avatar: 'a1' },
+      }),
+    })
+
+    render(<AppRouter />)
+
+    await user.type(screen.getByLabelText('账号'), '13800138000')
+    await user.type(screen.getByLabelText('登录密码'), 'Correct#12345')
+    await user.click(screen.getByLabelText('服务协议'))
+    await user.click(screen.getByRole('button', { name: '登 录' }))
+
+    expect(await screen.findByLabelText('账号菜单')).toBeInTheDocument()
+    expect(window.location.hash).toBe('#/logined')
   })
 
   test('账号或密码为空时，分别显示“请输入用户名”“请输入密码”', async () => {
@@ -144,6 +173,30 @@ describe('UI-LoginPage', () => {
     await user.click(screen.getByRole('button', { name: '登 录' }))
 
     expect(screen.getByText('验证码不正确')).toBeInTheDocument()
+  })
+
+  test('手机号验证码登录成功后跳转至登录后的首页', async () => {
+    const user = userEvent.setup()
+    globalThis.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        token: 'jwt',
+        user: { id: 'u1', nickname: 'n1', avatar: 'a1' },
+      }),
+    })
+
+    render(<AppRouter />)
+
+    await user.click(screen.getByRole('button', { name: '手机验证码登录' }))
+    await user.type(screen.getByLabelText('手机号'), '13800138000')
+    await user.type(screen.getByLabelText('验证码'), '123456')
+    await user.click(screen.getByLabelText('服务协议'))
+    await user.click(screen.getByRole('button', { name: '登 录' }))
+
+    expect(await screen.findByLabelText('账号菜单')).toBeInTheDocument()
+    expect(window.location.hash).toBe('#/logined')
   })
 
   test('手机号未注册的验证码登录，显示“该手机号未注册，请先注册”', async () => {

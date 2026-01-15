@@ -55,3 +55,37 @@
   transform: rotate(45deg);
   margin-right: 2px;
 }
+
+.chevronUp {
+  transform: rotate(-135deg);
+}
+
+.subList {
+  background: rgba(11, 99, 206, 0.06);
+}
+
+.subRow {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding-left: 28px;
+  font-size: 18px;
+  line-height: 22px;
+  color: #344054;
+  text-decoration: none;
+}
+
+.subActive {
+  color: #0b63ce;
+  position: relative;
+}
+
+.subActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: #0b63ce;
+}

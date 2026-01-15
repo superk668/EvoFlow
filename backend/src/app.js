@@ -1,9 +1,30 @@
 const express = require('express')
 const crypto = require('crypto')
+const { bindOrderStore, payOrderForUser } = require('./db/orderRepository')
+const {
+  bindUserStore,
+  getUserProfileById,
+  updateUserProfileById,
+  listCommonTravelersByUser,
+  searchCommonTravelersByUser,
+  createCommonTraveler,
+  deleteCommonTraveler,
+} = require('./db/userRepository')
 
 function isValidPhoneNumber(phoneNumber) {
   if (typeof phoneNumber !== 'string') return false
   return /^1\d{10}$/.test(phoneNumber)
+}
+
+function isValidEmail(email) {
+  if (typeof email !== 'string') return false
+  if (!email) return true
+  return /.+@.+\..+/.test(email)
+}
+
+function isValidIdNumber(documentNumber) {
+  const s = String(documentNumber || '')
+  return /^\d{15,18}$/.test(s)
 }
 
 function hashPassword(password) {
@@ -69,6 +90,9 @@ function createStore() {
   const userIdByPhone = new Map()
   const userIdByAccount = new Map()
 
+  const userProfilesById = new Map()
+  const commonTravelersByUserId = new Map()
+
   const smsByKey = new Map()
   const registerTokenByPhone = new Map()
 
@@ -89,6 +113,26 @@ function createStore() {
   userIdByAccount.set(seedUser.phoneNumber, seedUser.id)
   userIdByAccount.set(seedUser.username, seedUser.id)
   userIdByAccount.set(seedUser.email, seedUser.id)
+
+  userProfilesById.set(seedUser.id, {
+    userId: seedUser.id,
+    name: '张三',
+    phoneNumber: seedUser.phoneNumber,
+    email: 'z3@example.com',
+    countryRegion: 'CN',
+    documentType: '身份证',
+    documentNumber: '430802199001011234',
+  })
+
+  commonTravelersByUserId.set(seedUser.id, [
+    {
+      travelerId: 't_seed_1',
+      name: '张三',
+      phoneNumber: '13800138000',
+      documentType: '身份证',
+      documentNumber: '110101199001011234',
+    },
+  ])
 
   function addOrder(order) {
     ordersById.set(order.orderId, order)
@@ -318,6 +362,8 @@ function createStore() {
     registerTokenByPhone,
     ordersById,
     orderIdsByUserId,
+    userProfilesById,
+    commonTravelersByUserId,
   }
 }
 
@@ -330,6 +376,8 @@ function createApp() {
   app.use(express.json())
 
   const store = createStore()
+  bindOrderStore(store)
+  bindUserStore(store)
 
   function getAuthedUserId(req) {
     const auth = String(req.get('Authorization') || '')
@@ -657,6 +705,146 @@ function createApp() {
     })
   })
 
+  app.get('/api/v1/user/profile', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    try {
+      const profile = await getUserProfileById({ userId })
+      return res.status(200).json({
+        success: true,
+        profile: {
+          userId: String(profile?.userId || userId),
+          name: String(profile?.name || ''),
+          phoneNumber: String(profile?.phoneNumber || ''),
+          email: String(profile?.email || ''),
+          countryRegion: String(profile?.countryRegion || ''),
+          documentType: String(profile?.documentType || ''),
+          documentNumberMasked: maskIdNumber(profile?.documentNumber),
+        },
+      })
+    } catch (err) {
+      const statusCode = Number(err?.statusCode) || 500
+      return res.status(statusCode).json({ success: false, message: String(err?.exposeMessage || '个人信息加载失败') })
+    }
+  })
+
+  app.put('/api/v1/user/profile', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    const body = req.body || {}
+    const name = String(body?.name || '').trim()
+    const phoneNumber = String(body?.phoneNumber || '').trim()
+    const email = String(body?.email || '').trim()
+    const countryRegion = String(body?.countryRegion || '').trim()
+    const documentType = String(body?.documentType || '').trim()
+    const documentNumber = String(body?.documentNumber || '').trim()
+
+    if (!name || !isValidPhoneNumber(phoneNumber) || !isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: '请输入正确的个人信息' })
+    }
+    if (!countryRegion || !documentType || !isValidIdNumber(documentNumber)) {
+      return res.status(400).json({ success: false, message: '请输入正确的个人信息' })
+    }
+
+    try {
+      const profile = await updateUserProfileById({ userId, profile: body })
+      return res.status(200).json({
+        success: true,
+        message: '个人信息已更新',
+        profile: {
+          userId: String(profile?.userId || userId),
+          name: String(profile?.name || ''),
+          phoneNumber: String(profile?.phoneNumber || ''),
+          email: String(profile?.email || ''),
+          countryRegion: String(profile?.countryRegion || ''),
+          documentType: String(profile?.documentType || ''),
+          documentNumberMasked: maskIdNumber(profile?.documentNumber),
+        },
+      })
+    } catch (err) {
+      const statusCode = Number(err?.statusCode) || 500
+      return res.status(statusCode).json({ success: false, message: String(err?.exposeMessage || '保存失败') })
+    }
+  })
+
+  app.get('/api/v1/user/common-travelers', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    const keyword = String(req.query.keyword || '')
+
+    try {
+      const items = keyword
+        ? await searchCommonTravelersByUser({ userId, keyword })
+        : await listCommonTravelersByUser({ userId })
+
+      const safeItems = Array.isArray(items) ? items : []
+
+      return res.status(200).json({
+        success: true,
+        items: safeItems.map((t) => ({
+          travelerId: String(t?.travelerId || ''),
+          name: String(t?.name || ''),
+          phoneNumber: String(t?.phoneNumber || ''),
+          documentType: String(t?.documentType || ''),
+          documentNumberMasked: maskIdNumber(t?.documentNumber),
+        })),
+      })
+    } catch (err) {
+      const statusCode = Number(err?.statusCode) || 500
+      return res.status(statusCode).json({ success: false, message: String(err?.exposeMessage || '常用旅客加载失败') })
+    }
+  })
+
+  app.post('/api/v1/user/common-travelers', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    const body = req.body || {}
+    const name = String(body?.name || '').trim()
+    const phoneNumber = String(body?.phoneNumber || '').trim()
+    const documentType = String(body?.documentType || '').trim()
+    const documentNumber = String(body?.documentNumber || '').trim()
+
+    if (!name || !isValidPhoneNumber(phoneNumber) || !documentType || !isValidIdNumber(documentNumber)) {
+      return res.status(400).json({ success: false, message: '请输入正确的常用旅客相关信息' })
+    }
+
+    try {
+      const traveler = await createCommonTraveler({ userId, traveler: body })
+
+      return res.status(201).json({
+        success: true,
+        message: '常用旅客信息已更新',
+        traveler: {
+          travelerId: String(traveler?.travelerId || ''),
+          name: String(traveler?.name || ''),
+          phoneNumber: String(traveler?.phoneNumber || ''),
+          documentType: String(traveler?.documentType || ''),
+          documentNumberMasked: maskIdNumber(traveler?.documentNumber),
+        },
+      })
+    } catch (err) {
+      const statusCode = Number(err?.statusCode) || 500
+      return res.status(statusCode).json({ success: false, message: String(err?.exposeMessage || '保存失败') })
+    }
+  })
+
+  app.delete('/api/v1/user/common-travelers/:travelerId', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    try {
+      await deleteCommonTraveler({ userId, travelerId: req.params.travelerId })
+      return res.status(200).json({ success: true, message: '常用旅客信息已删除' })
+    } catch (err) {
+      const statusCode = Number(err?.statusCode) || 500
+      return res.status(statusCode).json({ success: false, message: String(err?.exposeMessage || '删除失败') })
+    }
+  })
+
   app.get('/api/v1/orders', (req, res) => {
     const userId = requireAuth(req, res)
     if (!userId) return
@@ -780,6 +968,28 @@ function createApp() {
     }
   })
 
+  app.get('/api/v1/orders/:orderId/download/pdf', (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    try {
+      const order = getOrderById(req.params.orderId)
+      if (!isOrderOwnedByUser(order, userId)) {
+        return res.status(404).json({ success: false, message: '订单不存在或您没有权限查看' })
+      }
+
+      const content = `PDF\n${buildOrderTxt(order)}`
+      const contentBase64 = Buffer.from(String(content), 'utf8').toString('base64')
+      return res.status(200).json({
+        success: true,
+        fileName: `order-${order.orderId}.pdf`,
+        contentBase64,
+      })
+    } catch {
+      return res.status(500).json({ success: false, message: '下载失败' })
+    }
+  })
+
   app.post('/api/v1/orders/download', (req, res) => {
     const userId = requireAuth(req, res)
     if (!userId) return
@@ -799,6 +1009,32 @@ function createApp() {
         success: true,
         fileName: `orders-${toDateOnly(new Date().toISOString())}.txt`,
         content,
+      })
+    } catch {
+      return res.status(500).json({ success: false, message: '下载失败' })
+    }
+  })
+
+  app.post('/api/v1/orders/download/pdf', (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    try {
+      const orderIds = (req.body || {}).orderIds
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'orderIds 不能为空' })
+      }
+
+      const owned = orderIds
+        .map((id) => getOrderById(id))
+        .filter((o) => isOrderOwnedByUser(o, userId))
+
+      const content = owned.map((o) => `PDF\n${buildOrderTxt(o)}`).join('\n\n')
+      const contentBase64 = Buffer.from(String(content), 'utf8').toString('base64')
+      return res.status(200).json({
+        success: true,
+        fileName: `orders-${toDateOnly(new Date().toISOString())}.pdf`,
+        contentBase64,
       })
     } catch {
       return res.status(500).json({ success: false, message: '下载失败' })
@@ -832,6 +1068,34 @@ function createApp() {
     }
   })
 
+  app.get('/api/v1/orders/download/all/pdf', (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    try {
+      const scope = String(req.query.scope || '')
+      const allOrders = listOrdersForUser(userId)
+      const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000
+      const picked =
+        scope === 'all'
+          ? allOrders
+          : allOrders.filter((o) => new Date(o.createdAt).getTime() >= oneYearAgo)
+
+      const content = picked
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .map((o) => `PDF\n${buildOrderTxt(o)}`)
+        .join('\n\n')
+      const contentBase64 = Buffer.from(String(content), 'utf8').toString('base64')
+      return res.status(200).json({
+        success: true,
+        fileName: scope === 'all' ? 'orders-all.pdf' : 'orders-one-year.pdf',
+        contentBase64,
+      })
+    } catch {
+      return res.status(500).json({ success: false, message: '下载失败' })
+    }
+  })
+
   app.post('/api/v1/orders/:orderId/rebook', (req, res) => {
     const userId = requireAuth(req, res)
     if (!userId) return
@@ -853,6 +1117,45 @@ function createApp() {
       return res.status(200).json({ success: true, redirectUrl })
     } catch {
       return res.status(500).json({ success: false, message: '跳转失败' })
+    }
+  })
+
+  app.post('/api/v1/orders/:orderId/pay', async (req, res) => {
+    const userId = requireAuth(req, res)
+    if (!userId) return
+
+    const paymentMethod = String((req.body || {}).paymentMethod || '')
+    if (!paymentMethod) {
+      return res.status(400).json({ success: false, message: 'paymentMethod 不能为空' })
+    }
+
+    try {
+      const result = await payOrderForUser({
+        userId,
+        orderId: req.params.orderId,
+        paymentMethod,
+      })
+
+      if (!result.ok) {
+        if (result.reason === 'not_owned_or_missing') {
+          return res.status(404).json({ success: false, message: '订单不存在或您没有权限支付' })
+        }
+        if (result.reason === 'not_payable') {
+          return res.status(409).json({ success: false, message: '订单当前状态不支持支付' })
+        }
+        if (result.reason === 'invalid_input' || result.reason === 'invalid_payment_method') {
+          return res.status(400).json({ success: false, message: 'paymentMethod 不能为空' })
+        }
+        return res.status(500).json({ success: false, message: '支付失败' })
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: '支付成功',
+        order: result.order,
+      })
+    } catch {
+      return res.status(500).json({ success: false, message: '支付失败' })
     }
   })
 

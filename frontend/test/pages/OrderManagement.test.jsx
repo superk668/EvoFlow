@@ -137,35 +137,87 @@ describe('UI-OrderManagementPage', () => {
     const user = userEvent.setup()
     window.location.hash = '#/user/orders'
 
-    globalThis.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        success: true,
-        page: 1,
-        pageSize: 10,
-        totalCount: 1,
-        items: [
-          {
-            orderId: 'o_pay_1',
-            createdAt: '2025-12-28T10:00:00.000Z',
-            status: 'pending_payment',
-            productType: 'flight',
-            title: '上海—北京',
-            departAt: '2025-12-29T10:00:00.000Z',
-            passengers: ['张三'],
-            totalAmount: 800,
-          },
-        ],
-      }),
-    })
+    localStorage.setItem('authToken', 'jwt')
+
+    globalThis.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: true,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [
+            {
+              orderId: 'o_pay_1',
+              createdAt: '2025-12-28T10:00:00.000Z',
+              status: 'pending_payment',
+              productType: 'flight',
+              title: '上海—北京',
+              departAt: '2025-12-29T10:00:00.000Z',
+              passengers: ['张三'],
+              totalAmount: 800,
+            },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: true,
+          message: '支付成功',
+          order: { orderId: 'o_pay_1', status: 'pending_review', paidAt: '2026-01-14T00:00:00.000Z' },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: true,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [
+            {
+              orderId: 'o_pay_1',
+              createdAt: '2025-12-28T10:00:00.000Z',
+              status: 'pending_review',
+              productType: 'flight',
+              title: '上海—北京',
+              departAt: '2025-12-29T10:00:00.000Z',
+              passengers: ['张三'],
+              totalAmount: 800,
+            },
+          ],
+        }),
+      })
 
     render(<AppRouter />)
 
     await user.click(screen.getByText('待支付'))
-    const payBtn = await screen.findByRole('button', { name: '去支付' })
+    const payBtn = await screen.findByRole('button', { name: '支付' })
     await user.click(payBtn)
-    expect(window.location.hash).toBe('#/booking/payment/o_pay_1')
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/v1/orders/o_pay_1/pay',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ paymentMethod: 'default' }),
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer jwt',
+        }),
+      })
+    )
+
+    expect(await screen.findByText('支付成功')).toBeInTheDocument()
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('status=pending_review'),
+      expect.anything()
+    )
+    expect(await screen.findByText('待点评', { selector: 'div' })).toBeInTheDocument()
   })
 
   test('用户没有任何订单 (状态异常)', async () => {
