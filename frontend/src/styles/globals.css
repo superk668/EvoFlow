@@ -1,8 +1,0 @@
-@import './tokens.css';
-@import './reset.css';
-@import './typography.css';
-
-body {
-  background: var(--color-app-bg);
-}
-
