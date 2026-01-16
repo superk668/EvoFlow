@@ -1,0 +1,116 @@
+.page {
+  width: 100%;
+  padding-top: 20px;
+}
+
+.formWrap {
+  width: var(--container-width);
+  margin: 0 auto;
+  padding-top: 54px;
+  padding-bottom: 70px;
+}
+
+.form {
+  width: 520px;
+  margin: 0 auto;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.label {
+  font-size: 14px;
+  color: #2b2f36;
+  text-align: right;
+  padding-right: 14px;
+}
+
+.combo {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  column-gap: 12px;
+  align-items: center;
+}
+
+.select {
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  color: #2b2f36;
+  font-size: 14px;
+}
+
+.caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #97a0af;
+}
+
+.input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 2px;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #a6aebb;
+}
+
+.codeRow {
+  position: relative;
+}
+
+.send {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2f7fff;
+  font-size: 13px;
+}
+
+.agree {
+  margin-left: 98px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #97a0af;
+}
+
+.link {
+  color: #2f7fff;
+}
+
+.nextBtn {
+  margin-left: 98px;
+  margin-top: 26px;
+  width: 360px;
+  height: 52px;
+  border: 0;
+  border-radius: 2px;
+  background: #ff8a00;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: default;
+}
+
+.company {
+  margin-left: 98px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #2f7fff;
+}

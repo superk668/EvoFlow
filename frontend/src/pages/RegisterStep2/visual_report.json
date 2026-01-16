@@ -1,0 +1,12 @@
+{
+  "page": "RegisterStep2",
+  "sourceScreenshot": "manual_prompt/login_register/web_constructor_step_4/register2_overview.png",
+  "coreScreenshot1": "manual_prompt/login_register/web_constructor_step_4/register2_core1.png",
+  "coreScreenshot2": "manual_prompt/login_register/web_constructor_step_4/register2_core2.png",
+  "focus": ["第二步进度条高亮", "密码/确认密码输入", "强度指示条", "完成按钮与辅助链接"],
+  "notes": [
+    "本轮仅实现静态外观与布局，不包含密码强度计算、输入校验或提交逻辑。",
+    "显示密码图标使用 SVG 占位符，并记录在 image_mapping.json。"
+  ]
+}
+

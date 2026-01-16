@@ -1,0 +1,11 @@
+{
+  "page": "Login",
+  "sourceScreenshot": "manual_prompt/login_register/web_constructor_step_2/login_overview.png",
+  "coreScreenshot": "manual_prompt/login_register/web_constructor_step_2/login_core.png",
+  "focus": ["登录卡片", "输入框与按钮", "协议与链接", "第三方登录入口", "右侧二维码登录竖条"],
+  "notes": [
+    "本轮仅实现静态外观与布局，不包含表单校验、提交或跳转逻辑。",
+    "插画与第三方图标使用 SVG 占位符，并记录在 image_mapping.json。"
+  ]
+}
+

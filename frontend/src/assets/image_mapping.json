@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "images": [
+    {
+      "name": "Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 22,
+      "height": 22,
+      "usedIn": ["components/TopHeader", "components/AuthHeader", "components/RegisterHeader"]
+    },
+    {
+      "name": "Search",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/TopHeader", "components/RegisterHeader"]
+    },
+    {
+      "name": "消息",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/TopHeader"]
+    },
+    {
+      "name": "客服",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/TopHeader"]
+    },
+    {
+      "name": "语言",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/TopHeader"]
+    },
+    {
+      "name": "侧栏-酒店",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-机票",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-国内·国际",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-火车票",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-门票·活动",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-用车·租车",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-汽车·船票",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-攻略·景点",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-美食·购物",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-现金·借钱",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-WiFi·电话卡",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-行程助手",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-商旅服务",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-会员中心",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-企业差旅",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "侧栏-艺术馆",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["components/SideNav"]
+    },
+    {
+      "name": "交换",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 22,
+      "height": 22,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "放大镜",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 16,
+      "height": 16,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "首页横幅",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 820,
+      "height": 110,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "右箭头",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 26,
+      "height": 26,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-大连-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-丽江-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-青岛-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-合肥-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-金昌-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-呼和浩特-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-西宁-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-银川-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-鄂尔多斯-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-乌兰浩特-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-三亚-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-厦门-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-宁波-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-中山-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "上海-湛江-缩略图",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 56,
+      "height": 36,
+      "usedIn": ["pages/Home"]
+    },
+    {
+      "name": "底边栏二维码",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 110,
+      "height": 110,
+      "usedIn": ["components/BottomBar"]
+    },
+    {
+      "name": "首页",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/AuthHeader", "components/RegisterHeader"]
+    },
+    {
+      "name": "收藏",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/AuthHeader", "components/RegisterHeader"]
+    },
+    {
+      "name": "更多",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["components/AuthHeader", "components/RegisterHeader"]
+    },
+    {
+      "name": "登录页插画",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 520,
+      "height": 210,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "微信",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "QQ",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "微博",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "支付宝",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "Apple",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/Login"]
+    },
+    {
+      "name": "显示密码",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["pages/RegisterStep2"]
+    }
+  ]
+}

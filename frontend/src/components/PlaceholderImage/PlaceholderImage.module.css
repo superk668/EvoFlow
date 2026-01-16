@@ -1,0 +1,11 @@
+.svg {
+  display: block;
+  border-radius: 6px;
+}
+
+.text {
+  font-family: var(--font-family);
+  font-size: 12px;
+  fill: #6b6b6b;
+}
+

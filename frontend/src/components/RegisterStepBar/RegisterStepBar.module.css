@@ -1,0 +1,61 @@
+.wrap {
+  width: var(--container-width);
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 14px 1fr 14px 1fr 14px;
+  align-items: center;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.dotTodo {
+  background: #d9dee8;
+}
+
+.dotDone {
+  background: #8ac43f;
+}
+
+.dotActive {
+  background: #8ac43f;
+  box-shadow: 0 0 0 4px rgba(138, 196, 63, 0.18);
+}
+
+.seg {
+  height: 4px;
+  border-radius: 999px;
+}
+
+.segTodo {
+  background: #e5e9f1;
+}
+
+.segDone {
+  background: #8ac43f;
+}
+
+.labels {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 12px;
+}
+
+.label {
+  text-align: center;
+  color: #97a0af;
+}
+
+.labelActive {
+  text-align: center;
+  color: #8ac43f;
+}
+

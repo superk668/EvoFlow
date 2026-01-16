@@ -1,0 +1,16 @@
+{
+  "page": "Home",
+  "sourceScreenshot": "manual_prompt/login_register/web_constructor_step_0/homepage.png",
+  "focus": [
+    "左侧功能栏",
+    "顶部导航与搜索框",
+    "机票搜索卡片",
+    "首页横幅",
+    "低价速报三列榜单"
+  ],
+  "notes": [
+    "本轮仅实现静态布局与视觉样式，不含任何交互或数据请求。",
+    "图片均使用内联 SVG 占位符，已在 image_mapping.json 记录尺寸与标识名。"
+  ]
+}
+
