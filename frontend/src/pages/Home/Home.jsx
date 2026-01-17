@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './Home.module.css'
 
@@ -67,13 +68,13 @@ export default function Home() {
                   多程(含缺口)
                 </div>
               </div>
-              <div className={styles.rightHint}>不加价购</div>
+              <div className={styles.rightHint}>不限舱等</div>
             </div>
 
             <div className={styles.formRow}>
               <div className={styles.field}>
-                <div className={styles.fieldLabel}>出发</div>
-                <div className={styles.fieldValue}>上海(SHA)</div>
+                <div className={styles.fieldLabel}>出发地</div>
+                <div className={styles.fieldValue}>北京(BJS)</div>
               </div>
 
               <div className={styles.swap}>
@@ -81,28 +82,34 @@ export default function Home() {
               </div>
 
               <div className={styles.field}>
-                <div className={styles.fieldLabel}>到达</div>
-                <div className={styles.fieldValue}>北京(BJS)</div>
+                <div className={styles.fieldLabel}>目的地</div>
+                <div className={styles.fieldValue}>上海(SHA)</div>
               </div>
 
               <div className={styles.fieldWide}>
                 <div className={styles.fieldLabel}>日期</div>
-                <div className={styles.fieldValue}>2025-12-18 周三</div>
+                <div className={styles.fieldValue}>2025-12-09 明天</div>
               </div>
 
               <div className={styles.fieldSmall}>
-                <div className={styles.fieldLabel}>舱位</div>
-                <div className={styles.fieldValue}>不限舱位</div>
+                <div className={styles.fieldLabel}>乘客类型</div>
+                <div className={styles.checks}>
+                  <span className={styles.checkBox} aria-hidden="true" /> 带儿童
+                  <span className={styles.checkBox} aria-hidden="true" /> 带婴儿
+                </div>
               </div>
             </div>
 
             <div className={styles.actionRow}>
-              <button className={styles.searchBtn} type="button">
+              <Link
+                className={styles.searchBtn}
+                to="/flights/list?dcity=BJS&acity=SHA&date=2025-12-09"
+              >
                 <span className={styles.searchIcon} aria-hidden="true">
                   <PlaceholderImage name="放大镜" width={16} height={16} />
                 </span>
                 搜索
-              </button>
+              </Link>
             </div>
           </div>
         </section>
@@ -156,4 +163,3 @@ export default function Home() {
     </div>
   )
 }
-

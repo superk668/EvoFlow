@@ -105,7 +105,20 @@
 
 .rightHint {
   font-size: 12px;
-  color: #9aa3b3;
+  color: #2b2f36;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rightHint::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #97a0af;
+  transform: translateY(1px);
 }
 
 .formRow {
@@ -138,6 +151,25 @@
   font-weight: 700;
 }
 
+.checks {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #2b2f36;
+}
+
+.checkBox {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #c7cedc;
+  border-radius: 2px;
+  background: #ffffff;
+  display: inline-block;
+  margin-right: 6px;
+}
+
 .swap {
   display: flex;
   align-items: center;
@@ -165,6 +197,7 @@
   gap: 8px;
   box-shadow: 0 8px 16px rgba(255, 138, 0, 0.28);
   cursor: default;
+  text-decoration: none;
 }
 
 .searchIcon {
@@ -324,4 +357,3 @@
   justify-content: center;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
-

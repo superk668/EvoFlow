@@ -6,7 +6,7 @@
       "placeholder": "inline-svg:PlaceholderImage",
       "width": 22,
       "height": 22,
-      "usedIn": ["components/TopHeader", "components/AuthHeader", "components/RegisterHeader"]
+      "usedIn": ["components/TopHeader", "components/AuthHeader", "components/RegisterHeader", "layouts/BookingLayout"]
     },
     {
       "name": "Search",
@@ -153,7 +153,7 @@
       "placeholder": "inline-svg:PlaceholderImage",
       "width": 22,
       "height": 22,
-      "usedIn": ["pages/Home"]
+      "usedIn": ["pages/Home", "pages/FlightsList"]
     },
     {
       "name": "放大镜",
@@ -357,6 +357,139 @@
       "width": 18,
       "height": 18,
       "usedIn": ["pages/RegisterStep2"]
+    },
+    {
+      "name": "日历",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 16,
+      "height": 16,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "低价提醒",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 16,
+      "height": 16,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "东方航空-Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 30,
+      "height": 30,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "吉祥航空-Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 30,
+      "height": 30,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "HU-Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 44,
+      "height": 28,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "ZH-Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 44,
+      "height": 28,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "CZ-Logo",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 44,
+      "height": 28,
+      "usedIn": ["pages/FlightsList"]
+    },
+    {
+      "name": "提示-信息",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["pages/BuyTicketStep1"]
+    },
+    {
+      "name": "删除",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 12,
+      "height": 12,
+      "usedIn": ["pages/BuyTicketStep1"]
+    },
+    {
+      "name": "航司-中国联合航空",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["pages/BuyTicketStep1", "pages/BuyTicketStep2"]
+    },
+    {
+      "name": "飞机",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["pages/BuyTicketStep1", "pages/BuyTicketStep2"]
+    },
+    {
+      "name": "乘机人头像",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 44,
+      "height": 44,
+      "usedIn": ["pages/BuyTicketStep2"]
+    },
+    {
+      "name": "行程保障插画",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 260,
+      "height": 180,
+      "usedIn": ["pages/BuyTicketStep2"]
+    },
+    {
+      "name": "无障碍",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 14,
+      "height": 14,
+      "usedIn": ["layouts/BookingLayout"]
+    },
+    {
+      "name": "用户",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 16,
+      "height": 16,
+      "usedIn": ["layouts/BookingLayout"]
+    },
+    {
+      "name": "中国银行",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 18,
+      "height": 18,
+      "usedIn": ["pages/BuyTicketStep3"]
+    },
+    {
+      "name": "支付宝",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 16,
+      "height": 16,
+      "usedIn": ["pages/BuyTicketStep3"]
+    },
+    {
+      "name": "支付盾牌",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 22,
+      "height": 22,
+      "usedIn": ["pages/BuyTicketStep3"]
+    },
+    {
+      "name": "PCI",
+      "placeholder": "inline-svg:PlaceholderImage",
+      "width": 28,
+      "height": 18,
+      "usedIn": ["pages/BuyTicketStep3"]
     }
   ]
 }

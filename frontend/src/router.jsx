@@ -1,17 +1,33 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AuthLayout from './layouts/AuthLayout/AuthLayout.jsx'
+import BookingLayout from './layouts/BookingLayout/BookingLayout.jsx'
 import MainLayout from './layouts/MainLayout/MainLayout.jsx'
 import RegisterLayout from './layouts/RegisterLayout/RegisterLayout.jsx'
 import Home from './pages/Home/Home.jsx'
+import BuyTicketStep1 from './pages/BuyTicketStep1/BuyTicketStep1.jsx'
+import BuyTicketStep2 from './pages/BuyTicketStep2/BuyTicketStep2.jsx'
+import BuyTicketStep3 from './pages/BuyTicketStep3/BuyTicketStep3.jsx'
+import BuyTicketStep4 from './pages/BuyTicketStep4/BuyTicketStep4.jsx'
 import Login from './pages/Login/Login.jsx'
 import RegisterStep1 from './pages/RegisterStep1/RegisterStep1.jsx'
 import RegisterStep2 from './pages/RegisterStep2/RegisterStep2.jsx'
+import FlightsList from './pages/FlightsList/FlightsList.jsx'
+import FlightBooking from './pages/FlightBooking/FlightBooking.jsx'
 
 export default function Router() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/flights/list" element={<FlightsList />} />
+      </Route>
+
+      <Route element={<BookingLayout />}>
+        <Route path="/flights/booking" element={<FlightBooking />} />
+        <Route path="/buy-ticket/step1" element={<BuyTicketStep1 />} />
+        <Route path="/buy-ticket/step2" element={<BuyTicketStep2 />} />
+        <Route path="/buy-ticket/step3" element={<BuyTicketStep3 />} />
+        <Route path="/buy-ticket/step4" element={<BuyTicketStep4 />} />
       </Route>
 
       <Route element={<AuthLayout />}>

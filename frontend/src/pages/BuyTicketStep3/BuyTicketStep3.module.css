@@ -1,0 +1,228 @@
+.page {
+  width: 100%;
+}
+
+.wrap {
+  width: 930px;
+  margin: 0 auto;
+  padding: 14px 0 40px;
+}
+
+.card {
+  background: #f7f9fb;
+  border: 1px solid #e6e9ef;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.amount {
+  font-size: 14px;
+  color: #2b2f36;
+}
+
+.amountNum {
+  color: #ff8a00;
+  font-size: 22px;
+  font-weight: 900;
+  margin-left: 6px;
+}
+
+.timeTip {
+  font-size: 12px;
+  color: #2b2f36;
+}
+
+.timeNum {
+  color: #ff8a00;
+  font-weight: 900;
+  margin: 0 2px;
+}
+
+.title {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #2b2f36;
+}
+
+.meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6e7686;
+}
+
+.notice {
+  margin-top: 14px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: 3px;
+  border: 1px solid #f3e0ac;
+  background: #fff7db;
+  color: #b66a00;
+  font-size: 12px;
+}
+
+.noticeIcon {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: #ff8a00;
+  flex: 0 0 auto;
+}
+
+.payCard {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #e6e9ef;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.paySelectRow {
+  height: 72px;
+  border: 2px solid #6aa8ff;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+}
+
+.radioOn {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #1f6bff;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.radioOn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #1f6bff;
+  transform: translate(-50%, -50%);
+}
+
+.bankIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bankName {
+  font-size: 14px;
+  color: #2b2f36;
+  font-weight: 900;
+}
+
+.payOtherRow {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  border-top: 1px solid #eef1f6;
+  color: #2b2f36;
+  font-size: 14px;
+}
+
+.radioOff {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #c7cedc;
+  flex: 0 0 auto;
+}
+
+.payBtn {
+  margin: 16px 0 18px 18px;
+  width: 180px;
+  height: 44px;
+  border-radius: 2px;
+  background: #ff8a00;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.aliCard {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #e6e9ef;
+  border-radius: 4px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  color: #2b2f36;
+  font-size: 14px;
+}
+
+.aliLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aliIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aliRight {
+  color: #6e7686;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid #97a0af;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.footerBadges {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  color: #97a0af;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badgeText {
+  font-size: 12px;
+}

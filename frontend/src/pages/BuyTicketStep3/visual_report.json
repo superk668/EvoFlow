@@ -1,0 +1,10 @@
+{
+  "page": "BuyTicketStep3",
+  "sourceScreenshot": "manual_prompt/buy_ticket/web_constructor_step_3/buy_ticket_step3_whole_page.png",
+  "focus": ["安全支付顶部栏", "订单金额与剩余时间区", "银行支付选择卡", "支付宝入口卡", "底部安全认证标识"],
+  "notes": [
+    "本轮仅实现静态布局与视觉样式，不含任何交互或数据请求。",
+    "图标均使用内联 SVG 占位符，已在 image_mapping.json 记录尺寸与标识名。"
+  ]
+}
+
