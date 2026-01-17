@@ -16,9 +16,12 @@
     - 默认展示“账号密码登录”Tab。
     - Tab 可在“账号密码登录”和“验证码登录”间切换。
     - 未勾选服务协议时点击登录应提示并阻止提交。
+    - 点击“免费注册”进入注册流程页面。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充注册入口的验收标准。"
 
 - type: Frontend
   id: UI-LoginPasswordForm
@@ -43,11 +46,15 @@
   acceptanceCriteria:
     - 未输入账号点击登录时在账号输入框下方提示“请输入用户名”。
     - 未输入密码点击登录时在密码输入框下方提示“请输入密码”。
+    - 未勾选服务协议时提示“请阅读并同意服务协议”，并阻止提交。
     - 账号或密码错误时显示“用户名或密码不正确”，并停留在登录页。
     - 登录成功后触发 onLoginSuccess。
+    - 提交登录请求发生网络异常时提示“网络异常，请稍后重试”，并允许用户重试。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充服务协议与网络异常处理验收标准。"
 
 - type: Frontend
   id: UI-LoginSmsForm
@@ -77,9 +84,13 @@
     - 获取验证码后按钮进入不可点击状态并开始 60 秒倒计时。
     - 验证码错误时提示“验证码不正确”。
     - 手机号未注册时提示“该手机号未注册，请先注册”。
+    - 未勾选服务协议点击登录时提示“先请阅读并勾选服务协议”，并阻止提交。
+    - 提交登录请求发生网络异常时提示“网络异常，请稍后重试”，并允许用户重试。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充服务协议与网络异常处理验收标准。"
 
 - type: Frontend
   id: UI-RegisterStep1
@@ -106,9 +117,12 @@
     - 60 秒内重复获取验证码按钮无响应且倒计时继续。
     - 验证码错误时在验证码输入框下方提示“验证码错误”。
     - 手机号已注册时提示“该手机号已注册，请直接登录”。
+    - 点击“已有账号？直接登录”跳转至登录页。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充登录入口的验收标准。"
 
 - type: Frontend
   id: UI-RegisterStep2
@@ -143,9 +157,12 @@
     - 两次密码不一致时提示“两次输入密码不一致”，完成按钮不可点。
     - 点击可视化按钮可在明文与密文显示间切换。
     - 注册成功后触发 onRegisterSuccess 并跳转至登录页。
+    - 提交注册请求发生网络异常时提示“网络异常，请稍后重试”，并允许用户重试。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充注册完成的网络异常处理验收标准。"
 
 - type: Frontend
   id: UI-PasswordStrengthIndicator
@@ -161,6 +178,31 @@
   acceptanceCriteria:
     - 未输入或不符合规则时三格均为灰色。
     - 强度为弱/中/强时分别点亮 1/2/3 格。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-HomePage
+  description: 首页（未登录），包含登录/注册入口、搜索入口与我的订单入口。
+  properties:
+    - name: isLoggedIn
+      type: boolean
+      description: "是否已登录。"
+  state:
+    - searchQuery
+    - searchDate
+  dependencies:
+    - UI-LoginPage
+    - UI-RegisterStep1
+    - UI-FlightsListPage
+  acceptanceCriteria:
+    - 点击“登录”跳转至登录界面。
+    - 点击“注册”跳转至注册界面。
+    - 未登录点击“我的订单”跳转至登录界面，并默认展示“账号密码登录”Tab。
+    - 点击“搜索”跳转至结果页，并在 URL 中包含 dcity/acity/date 参数。
+    - date 参数格式为 YYYY-MM-DD，且不得为过去日期。
+    - 在任何页面都必须有“首页”按钮，点击后跳转至首页。
   changeLog:
     - date: "2026-01-17"
       description: "初始创建。"
