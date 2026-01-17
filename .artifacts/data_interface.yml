@@ -1,0 +1,415 @@
+- type: Database
+  id: DB-FindUserByAccount
+  description: 根据账号标识（手机号/邮箱/用户名）查询用户。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当账号存在时返回用户记录（包含 userId、phoneNumber、email、username、passwordHash 等字段）。
+    - 当账号不存在时返回空结果，不抛出异常。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CheckPhoneRegistered
+  description: 检查手机号是否已注册。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当手机号存在于 users 表时返回 true。
+    - 当手机号不存在于 users 表时返回 false。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateUser
+  description: 在数据库中创建一个新用户记录。
+  dependencies:
+    - DB-CheckPhoneRegistered
+  acceptanceCriteria:
+    - 成功执行后 users 表增加一条新记录。
+    - 当手机号已存在时写入失败并返回唯一性冲突。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ValidateUserPassword
+  description: 校验用户输入的明文密码与已存储的密码哈希是否匹配。
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 当账号存在且密码匹配时返回 true。
+    - 当账号不存在或密码不匹配时返回 false。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-StoreSmsVerificationCode
+  description: 存储短信验证码（支持 login/register 目的），并记录有效期与冷却期。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 写入验证码记录时包含 phoneNumber、purpose、code、expiresAt、createdAt、consumedAt。
+    - 同一 phoneNumber+purpose 在冷却期内再次写入应失败（用于限制 60 秒内重复获取）。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-VerifySmsVerificationCode
+  description: 校验短信验证码是否匹配且在有效期内。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当存在未过期且未被消费的最新验证码且 code 匹配时返回 true。
+    - 当验证码不存在/过期/已被消费/不匹配时返回 false。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ConsumeSmsVerificationCode
+  description: 将一条短信验证码标记为已消费，防止重复使用。
+  dependencies:
+    - DB-VerifySmsVerificationCode
+  acceptanceCriteria:
+    - 当验证码校验通过时，能将对应记录的 consumedAt 设置为当前时间。
+    - 已消费的验证码不能再次通过校验。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateUserPassword
+  description: 更新用户密码哈希（用于注册完成或找回密码）。
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 当 userId 存在时更新 passwordHash 成功。
+    - 当 userId 不存在时更新失败并返回未找到错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-SearchFlights
+  description: 根据查询参数搜索可售航班列表并支持快捷筛选。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 支持按 from/to/departDate 返回可售航班基础信息与最低价。
+    - 当 departDate 为过去日期时返回输入错误。
+    - 支持航司/起降时间/机型/舱位等筛选条件。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetFlightPackages
+  description: 获取指定航班在指定日期的可售套餐与价格版本。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回套餐名称、价格、退改政策、行李额、priceVersion。
+    - 当航班或日期无可售套餐时返回空列表。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ValidatePriceVersion
+  description: 校验用户选择套餐时携带的 priceVersion 是否仍然有效。
+  dependencies:
+    - DB-GetFlightPackages
+  acceptanceCriteria:
+    - 当 priceVersion 与当前最新版本一致时返回 true。
+    - 当 priceVersion 已过期时返回 false，并可返回最新 priceVersion。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateBookingDraft
+  description: 创建订票草稿（会话），保存所选航班与套餐及初始阶段。
+  dependencies:
+    - DB-ValidatePriceVersion
+  acceptanceCriteria:
+    - 成功创建后生成 bookingDraftId，并写入 flightId、packageId、departDate、priceVersion。
+    - 初始 bookingStage 为 1（乘机信息）。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetBookingDraft
+  description: 根据 bookingDraftId 读取订票草稿与当前阶段。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当草稿存在时返回草稿完整信息（航班、套餐、乘机人、联系人、服务、阶段）。
+    - 当草稿不存在时返回空结果或未找到错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateBookingPassengerContact
+  description: 更新订票草稿中的乘机人与联系人信息。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 保存乘机人姓名、证件类型、证件号、国家/地区码、乘机人手机（可选）。
+    - 保存联系人国家/地区码与联系人手机号。
+    - 输入不合法时返回校验错误，不更新原数据。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-SetBookingStage
+  description: 更新订票草稿当前购票阶段（1-4）。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 当阶段值合法时写入成功。
+    - 当阶段值缺失或非法时拒绝写入并返回输入错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListAncillaryServices
+  description: 获取可选增值服务列表与价格信息。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回服务项（行李额升级、延误险/取消险、值机提醒等）与可用状态。
+    - 当服务加载失败时返回错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateBookingServices
+  description: 更新订票草稿中已选择的增值服务。
+  dependencies:
+    - DB-GetBookingDraft
+    - DB-ListAncillaryServices
+  acceptanceCriteria:
+    - 当服务可用时可保存勾选状态并计入价格清单。
+    - 当服务不可用时拒绝选择并返回“服务暂不可用”。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreatePaymentIntent
+  description: 为订票草稿创建支付意图并返回 15 分钟倒计时起点。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 创建后返回 paymentIntentId，并记录 amount、expiresAt（15 分钟）。
+    - 当草稿信息不完整时拒绝创建并返回校验错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-RecordPaymentResult
+  description: 记录支付结果（成功/失败/超时）并关联 bookingDraftId。
+  dependencies:
+    - DB-CreatePaymentIntent
+  acceptanceCriteria:
+    - 支付成功时记录成功状态与完成时间。
+    - 支付失败时记录失败原因并允许重试。
+    - 当超过 expiresAt 时记录超时状态。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateOrderFromBooking
+  description: 支付成功后根据订票草稿生成订单，并防止重复创建。
+  dependencies:
+    - DB-GetBookingDraft
+    - DB-RecordPaymentResult
+  acceptanceCriteria:
+    - 成功创建订单后返回 orderId、status、createdAt、totalAmount。
+    - 若检测到已存在 createdOrderId 或创建锁，则跳过重复创建并返回已有 orderId。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetOrderDetail
+  description: 根据 orderId 获取订单详情与价格明细。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回订单号、状态、下单时间、总金额、航段信息、旅客信息、联系信息、价格明细。
+    - 当 orderId 不存在时返回未找到错误。
+    - 当订单不属于当前用户时返回未找到或权限错误（由上层映射为 403/404）。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+    - date: "2026-01-17"
+      description: "补充订单归属校验的验收。"
+
+- type: Database
+  id: DB-ListCountries
+  description: 获取国家/地区列表。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回包含 code 与 name 的国家/地区选项列表。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListCountryCallingCodes
+  description: 获取手机号国家码列表。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回包含国家/地区与 callingCode 的选项列表。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListIdDocumentTypes
+  description: 获取证件类型列表。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回包含 id 与 displayName 的证件类型选项列表。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetUserProfile
+  description: 获取当前用户个人信息（我的信息页）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回昵称、姓名、性别、生日、脱敏手机、邮箱状态、昵称审核状态与版本号。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateUserProfile
+  description: 更新当前用户个人信息并支持乐观锁冲突检测。
+  dependencies:
+    - DB-GetUserProfile
+  acceptanceCriteria:
+    - 昵称为空或超长、生日格式错误或为未来日期时返回校验错误。
+    - 当版本冲突时返回冲突错误，提示信息已被更新，请刷新后重试。
+    - 更新成功后返回最新 UserProfile 与新版本号。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListCommonTravellers
+  description: 获取常用旅客列表，支持按姓名关键字搜索与分页。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 关键字仅含特殊字符时返回输入错误。
+    - 返回旅客摘要列表（包含本人标识、姓名、证件类型/号码脱敏、国籍、性别等）。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetCommonTraveller
+  description: 根据 travellerId 获取常用旅客详情。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 记录存在时返回完整字段（旅客信息/证件信息/常旅客卡等）。
+    - 记录不存在时返回未找到错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateCommonTraveller
+  description: 创建常用旅客记录。
+  dependencies:
+    - DB-ListCommonTravellers
+  acceptanceCriteria:
+    - 中文名与英文名至少填写一项，否则返回校验错误。
+    - 当已存在本人旅客且尝试新增为本人时返回冲突错误。
+    - 创建成功后返回 travellerId。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateCommonTraveller
+  description: 更新常用旅客记录并校验证件号唯一性。
+  dependencies:
+    - DB-GetCommonTraveller
+  acceptanceCriteria:
+    - 日期字段格式非法时返回校验错误。
+    - 证件类型+证件号重复时返回冲突错误。
+    - 更新失败时返回系统错误并保留原数据。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-DeleteCommonTravellers
+  description: 批量删除常用旅客记录（本人不可删除）。
+  dependencies:
+    - DB-ListCommonTravellers
+  acceptanceCriteria:
+    - 未选择任何记录时返回输入错误。
+    - 当删除集合包含本人条目时拒绝删除并返回不可删除错误。
+    - 删除成功后返回删除条目数。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListOrders
+  description: 查询当前用户订单列表，支持标签/类型筛选与分页。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 默认按创建时间倒序返回分页订单摘要列表。
+    - 支持 tab(productType/page) 等筛选并返回 total。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CancelOrder
+  description: 取消订单并做状态校验。
+  dependencies:
+    - DB-GetOrderDetail
+  acceptanceCriteria:
+    - 仅待支付或待出行状态允许取消，成功后更新为已取消。
+    - 当状态不允许取消时返回冲突错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GenerateOrderTxt
+  description: 生成订单下载 TXT 内容。
+  dependencies:
+    - DB-GetOrderDetail
+  acceptanceCriteria:
+    - 成功生成包含订单号、状态、金额等信息的文本内容。
+    - 当订单不存在或无权限时返回未找到或权限错误。
+  changeLog:
+    - date: "2026-01-17"
+      description: "初始创建。"
