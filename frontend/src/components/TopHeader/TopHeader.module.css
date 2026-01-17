@@ -12,13 +12,6 @@
   justify-content: space-between;
 }
 
-.left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
-
 .brand {
   display: flex;
   align-items: center;
@@ -32,59 +25,51 @@
   letter-spacing: 0.2px;
 }
 
-.search {
-  width: 360px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid #dfe6f2;
-  background: #f7f9fc;
+.nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 6px 0 14px;
+  gap: 14px;
 }
 
-.searchText {
+.navItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  color: #97a0af;
+  color: #2b2f36;
+  white-space: nowrap;
 }
 
-.searchBtn {
-  width: 28px;
-  height: 28px;
-  background: #1f6bff;
-  border-radius: 999px;
-  display: flex;
+.navIcon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.link {
-  font-size: 12px;
-  color: #2b2f36;
-}
-
-.sep {
-  color: #c5cad4;
-  font-size: 12px;
-}
-
-.linkMuted {
-  font-size: 12px;
-  color: #2b2f36;
-  margin-left: 8px;
+.divider {
+  width: 1px;
+  height: 14px;
+  background: #d8dde6;
 }
 
 .iconRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: 6px;
+  margin-left: 4px;
 }
 
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #7b8799;
+  margin-left: 2px;
+}

@@ -1,0 +1,10 @@
+{
+  "page": "PersonalCenterOrders",
+  "sourceScreenshot": "manual_prompt/personal _information_center/order_overview.png",
+  "coreScreenshot": "manual_prompt/personal _information_center/order_core.png",
+  "focus": ["提示条", "订单 Tabs", "筛选条", "订单列表条目", "底部全选/下载/分页"],
+  "notes": [
+    "本轮仅实现静态布局与视觉样式，不含任何交互或数据请求。",
+    "订单列表为静态示例条目，不包含真实数据与状态切换。"
+  ]
+}

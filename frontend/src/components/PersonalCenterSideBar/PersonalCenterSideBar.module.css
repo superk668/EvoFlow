@@ -1,0 +1,89 @@
+.wrap {
+  width: 180px;
+}
+
+.card {
+  background: #f7fbff;
+  border: 1px solid #cfe0ff;
+}
+
+.item {
+  position: relative;
+  padding: 16px 14px 16px 18px;
+  font-size: 18px;
+  color: #1d2430;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+}
+
+.item + .item {
+  border-top: 1px solid rgba(207, 224, 255, 0.5);
+}
+
+.active {
+  color: #1f6bff;
+  font-weight: 700;
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: #1f6bff;
+}
+
+.caretDown {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #7b8799;
+}
+
+.caretUpBlue {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 7px solid #1f6bff;
+}
+
+.groupHead {
+  border-top: 1px solid rgba(207, 224, 255, 0.5);
+}
+
+.groupActive {
+  color: #1d2430;
+  font-weight: 400;
+}
+
+.subList {
+  padding: 6px 0 10px;
+}
+
+.subItem {
+  position: relative;
+  padding: 10px 14px 10px 44px;
+  font-size: 18px;
+  color: #1d2430;
+}
+
+.subActive {
+  color: #1f6bff;
+}
+
+.subActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: #1f6bff;
+}

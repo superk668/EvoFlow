@@ -1,0 +1,11 @@
+{
+  "page": "PersonalCenterOrderDetail",
+  "sourceScreenshot": "manual_prompt/personal _information_center/web_constructor_step4/order_detail_overview.png",
+  "coreScreenshot1": "manual_prompt/personal _information_center/web_constructor_step4/order_detail_core1.png",
+  "coreScreenshot2": "manual_prompt/personal _information_center/web_constructor_step4/order_detail_core2.png",
+  "coreScreenshot3": "manual_prompt/personal _information_center/web_constructor_step4/order_detail_core3.png",
+  "coreScreenshot4": "manual_prompt/personal _information_center/web_constructor_step4/order_detail_core4.png",
+  "focus": ["面包屑与打印入口", "订单状态卡与出行提醒", "推荐评分条", "航段信息卡", "出行人/联系信息卡", "右侧支付明细卡"],
+  "notes": ["本轮仅实现静态外观与布局，不包含任何交互或数据请求。", "图标使用内联 SVG 占位符。"]
+}
+

@@ -3,11 +3,17 @@ import AuthLayout from './layouts/AuthLayout/AuthLayout.jsx'
 import BookingLayout from './layouts/BookingLayout/BookingLayout.jsx'
 import MainLayout from './layouts/MainLayout/MainLayout.jsx'
 import RegisterLayout from './layouts/RegisterLayout/RegisterLayout.jsx'
+import PersonalCenterLayout from './layouts/PersonalCenterLayout/PersonalCenterLayout.jsx'
 import Home from './pages/Home/Home.jsx'
 import BuyTicketStep1 from './pages/BuyTicketStep1/BuyTicketStep1.jsx'
 import BuyTicketStep2 from './pages/BuyTicketStep2/BuyTicketStep2.jsx'
 import BuyTicketStep3 from './pages/BuyTicketStep3/BuyTicketStep3.jsx'
 import BuyTicketStep4 from './pages/BuyTicketStep4/BuyTicketStep4.jsx'
+import PersonalCenterOrders from './pages/PersonalCenterOrders/PersonalCenterOrders.jsx'
+import PersonalCenterOrderDetail from './pages/PersonalCenterOrderDetail/PersonalCenterOrderDetail.jsx'
+import PersonalCenterProfile from './pages/PersonalCenterProfile/PersonalCenterProfile.jsx'
+import PersonalCenterCommonTravellers from './pages/PersonalCenterCommonTravellers/PersonalCenterCommonTravellers.jsx'
+import PersonalCenterTravellerForm from './pages/PersonalCenterTravellerForm/PersonalCenterTravellerForm.jsx'
 import Login from './pages/Login/Login.jsx'
 import RegisterStep1 from './pages/RegisterStep1/RegisterStep1.jsx'
 import RegisterStep2 from './pages/RegisterStep2/RegisterStep2.jsx'
@@ -28,6 +34,16 @@ export default function Router() {
         <Route path="/buy-ticket/step2" element={<BuyTicketStep2 />} />
         <Route path="/buy-ticket/step3" element={<BuyTicketStep3 />} />
         <Route path="/buy-ticket/step4" element={<BuyTicketStep4 />} />
+      </Route>
+
+      <Route element={<PersonalCenterLayout />}>
+        <Route path="/personal" element={<Navigate to="/personal/profile" replace />} />
+        <Route path="/personal/profile" element={<PersonalCenterProfile />} />
+        <Route path="/personal/orders" element={<PersonalCenterOrders />} />
+        <Route path="/personal/orders/detail" element={<PersonalCenterOrderDetail />} />
+        <Route path="/personal/common-info" element={<Navigate to="/personal/common-info/travellers" replace />} />
+        <Route path="/personal/common-info/travellers" element={<PersonalCenterCommonTravellers />} />
+        <Route path="/personal/common-info/travellers/new" element={<PersonalCenterTravellerForm />} />
       </Route>
 
       <Route element={<AuthLayout />}>
