@@ -46,7 +46,7 @@ export default function PersonalCenterOrders() {
               <span className={styles.checkbox} aria-hidden="true" />
               <div className={styles.metaText}>
                 <span className={styles.metaLabel}>订单号：</span>
-                <Link className={styles.metaLink} to="/personal/orders/detail">
+                <Link className={styles.metaLink} to="/user-center/orders/1128144831159754">
                   1128144831159754
                 </Link>
               </div>

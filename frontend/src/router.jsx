@@ -12,6 +12,7 @@ import BuyTicketStep4 from './pages/BuyTicketStep4/BuyTicketStep4.jsx'
 import PersonalCenterOrders from './pages/PersonalCenterOrders/PersonalCenterOrders.jsx'
 import PersonalCenterOrderDetail from './pages/PersonalCenterOrderDetail/PersonalCenterOrderDetail.jsx'
 import PersonalCenterProfile from './pages/PersonalCenterProfile/PersonalCenterProfile.jsx'
+import PersonalCenterCommonInfoIndex from './pages/PersonalCenterCommonInfoIndex/PersonalCenterCommonInfoIndex.jsx'
 import PersonalCenterCommonTravellers from './pages/PersonalCenterCommonTravellers/PersonalCenterCommonTravellers.jsx'
 import PersonalCenterTravellerForm from './pages/PersonalCenterTravellerForm/PersonalCenterTravellerForm.jsx'
 import Login from './pages/Login/Login.jsx'
@@ -30,6 +31,11 @@ export default function Router() {
 
       <Route element={<BookingLayout />}>
         <Route path="/flights/booking" element={<FlightBooking />} />
+        <Route path="/booking" element={<BuyTicketStep1 />} />
+        <Route path="/booking/services" element={<BuyTicketStep2 />} />
+        <Route path="/booking/payment" element={<BuyTicketStep3 />} />
+        <Route path="/booking/payment/:orderId" element={<BuyTicketStep3 />} />
+        <Route path="/booking/complete" element={<BuyTicketStep4 />} />
         <Route path="/buy-ticket/step1" element={<BuyTicketStep1 />} />
         <Route path="/buy-ticket/step2" element={<BuyTicketStep2 />} />
         <Route path="/buy-ticket/step3" element={<BuyTicketStep3 />} />
@@ -41,9 +47,25 @@ export default function Router() {
         <Route path="/personal/profile" element={<PersonalCenterProfile />} />
         <Route path="/personal/orders" element={<PersonalCenterOrders />} />
         <Route path="/personal/orders/detail" element={<PersonalCenterOrderDetail />} />
-        <Route path="/personal/common-info" element={<Navigate to="/personal/common-info/travellers" replace />} />
+        <Route path="/personal/common-info" element={<PersonalCenterCommonInfoIndex />} />
         <Route path="/personal/common-info/travellers" element={<PersonalCenterCommonTravellers />} />
-        <Route path="/personal/common-info/travellers/new" element={<PersonalCenterTravellerForm />} />
+        <Route path="/personal/common-info/travellers/new" element={<Navigate to="/personal/common-info/travellers/add" replace />} />
+        <Route path="/personal/common-info/travellers/add" element={<PersonalCenterTravellerForm />} />
+        <Route path="/personal/common-info/travellers/edit" element={<PersonalCenterTravellerForm />} />
+        <Route path="/personal/common-info/travellers/view" element={<PersonalCenterTravellerForm />} />
+        <Route path="/personal/common-info/*" element={<Navigate to="/personal/common-info" replace />} />
+
+        <Route path="/user-center" element={<Navigate to="/user-center/my-info" replace />} />
+        <Route path="/user-center/my-info" element={<PersonalCenterProfile />} />
+        <Route path="/user-center/orders" element={<PersonalCenterOrders />} />
+        <Route path="/user-center/orders/:orderId" element={<PersonalCenterOrderDetail />} />
+        <Route path="/user-center/common-info" element={<PersonalCenterCommonInfoIndex />} />
+        <Route path="/user-center/common-info/travelers" element={<PersonalCenterCommonTravellers />} />
+        <Route path="/user-center/common-info/travelers/new" element={<Navigate to="/user-center/common-info/travelers/add" replace />} />
+        <Route path="/user-center/common-info/travelers/add" element={<PersonalCenterTravellerForm />} />
+        <Route path="/user-center/common-info/travelers/edit" element={<PersonalCenterTravellerForm />} />
+        <Route path="/user-center/common-info/travelers/view" element={<PersonalCenterTravellerForm />} />
+        <Route path="/user-center/common-info/*" element={<Navigate to="/user-center/common-info" replace />} />
       </Route>
 
       <Route element={<AuthLayout />}>

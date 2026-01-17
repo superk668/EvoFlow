@@ -1,13 +1,18 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import styles from './PersonalCenterTravellerForm.module.css'
 
 export default function PersonalCenterTravellerForm() {
+  const { pathname } = useLocation()
+  const isView = pathname.includes('/view')
+  const isEdit = pathname.includes('/edit')
+  const title = isView ? '查看常用旅客信息' : isEdit ? '编辑常用旅客信息' : '新增常用旅客信息'
+
   return (
     <div className={styles.page}>
       <div className={styles.topBar}>
-        <div className={styles.topTitle}>新增常用旅客信息</div>
+        <div className={styles.topTitle}>{title}</div>
         <div className={styles.topSub}>请填写以下旅客信息，为必填项。</div>
-        <Link className={styles.topLink} to="/personal/common-info/travellers">
+        <Link className={styles.topLink} to="/user-center/common-info/travelers">
           查看所有旅客信息
         </Link>
       </div>

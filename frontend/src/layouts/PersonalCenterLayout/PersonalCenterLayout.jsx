@@ -6,11 +6,11 @@ import styles from './PersonalCenterLayout.module.css'
 
 export default function PersonalCenterLayout() {
   const { pathname } = useLocation()
-  const active = pathname.includes('/personal/orders')
+  const active = pathname.includes('/personal/orders') || pathname.includes('/user-center/orders')
     ? 'orders'
-    : pathname.includes('/personal/common-info/travellers')
+    : pathname.includes('/personal/common-info/travellers') || pathname.includes('/user-center/common-info/travelers')
       ? 'commonTravellers'
-      : pathname.includes('/personal/profile')
+      : pathname.includes('/personal/profile') || pathname.includes('/user-center/my-info')
         ? 'profile'
         : 'profile'
 

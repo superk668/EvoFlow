@@ -11,11 +11,11 @@ const steps = [
 
 export default function BookingLayout() {
   const { pathname } = useLocation()
-  const currentStep = pathname.includes('/buy-ticket/step2')
+  const currentStep = pathname.includes('/buy-ticket/step2') || pathname.includes('/booking/services')
     ? 2
-    : pathname.includes('/buy-ticket/step3')
+    : pathname.includes('/buy-ticket/step3') || pathname.includes('/booking/payment')
       ? 3
-      : pathname.includes('/buy-ticket/step4')
+      : pathname.includes('/buy-ticket/step4') || pathname.includes('/booking/complete')
         ? 4
         : 1
 

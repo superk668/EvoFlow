@@ -11,7 +11,7 @@ export default function PersonalCenterOrderDetail() {
           <span className={styles.crumbSep} aria-hidden="true">
             &gt;
           </span>
-          <Link className={styles.crumbLink} to="/personal/orders">
+          <Link className={styles.crumbLink} to="/user-center/orders">
             机票订单
           </Link>
           <span className={styles.crumbSep} aria-hidden="true">
@@ -222,4 +222,3 @@ export default function PersonalCenterOrderDetail() {
     </div>
   )
 }
-

@@ -16,7 +16,7 @@ export default function PersonalCenterCommonTravellers() {
             <button className={styles.searchBtn} type="button">
               查询
             </button>
-            <Link className={styles.addLink} to="/personal/common-info/travellers/new">
+            <Link className={styles.addLink} to="/user-center/common-info/travelers/add">
               新增
             </Link>
           </div>
