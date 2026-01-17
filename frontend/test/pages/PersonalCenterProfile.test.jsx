@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../../src/App.jsx'
 
@@ -155,7 +155,9 @@ describe('settings_requirement - 3.3 我的信息页', () => {
       expect.stringContaining('/api/user/profile'),
       expect.objectContaining({ method: 'GET' })
     )
-    expect(window.location.hash).toBe('#/login')
+    await waitFor(() => {
+      expect(window.location.hash).toBe('#/login')
+    })
   })
 
   it('系统异常：保存失败', async () => {
@@ -281,15 +283,17 @@ describe('settings_requirement - 3.5 我的信息编辑页', () => {
       expect.objectContaining({ method: 'GET' })
     )
 
+    expect(await screen.findByText('审核中')).toBeInTheDocument()
     expect(screen.getByLabelText('昵称')).toBeDisabled()
-    expect(screen.getByText('审核中')).toBeInTheDocument()
     expect(screen.getByLabelText('姓名')).toBeEnabled()
   })
 
   it('状态异常：未登录访问编辑态', async () => {
     globalThis.fetch.mockResolvedValueOnce({ ok: false, status: 401, json: async () => ({ error: 'Unauthorized' }) })
     renderAtHash('#/user-center/my-info?edit=true')
-    expect(window.location.hash).toBe('#/login')
+    await waitFor(() => {
+      expect(window.location.hash).toBe('#/login')
+    })
   })
 
   it('系统异常：保存接口失败', async () => {

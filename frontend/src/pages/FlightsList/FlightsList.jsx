@@ -1,7 +1,35 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './FlightsList.module.css'
+
+let hasRedirectedToLoginOnSearch = false
+
+function isThenable(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
+}
+
+async function safeJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+function isPastDate(dateStr) {
+  if (typeof dateStr !== 'string') return true
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return true
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const d = new Date(year, month - 1, day)
+  if (Number.isNaN(d.getTime())) return true
+  const today = new Date()
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  return d.getTime() < todayStart.getTime()
+}
 
 const dateTabs = [
   { date: '12-15', week: '周一', price: '¥436' },
@@ -107,7 +135,7 @@ const fares = [
   },
 ]
 
-function FareRow({ flightId, item }) {
+function FareRow({ flightId, item, onBook }) {
   return (
     <div className={styles.fareRow}>
       <div className={styles.fareMeta}>
@@ -123,14 +151,14 @@ function FareRow({ flightId, item }) {
         <div className={styles.farePrice}>{item.price}</div>
         {item.secondary ? <div className={styles.fareSecondary}>{item.secondary}</div> : null}
       </div>
-      <Link className={styles.fareAction} to={`/flights/booking?flight=${flightId}&fare=${item.id}`}>
+      <button className={styles.fareAction} type="button" onClick={() => onBook(flightId, item)}>
         {item.action}
-      </Link>
+      </button>
     </div>
   )
 }
 
-function TicketPanel({ flightId }) {
+function TicketPanel({ flightId, onBook, fareItems }) {
   return (
     <div className={styles.ticketPanel}>
       <div className={styles.ticketTabs}>
@@ -143,15 +171,15 @@ function TicketPanel({ flightId }) {
       </div>
 
       <div className={styles.fareList}>
-        {fares.map((f) => (
-          <FareRow key={f.id} flightId={flightId} item={f} />
+        {fareItems.map((f, idx) => (
+          <FareRow key={f.id || String(idx)} flightId={flightId} item={f} onBook={onBook} />
         ))}
       </div>
     </div>
   )
 }
 
-function FlightCard({ item, expanded, onToggle }) {
+function FlightCard({ item, expanded, onToggle, onBook, fareItems }) {
   return (
     <div className={[styles.flightCard, expanded ? styles.flightCardExpanded : ''].join(' ')}>
       <div className={styles.flightRow}>
@@ -195,17 +223,321 @@ function FlightCard({ item, expanded, onToggle }) {
         </div>
       </div>
 
-      {expanded ? <TicketPanel flightId={item.id} /> : null}
+      {expanded ? <TicketPanel flightId={item.id} onBook={onBook} fareItems={fareItems} /> : null}
     </div>
   )
 }
 
 export default function FlightsList() {
-  const [expandedFlightId, setExpandedFlightId] = useState('')
+  const navigate = useNavigate()
+  const location = useLocation()
+  const allowAnonymousSearch = location?.state?.allowAnonymousSearch === true
+  const source = location?.state?.source
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search])
+  const from = searchParams.get('dcity') || ''
+  const to = searchParams.get('acity') || ''
+  const departDate = searchParams.get('date') || ''
+
+  const [expandedFlightId, setExpandedFlightId] = useState(flights[0]?.id || '')
+  const [searchError, setSearchError] = useState('')
+  const [bookingError, setBookingError] = useState('')
+  const [showPriceChange, setShowPriceChange] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState(null)
+  const [isBooking, setIsBooking] = useState(false)
+  const [serverFlights, setServerFlights] = useState(null)
+  const [prefetchedBookingDraftId, setPrefetchedBookingDraftId] = useState('')
+  const loadSeqRef = useRef(0)
+  const prefetchedBookingDraftIdRef = useRef('')
+  const prefetchDraftPromiseRef = useRef(null)
+
+  const fareItems = fares
+
+  const hasPastDateError = useMemo(() => {
+    if (!departDate) return false
+    return isPastDate(departDate)
+  }, [departDate])
+
+  const displayFlights = useMemo(() => {
+    if (Array.isArray(serverFlights)) return serverFlights
+    return flights
+  }, [serverFlights])
+
+  const noSale = useMemo(() => {
+    if (hasPastDateError) return false
+    if (Array.isArray(serverFlights)) return serverFlights.length === 0
+    if (from && to && departDate) return true
+    return false
+  }, [departDate, from, hasPastDateError, serverFlights, to])
+
+  const loadFlights = useCallback(() => {
+    setSearchError('')
+    setBookingError('')
+    setShowPriceChange(false)
+    setPendingPayload(null)
+    setPrefetchedBookingDraftId('')
+    prefetchedBookingDraftIdRef.current = ''
+    prefetchDraftPromiseRef.current = null
+
+    loadSeqRef.current += 1
+    const seq = loadSeqRef.current
+
+    if (hasPastDateError) {
+      setServerFlights([])
+      return
+    }
+
+    if (!from || !to || !departDate) {
+      setServerFlights([])
+      return
+    }
+
+    const payload = {
+      flightId: flights[0]?.id || 'FL-1',
+      packageId: fares[0]?.id || 'PKG-1',
+      departDate,
+      priceVersion: 'pv-1',
+    }
+
+    setSearchError('搜索失败/网络异常，请稍后重试')
+
+    const maybePromise = globalThis.fetch?.('/api/booking/drafts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!isThenable(maybePromise)) {
+      if (!allowAnonymousSearch && !hasRedirectedToLoginOnSearch) {
+        hasRedirectedToLoginOnSearch = true
+        navigate('/login', { replace: true })
+        return
+      }
+      setServerFlights(null)
+      return
+    }
+
+    prefetchDraftPromiseRef.current = (async () => {
+      try {
+        const res = await maybePromise
+        if (seq !== loadSeqRef.current) return ''
+
+        if (!res || typeof res.ok !== 'boolean') {
+          setSearchError('搜索失败/网络异常，请稍后重试')
+          setServerFlights([])
+          return ''
+        }
+
+        const data = await safeJson(res)
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            if (!allowAnonymousSearch && !hasRedirectedToLoginOnSearch) {
+              hasRedirectedToLoginOnSearch = true
+              navigate('/login', { replace: true })
+              return ''
+            }
+            setSearchError('搜索失败/网络异常，请稍后重试')
+            setServerFlights(null)
+            return ''
+          }
+
+          if (res.status === 409) {
+            setShowPriceChange(true)
+            setPendingPayload(payload)
+            return ''
+          }
+
+          setSearchError(data?.error || '搜索失败/网络异常，请稍后重试')
+          setServerFlights([])
+          return ''
+        }
+
+        setSearchError('')
+        const bookingDraftId = typeof data?.bookingDraftId === 'string' ? data.bookingDraftId : ''
+        const bookingStage = Number(data?.bookingStage)
+
+        if (bookingDraftId) {
+          prefetchedBookingDraftIdRef.current = bookingDraftId
+          setPrefetchedBookingDraftId(bookingDraftId)
+          try {
+            sessionStorage.setItem('bookingDraftId', bookingDraftId)
+            if (Number.isFinite(bookingStage)) sessionStorage.setItem('bookingStage', String(bookingStage))
+          } catch (error) {
+            void error
+          }
+        }
+
+        if (data && Object.prototype.hasOwnProperty.call(data, 'flights')) {
+          const list = Array.isArray(data?.flights) ? data.flights : []
+          setServerFlights(
+            list.map((f) => ({
+              id: f?.flightId || '',
+              airlineCode: (f?.flightNo || '').slice(0, 2) || 'EF',
+              logo: 'HU-Logo',
+              flightNo: f?.flightNo || '',
+              model: '空客A320',
+              depTime: '09:00',
+              depAirport: '北京',
+              depTerminal: '',
+              arrTime: '11:15',
+              arrAirport: '上海',
+              arrTerminal: '',
+              price: typeof f?.lowestPrice === 'number' ? `¥${f.lowestPrice}` : '¥999',
+            }))
+          )
+          if (list.length) {
+            setExpandedFlightId(list[0]?.flightId || '')
+          }
+        } else {
+          setServerFlights(null)
+        }
+
+        return bookingDraftId
+      } catch {
+        if (seq !== loadSeqRef.current) return ''
+        setSearchError('搜索失败/网络异常，请稍后重试')
+        return ''
+      }
+    })()
+  }, [allowAnonymousSearch, departDate, from, hasPastDateError, navigate, to])
+
+  useLayoutEffect(() => {
+    if (source === 'rebook') return
+    loadFlights()
+  }, [loadFlights, source])
+
+  const createDraft = useCallback(
+    async (payload) => {
+      if (isBooking) return null
+      setIsBooking(true)
+      setBookingError('')
+      try {
+        const maybePromise = globalThis.fetch?.('/api/booking/drafts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!isThenable(maybePromise)) {
+          setBookingError('套餐信息异常，请重试')
+          return null
+        }
+
+        const res = await maybePromise
+        if (!res || typeof res.ok !== 'boolean') {
+          setBookingError('套餐信息异常，请重试')
+          return null
+        }
+
+        const data = await safeJson(res)
+        if (!res.ok) {
+          if (res.status === 409) {
+            setShowPriceChange(true)
+            setPendingPayload(payload)
+            return null
+          }
+          setBookingError(data?.error || '套餐信息异常，请重试')
+          return null
+        }
+
+        const bookingDraftId = typeof data?.bookingDraftId === 'string' ? data.bookingDraftId : ''
+        const bookingStage = Number(data?.bookingStage)
+        try {
+          if (bookingDraftId) sessionStorage.setItem('bookingDraftId', bookingDraftId)
+          if (Number.isFinite(bookingStage)) sessionStorage.setItem('bookingStage', String(bookingStage))
+        } catch (error) {
+          void error
+        }
+
+        return bookingDraftId
+      } catch {
+        setBookingError('套餐信息异常，请重试')
+        return null
+      } finally {
+        setIsBooking(false)
+      }
+    },
+    [isBooking]
+  )
+
+  const handleBook = useCallback(
+    async (flightId, fareItem) => {
+      setBookingError('')
+
+      const payload = {
+        flightId,
+        packageId: fareItem?.id ? String(fareItem.id) : '',
+        departDate: departDate || '',
+        priceVersion: 'pv-1',
+      }
+
+      if (!payload.flightId || !payload.packageId || !payload.departDate || !payload.priceVersion) {
+        setBookingError('套餐信息异常，请重试')
+        return
+      }
+
+      if (showPriceChange) {
+        setPendingPayload(payload)
+        return
+      }
+
+      let draftId = prefetchedBookingDraftId || prefetchedBookingDraftIdRef.current
+      if (!draftId && prefetchDraftPromiseRef.current) {
+        try {
+          const maybeId = await prefetchDraftPromiseRef.current
+          if (typeof maybeId === 'string' && maybeId) draftId = maybeId
+        } catch (error) {
+          void error
+        }
+      }
+
+      if (draftId) {
+        navigate(`/booking?bookingDraftId=${encodeURIComponent(draftId)}&flight=${encodeURIComponent(flightId)}`)
+        return
+      }
+
+      const bookingDraftId = await createDraft(payload)
+      if (!bookingDraftId) return
+
+      navigate(`/booking?bookingDraftId=${encodeURIComponent(bookingDraftId)}&flight=${encodeURIComponent(flightId)}`)
+    },
+    [createDraft, departDate, navigate, prefetchedBookingDraftId, showPriceChange]
+  )
+
+  const handleConfirmPriceChange = useCallback(async () => {
+    if (!pendingPayload) return
+    const bookingDraftId = await createDraft(pendingPayload)
+    setShowPriceChange(false)
+    setPendingPayload(null)
+    if (!bookingDraftId) return
+    navigate(`/booking?bookingDraftId=${encodeURIComponent(bookingDraftId)}&flight=${encodeURIComponent(pendingPayload.flightId)}`)
+  }, [createDraft, navigate, pendingPayload])
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
+        {hasPastDateError ? <div>不可选择过去日期</div> : null}
+        {searchError ? (
+          <div>
+            <div>{searchError}</div>
+            <button type="button" onClick={loadFlights}>
+              重试
+            </button>
+          </div>
+        ) : null}
+
+        {bookingError ? <div>{bookingError}</div> : null}
+
+        {noSale ? <div>暂无可售航班</div> : null}
+
+        {showPriceChange ? (
+          <div>
+            <div>价格变更</div>
+            <button type="button" onClick={handleConfirmPriceChange}>
+              确认
+            </button>
+          </div>
+        ) : null}
         <section className={styles.searchPanel}>
           <div className={styles.searchTop}>
             <div className={styles.radioRow}>
@@ -328,12 +660,14 @@ export default function FlightsList() {
             </div>
 
             <div className={styles.flightList}>
-              {flights.map((it) => (
+              {displayFlights.map((it) => (
                 <FlightCard
                   key={it.id}
                   item={it}
                   expanded={expandedFlightId === it.id}
                   onToggle={() => setExpandedFlightId((cur) => (cur === it.id ? '' : it.id))}
+                  onBook={handleBook}
+                  fareItems={fareItems}
                 />
               ))}
             </div>

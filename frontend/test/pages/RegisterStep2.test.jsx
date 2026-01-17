@@ -63,9 +63,12 @@ describe('Register Step2 Scenarios', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ registerToken: expect.any(String), password: 'Correct#123' }),
+        body: expect.any(String),
       })
     )
+
+    const [, options] = fetchMock.mock.calls[0]
+    expect(JSON.parse(options.body)).toEqual({ registerToken: expect.any(String), password: 'Correct#123' })
     expect(window.location.hash).toBe('#/login')
   })
 

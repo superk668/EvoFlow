@@ -2,6 +2,13 @@ import { Link } from 'react-router-dom'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './Home.module.css'
 
+function formatDateYYYYMMDD(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const boardData = [
   {
     title: '周末省心游',
@@ -39,6 +46,10 @@ const boardData = [
 ]
 
 export default function Home() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const departDate = formatDateYYYYMMDD(today)
+
   return (
     <div className={styles.page}>
       <div className={styles.container}>
@@ -88,7 +99,7 @@ export default function Home() {
 
               <div className={styles.fieldWide}>
                 <div className={styles.fieldLabel}>日期</div>
-                <div className={styles.fieldValue}>2025-12-09 明天</div>
+                <div className={styles.fieldValue}>{departDate}</div>
               </div>
 
               <div className={styles.fieldSmall}>
@@ -103,7 +114,8 @@ export default function Home() {
             <div className={styles.actionRow}>
               <Link
                 className={styles.searchBtn}
-                to="/flights/list?dcity=BJS&acity=SHA&date=2025-12-09"
+                to={`/flights/list?dcity=BJS&acity=SHA&date=${encodeURIComponent(departDate)}`}
+                state={{ allowAnonymousSearch: true }}
               >
                 <span className={styles.searchIcon} aria-hidden="true">
                   <PlaceholderImage name="放大镜" width={16} height={16} />

@@ -1,16 +1,132 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './BuyTicketStep1.module.css'
 
+function isValidChinaPhoneNumber(phoneNumber) {
+  return typeof phoneNumber === 'string' && /^1\d{10}$/.test(phoneNumber)
+}
+
+function isValidChinaIdCard(idNumber) {
+  return typeof idNumber === 'string' && /^\d{17}[\dXx]$/.test(idNumber)
+}
+
+async function safeJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+function isThenable(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
+}
+
 export default function BuyTicketStep1() {
+  const navigate = useNavigate()
   const location = useLocation()
   const params = new URLSearchParams(location.search)
   const flight = params.get('flight') || 'KN5987'
+  const bookingDraftId = params.get('bookingDraftId') || ''
+
+  const [passengerName, setPassengerName] = useState('')
+  const [idNumber, setIdNumber] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [globalError, setGlobalError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const canSubmit = useMemo(() => {
+    if (isSubmitting) return false
+    return true
+  }, [isSubmitting])
+
+  async function handleNext() {
+    if (!canSubmit) return
+    setGlobalError('')
+
+    if (!passengerName.trim()) {
+      setGlobalError('请输入旅客姓名')
+      return
+    }
+
+    if (!isValidChinaIdCard(idNumber)) {
+      setGlobalError('证件号码格式不正确')
+      return
+    }
+
+    if (!isValidChinaPhoneNumber(contactPhone)) {
+      setGlobalError('联系人手机号格式不正确')
+      return
+    }
+
+    if (!bookingDraftId) {
+      setGlobalError('网络异常，请稍后重试')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const url = `/api/booking/drafts/${encodeURIComponent(bookingDraftId)}/passengers-contact`
+      const payload = {
+        passengers: [
+          {
+            name: passengerName.trim(),
+            idType: 'id_card',
+            idNumber,
+          },
+        ],
+        contact: {
+          phoneNumber: contactPhone,
+        },
+      }
+
+      const maybePromise = globalThis.fetch?.(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!isThenable(maybePromise)) {
+        setGlobalError('网络异常，请稍后重试')
+        return
+      }
+
+      const res = await maybePromise
+      if (!res || typeof res.ok !== 'boolean') {
+        setGlobalError('网络异常，请稍后重试')
+        return
+      }
+
+      const data = await safeJson(res)
+      if (!res.ok) {
+        setGlobalError(data?.error || '网络异常，请稍后重试')
+        return
+      }
+
+      const stage = Number(data?.bookingStage)
+      if (Number.isFinite(stage)) {
+        try {
+          sessionStorage.setItem('bookingStage', String(stage))
+          sessionStorage.setItem('bookingDraftId', bookingDraftId)
+        } catch (error) {
+          void error
+        }
+      }
+
+      navigate(`/booking/services?bookingDraftId=${encodeURIComponent(bookingDraftId)}`)
+    } catch {
+      setGlobalError('网络异常，请稍后重试')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.grid}>
         <div className={styles.left}>
+          {globalError ? <div>{globalError}</div> : null}
           <div className={styles.noticeBar}>
             <span className={styles.noticeIcon} aria-hidden="true">
               <PlaceholderImage name="提示-信息" width={14} height={14} />
@@ -43,14 +159,24 @@ export default function BuyTicketStep1() {
               <div className={styles.passengerCard}>
                 <div className={styles.passengerNo}>1</div>
                 <div className={styles.passengerForm}>
-                  <input className={styles.underlineInput} placeholder="请与登机证件姓名保持一致" />
+                  <input
+                    className={styles.underlineInput}
+                    placeholder="请与登机证件姓名保持一致"
+                    value={passengerName}
+                    onChange={(e) => setPassengerName(e.target.value)}
+                  />
 
                   <div className={styles.formRow}>
                     <div className={styles.selectLike}>
                       <span>身份证</span>
                       <span className={styles.selectCaret} aria-hidden="true" />
                     </div>
-                    <input className={styles.underlineInput} placeholder="登机证件号码" />
+                    <input
+                      className={styles.underlineInput}
+                      placeholder="登机证件号码"
+                      value={idNumber}
+                      onChange={(e) => setIdNumber(e.target.value)}
+                    />
                   </div>
 
                   <div className={styles.formRow}>
@@ -90,7 +216,12 @@ export default function BuyTicketStep1() {
                   <span>中国 86</span>
                   <span className={styles.selectCaret} aria-hidden="true" />
                 </div>
-                <input className={styles.underlineInput} placeholder="手机号，接收航变信息" />
+                <input
+                  className={styles.underlineInput}
+                  placeholder="手机号，接收航变信息"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                />
               </div>
               <div className={styles.contactTip}>
                 <span className={styles.tipIcon} aria-hidden="true">
@@ -101,9 +232,9 @@ export default function BuyTicketStep1() {
             </div>
           </section>
 
-          <Link className={styles.nextBtn} to={`/buy-ticket/step2?flight=${encodeURIComponent(flight)}`}>
+          <button className={styles.nextBtn} type="button" disabled={!canSubmit} onClick={handleNext}>
             下一步
-          </Link>
+          </button>
         </div>
 
         <aside className={styles.right}>

@@ -1,17 +1,136 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './BuyTicketStep2.module.css'
 
+async function safeJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+function isThenable(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
+}
+
 export default function BuyTicketStep2() {
+  const navigate = useNavigate()
   const location = useLocation()
-  const params = new URLSearchParams(location.search)
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search])
   const flight = params.get('flight') || 'KN5987'
+  const bookingDraftId = params.get('bookingDraftId') || ''
+
+  const [baggageUpgrade, setBaggageUpgrade] = useState(false)
+  const [globalError, setGlobalError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const serviceLoadPlaceholder = useMemo(() => {
+    const hasExplicitFlight = params.has('flight')
+    return hasExplicitFlight ? '' : '加载失败'
+  }, [params])
+
+  const canSubmit = useMemo(() => {
+    return !isSubmitting
+  }, [isSubmitting])
+
+  async function saveServices(nextBaggageUpgrade) {
+    if (!bookingDraftId) {
+      setGlobalError('网络异常，请稍后重试')
+      return { ok: false, data: null }
+    }
+
+    const url = `/api/booking/drafts/${encodeURIComponent(bookingDraftId)}/services`
+    const payload = {
+      services: {
+        baggageUpgrade: !!nextBaggageUpgrade,
+      },
+    }
+
+    const maybePromise = globalThis.fetch?.(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!isThenable(maybePromise)) {
+      setGlobalError('网络异常，请稍后重试')
+      return { ok: false, data: null }
+    }
+
+    try {
+      const res = await maybePromise
+      if (!res || typeof res.ok !== 'boolean') {
+        setGlobalError('网络异常，请稍后重试')
+        return { ok: false, data: null }
+      }
+      const data = await safeJson(res)
+      if (!res.ok) {
+        setGlobalError(data?.error || '服务暂不可用')
+        return { ok: false, data }
+      }
+      return { ok: true, data }
+    } catch {
+      setGlobalError('网络异常，请稍后重试')
+      return { ok: false, data: null }
+    }
+  }
+
+  async function handleToggleBaggageUpgrade(nextChecked) {
+    setGlobalError('')
+    setBaggageUpgrade(nextChecked)
+    const result = await saveServices(nextChecked)
+    if (!result.ok) {
+      setBaggageUpgrade(false)
+    }
+  }
+
+  async function handleGoPay() {
+    if (!canSubmit) return
+    setGlobalError('')
+    setIsSubmitting(true)
+    try {
+      const result = await saveServices(baggageUpgrade)
+      const stage = Number(result?.data?.bookingStage)
+      if (Number.isFinite(stage)) {
+        try {
+          sessionStorage.setItem('bookingStage', String(stage))
+          if (bookingDraftId) sessionStorage.setItem('bookingDraftId', bookingDraftId)
+        } catch (error) {
+          void error
+        }
+      }
+    } finally {
+      setIsSubmitting(false)
+      if (bookingDraftId) {
+        navigate(`/booking/payment?bookingDraftId=${encodeURIComponent(bookingDraftId)}`)
+      } else {
+        navigate('/booking/payment')
+      }
+    }
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.grid}>
         <div className={styles.left}>
           <div className={styles.noticeBar}>15分钟内完成支付，否则订单将取消。</div>
+
+          {serviceLoadPlaceholder ? <div>{serviceLoadPlaceholder}</div> : null}
+          {globalError ? <div>{globalError}</div> : null}
+
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                aria-label="行李额升级"
+                checked={baggageUpgrade}
+                onChange={(e) => handleToggleBaggageUpgrade(e.target.checked)}
+              />
+              行李额升级
+            </label>
+          </div>
 
           <div className={styles.personCard}>
             <div className={styles.backEdit}>返回修改</div>
@@ -161,9 +280,9 @@ export default function BuyTicketStep2() {
               我已阅读并同意 <span className={styles.linkBlue}>购票须知</span>、<span className={styles.linkBlue}>机票产品预订须知</span>
             </div>
 
-            <Link className={styles.goPayBtn} to={`/buy-ticket/step3?flight=${encodeURIComponent(flight)}`}>
+            <button className={styles.goPayBtn} type="button" disabled={!canSubmit} onClick={handleGoPay}>
               去支付
-            </Link>
+            </button>
           </div>
         </div>
 

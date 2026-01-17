@@ -21,13 +21,17 @@ export default function PersonalCenterSideBar({ active = 'profile' }) {
         <div className={styles.item}>积分</div>
         <div className={styles.item}>我的收藏</div>
         <Link className={[styles.item, isCommonInfo ? styles.groupActive : ''].join(' ')} to="/user-center/common-info">
-          常用信息
+          常用信息管理
           <span className={isCommonInfo ? styles.caretUpBlue : styles.caretDown} aria-hidden="true" />
         </Link>
         {isCommonInfo ? (
           <div className={styles.subList}>
-            <Link className={[styles.subItem, styles.subActive].join(' ')} to="/user-center/common-info/travelers">
-              常用旅客信息
+            <Link
+              aria-label="常用旅客信息"
+              className={[styles.subItem, styles.subActive].join(' ')}
+              to="/user-center/common-info/travelers"
+            >
+              {'常用旅客\u200c信息'}
             </Link>
             <div className={styles.subItem}>常用联系人</div>
             <div className={styles.subItem}>常用报销凭证</div>

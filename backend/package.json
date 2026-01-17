@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node src/server.js",
+    "start": "node src/server.js",
     "test": "jest"
   },
   "dependencies": {
@@ -15,4 +16,3 @@
     "supertest": "^6.3.4"
   }
 }
-

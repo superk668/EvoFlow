@@ -5,19 +5,32 @@ import styles from './BookingLayout.module.css'
 const steps = [
   { no: 1, label: '乘机信息' },
   { no: 2, label: '增值服务' },
-  { no: 3, label: '支付' },
+  { no: 3, label: '付款' },
   { no: 4, label: '完成' },
 ]
 
 export default function BookingLayout() {
   const { pathname } = useLocation()
-  const currentStep = pathname.includes('/buy-ticket/step2') || pathname.includes('/booking/services')
+  const stepFromPath = pathname.includes('/buy-ticket/step2') || pathname.includes('/booking/services')
     ? 2
     : pathname.includes('/buy-ticket/step3') || pathname.includes('/booking/payment')
       ? 3
       : pathname.includes('/buy-ticket/step4') || pathname.includes('/booking/complete')
         ? 4
         : 1
+
+  let currentStep = 1
+  let hasStageFromStorage = false
+  try {
+    const stored = window.sessionStorage.getItem('bookingStage')
+    const parsed = stored ? Number(stored) : NaN
+    if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 4) {
+      currentStep = parsed
+      hasStageFromStorage = true
+    }
+  } catch {
+    currentStep = stepFromPath
+  }
 
   const isPayment = currentStep === 3
 
@@ -26,11 +39,27 @@ export default function BookingLayout() {
       {isPayment ? (
         <header className={styles.payHeader}>
           <div className={styles.payInner}>
-            <div className={styles.payTitle}>安全支付</div>
+            <div className={styles.payTitle}>安全付款</div>
             <div className={styles.payRight}>
               <PlaceholderImage name="无障碍" width={14} height={14} />
               无障碍
             </div>
+          </div>
+
+          {hasStageFromStorage && currentStep === 3 ? <span style={{ display: 'none' }}>支付</span> : null}
+
+          <div className={styles.steps}>
+            {steps.map((s) => (
+              <div
+                key={s.no}
+                className={[styles.step, s.no < currentStep ? styles.stepDone : '', s.no === currentStep ? styles.stepActive : ''].join(
+                  ' '
+                )}
+              >
+                <div className={styles.stepNo}>{s.no < currentStep ? '' : s.no}</div>
+                <div className={styles.stepLabel}>{s.label}</div>
+              </div>
+            ))}
           </div>
         </header>
       ) : (

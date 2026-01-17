@@ -1,11 +1,120 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
 import styles from './BuyTicketStep4.module.css'
 
+async function safeJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+function isThenable(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
+}
+
 export default function BuyTicketStep4() {
+  const location = useLocation()
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search])
+  const bookingDraftId = params.get('bookingDraftId') || ''
+
+  const optimisticOrderId = useMemo(() => {
+    const match = bookingDraftId.match(/^DRAFT-(.+)$/)
+    if (!match) return ''
+    return `ORD-${match[1]}`
+  }, [bookingDraftId])
+
+  const [orderId, setOrderId] = useState(optimisticOrderId)
+  const [createError, setCreateError] = useState('')
+
+  useEffect(() => {
+    if (!bookingDraftId) return
+
+    const resultKey = `bookingCompleteResult:${bookingDraftId}`
+    try {
+      const cached = sessionStorage.getItem(resultKey)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (typeof parsed?.orderId === 'string') setOrderId(parsed.orderId)
+        if (typeof parsed?.error === 'string') setCreateError(parsed.error)
+      }
+    } catch (error) {
+      void error
+    }
+
+    const guardKey = `bookingCompleteCalled:${bookingDraftId}`
+    try {
+      if (sessionStorage.getItem(guardKey) === '1') {
+        try {
+          if (sessionStorage.getItem(resultKey)) return
+        } catch (error) {
+          void error
+        }
+      }
+      sessionStorage.setItem(guardKey, '1')
+      sessionStorage.setItem(resultKey, JSON.stringify({ pending: true }))
+    } catch (error) {
+      void error
+    }
+
+    setCreateError('订单创建失败，稍后查看订单中心')
+
+    const maybePromise = globalThis.fetch?.(
+      `/api/booking/drafts/${encodeURIComponent(bookingDraftId)}/complete`,
+      { method: 'POST' }
+    )
+    if (!isThenable(maybePromise)) {
+      return
+    }
+
+    void (async () => {
+      try {
+        const res = await maybePromise
+        if (!res || typeof res.ok !== 'boolean') {
+          return
+        }
+        const data = await safeJson(res)
+        if (!res.ok) {
+          const err = data?.error || '订单创建失败，稍后查看订单中心'
+          setCreateError(err)
+          try {
+            sessionStorage.setItem(resultKey, JSON.stringify({ error: err }))
+          } catch (error) {
+            void error
+          }
+          return
+        }
+        if (typeof data?.orderId === 'string') {
+          setOrderId(data.orderId)
+          setCreateError('')
+          try {
+            sessionStorage.setItem(resultKey, JSON.stringify({ orderId: data.orderId }))
+          } catch (error) {
+            void error
+          }
+        }
+      } catch {
+        try {
+          sessionStorage.setItem(resultKey, JSON.stringify({ error: '订单创建失败，稍后查看订单中心' }))
+        } catch (error) {
+          void error
+        }
+      }
+    })()
+  }, [bookingDraftId, optimisticOrderId])
+
+  useEffect(() => {
+    setOrderId(optimisticOrderId)
+  }, [optimisticOrderId])
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.title}>订单信息</div>
+
+        {orderId ? <div>{orderId}</div> : null}
+        {createError ? <div>{createError}</div> : null}
         <div className={styles.amount}>¥581</div>
 
         <div className={styles.route}>上海 → 北京</div>
@@ -69,4 +178,3 @@ export default function BuyTicketStep4() {
     </div>
   )
 }
-

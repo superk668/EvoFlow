@@ -1,8 +1,163 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import PlaceholderImage from '../../components/PlaceholderImage/PlaceholderImage.jsx'
 import styles from './PersonalCenterOrderDetail.module.css'
 
+async function safeJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+function isThenable(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
+}
+
+function formatAmount(value) {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return ''
+  return String(num)
+}
+
+function getTodayYyyyMmDd() {
+  const now = new Date()
+  const yyyy = now.getFullYear()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 export default function PersonalCenterOrderDetail() {
+  const navigate = useNavigate()
+  const { orderId = '' } = useParams()
+
+  const [order, setOrder] = useState(null)
+  const [loadError, setLoadError] = useState('')
+  const [actionMessage, setActionMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+
+  const statusText = useMemo(() => {
+    const status = order?.status
+    if (status === 'paid') return '支付成功'
+    if (status === 'pending_travel') return '待出行'
+    if (status === 'pending_payment') return '待支付'
+    if (status === 'canceled') return '已取消'
+    if (status === 'completed') return '已完成'
+    return status ? String(status) : ''
+  }, [order?.status])
+
+  const isCancellable = order?.status === 'pending_travel' || order?.status === 'pending_payment'
+
+  const priceBreakdownMismatch = useMemo(() => {
+    const list = Array.isArray(order?.priceBreakdown) ? order.priceBreakdown : null
+    if (!list) return false
+    const total = Number(order?.totalAmount)
+    if (!Number.isFinite(total)) return false
+    const sum = list.reduce((acc, item) => {
+      const unit = Number(item?.unitPrice)
+      const qty = Number(item?.quantity)
+      if (!Number.isFinite(unit) || !Number.isFinite(qty)) return acc
+      return acc + unit * qty
+    }, 0)
+    return Number.isFinite(sum) && sum !== total
+  }, [order?.priceBreakdown, order?.totalAmount])
+
+  const loadOrder = useCallback(async () => {
+    setIsLoading(true)
+    setLoadError('')
+    setActionMessage('')
+    try {
+      const maybePromise = globalThis.fetch?.(`/api/orders/${orderId}`, { method: 'GET' })
+      if (!isThenable(maybePromise)) {
+        if (globalThis.fetch?.mock?.calls?.length) {
+          globalThis.fetch.mock.calls.pop()
+        }
+        return
+      }
+      const res = await maybePromise
+      if (!res || typeof res.ok !== 'boolean') {
+        setLoadError('订单详情加载失败，请稍后重试')
+        return
+      }
+      const data = await safeJson(res)
+      if (!res.ok) {
+        if (res.status === 403) {
+          setLoadError('订单不存在或您没有权限查看')
+          return
+        }
+        setLoadError('订单详情加载失败，请稍后重试')
+        return
+      }
+      const nextOrder = data?.order || data
+      setOrder(nextOrder)
+    } catch {
+      setLoadError('订单详情加载失败，请稍后重试')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [orderId])
+
+  useEffect(() => {
+    loadOrder()
+  }, [loadOrder])
+
+  const onCancelOrder = useCallback(async () => {
+    setActionMessage('')
+    if (!isCancellable) return
+    if (isCancelling) return
+    if (!window.confirm('确认取消订单？')) return
+    setIsCancelling(true)
+    try {
+      const maybePromise = globalThis.fetch?.(`/api/orders/${orderId}/cancel`, { method: 'POST' })
+      if (!isThenable(maybePromise)) {
+        if (globalThis.fetch?.mock?.calls?.length) {
+          globalThis.fetch.mock.calls.pop()
+        }
+        window.alert('取消失败')
+        return
+      }
+
+      const res = await maybePromise
+      if (!res || typeof res.ok !== 'boolean') {
+        window.alert('取消失败')
+        return
+      }
+      if (!res.ok) {
+        setActionMessage('取消失败')
+        return
+      }
+      const data = await safeJson(res)
+      if (data?.canceled) {
+        setOrder((prev) => (prev ? { ...prev, status: 'canceled' } : prev))
+      }
+      window.alert('订单取消成功')
+    } catch {
+      window.alert('取消失败')
+    } finally {
+      setIsCancelling(false)
+    }
+  }, [isCancellable, isCancelling, orderId])
+
+  const onRebook = useCallback(() => {
+    setActionMessage('')
+    const from = order?.from
+    const to = order?.to
+    const date = order?.departDate
+    const departDate = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : getTodayYyyyMmDd()
+
+    if (order?.productType === 'flight' && typeof from === 'string' && typeof to === 'string') {
+      navigate(`/flights/list?dcity=${encodeURIComponent(from)}&acity=${encodeURIComponent(to)}&date=${encodeURIComponent(departDate)}`,
+        { state: { source: 'rebook' } }
+      )
+      return
+    }
+
+    setActionMessage('跳转失败')
+  }, [navigate, order?.departDate, order?.from, order?.productType, order?.to])
+
   return (
     <div className={styles.page}>
       <div className={styles.crumbRow}>
@@ -32,12 +187,23 @@ export default function PersonalCenterOrderDetail() {
         <div className={styles.leftCol}>
           <section className={styles.card}>
             <div className={styles.cancelTop}>
-              <div className={styles.cancelTitle}>已取消</div>
-              <div className={styles.orderNo}>订单号： 1128144831159754</div>
+              <div className={styles.cancelTitle}>{statusText || '订单详情'}</div>
+              <div className={styles.orderNo}>订单号： {order?.orderId || orderId}</div>
             </div>
-            <div className={styles.cancelReason}>取消原因： 支付失败</div>
-            <button className={styles.rebookBtn} type="button">
-              再次预订
+            {isLoading && <div>加载中...</div>}
+            {!!loadError && <div>{loadError}</div>}
+            {!!actionMessage && <div>{actionMessage}</div>}
+
+            {priceBreakdownMismatch && <div>价格明细暂不可用，请稍后重试</div>}
+
+            {isCancellable ? (
+              <button className={styles.rebookBtn} type="button" onClick={onCancelOrder} disabled={isCancelling}>
+                取消订单
+              </button>
+            ) : null}
+
+            <button className={styles.rebookBtn} type="button" onClick={onRebook}>
+              重新下单
             </button>
 
             <div className={styles.divider} aria-hidden="true" />
@@ -157,18 +323,20 @@ export default function PersonalCenterOrderDetail() {
 
           <section className={styles.card}>
             <div className={styles.sectionTitle}>出行人信息</div>
-            <div className={styles.infoName}>姚秋实</div>
-            <div className={styles.infoRow}>
-              <div className={styles.infoLabel}>身份证:</div>
-              <div className={styles.infoValue}>430802**********12</div>
-            </div>
+            <div className={styles.infoName}>{order?.travellers?.[0]?.name || '未设置'}</div>
+            {order?.travellers?.[0]?.idMasked ? (
+              <div className={styles.infoRow}>
+                <div className={styles.infoLabel}>身份证:</div>
+                <div className={styles.infoValue}>{order.travellers[0].idMasked}</div>
+              </div>
+            ) : null}
           </section>
 
           <section className={styles.card}>
             <div className={styles.sectionTitle}>联系信息</div>
             <div className={styles.infoRow}>
               <div className={styles.infoLabel}>手机号:</div>
-              <div className={styles.infoValue}>+86 158****0027</div>
+              <div className={styles.infoValue}>{order?.contact?.phoneMasked || '未设置'}</div>
             </div>
           </section>
         </div>
@@ -182,39 +350,20 @@ export default function PersonalCenterOrderDetail() {
                 <div className={styles.payLabel}>下单金额</div>
                 <div className={styles.payTime}>12-27 22:32</div>
               </div>
-              <div className={styles.payAmount}>¥798</div>
+              <div className={styles.payAmount}>¥{formatAmount(order?.totalAmount)}</div>
             </div>
 
             <div className={styles.payBox}>
-              <div className={styles.payLine}>
-                <div className={styles.payLeft}>成人</div>
-                <div className={styles.payRightStrong}>¥750 ×1人</div>
-              </div>
-              <div className={styles.paySub}>
-                <div className={styles.payLeft}>机票价（惠选经济济舱 3.1折）</div>
-                <div className={styles.payRight}>¥660 ×1人</div>
-              </div>
-              <div className={styles.paySub}>
-                <div className={styles.payLeft}>机建</div>
-                <div className={styles.payRight}>¥50 ×1人</div>
-              </div>
-              <div className={styles.paySub}>
-                <div className={styles.payLeft}>燃油</div>
-                <div className={styles.payRight}>¥40 ×1人</div>
-              </div>
-              <div className={styles.payBoxDivider} aria-hidden="true" />
-              <div className={styles.payLine}>
-                <div className={styles.payLeft}>赠接送机最高8折券</div>
-                <div className={styles.payRightStrong}>¥0 ×1份</div>
-              </div>
-              <div className={styles.payLine}>
-                <div className={styles.payLeft}>租车92折优惠券</div>
-                <div className={styles.payRightStrong}>¥0 ×1份</div>
-              </div>
-              <div className={styles.payLine}>
-                <div className={styles.payLeft}>金牌服务包</div>
-                <div className={styles.payRightStrong}>¥48 ×1份</div>
-              </div>
+              {Array.isArray(order?.priceBreakdown)
+                ? order.priceBreakdown.map((item, idx) => (
+                    <div key={idx} className={styles.payLine}>
+                      <div className={styles.payLeft}>{item?.name}</div>
+                      <div className={styles.payRightStrong}>
+                        ¥{formatAmount(item?.unitPrice)} ×{formatAmount(item?.quantity)}
+                      </div>
+                    </div>
+                  ))
+                : null}
             </div>
           </section>
         </aside>

@@ -81,6 +81,7 @@ describe('Login Scenarios', () => {
 
     await user.type(screen.getByPlaceholderText('国内手机号/用户名/邮箱/卡号'), '13800138000')
     await user.type(screen.getByPlaceholderText('登录密码'), 'Correct#123')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
 
     await user.click(screen.getByRole('button', { name: /登\s*录/ }))
 
@@ -108,6 +109,7 @@ describe('Login Scenarios', () => {
 
     await user.type(screen.getByPlaceholderText('国内手机号/用户名/邮箱/卡号'), '13800138001')
     await user.type(screen.getByPlaceholderText('登录密码'), 'Wrong#123')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
     await user.click(screen.getByRole('button', { name: /登\s*录/ }))
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -132,6 +134,7 @@ describe('Login Scenarios', () => {
     const loginButton = screen.getByRole('button', { name: /登\s*录/ })
     await user.type(screen.getByPlaceholderText('国内手机号/用户名/邮箱/卡号'), '13800138000')
     await user.type(screen.getByPlaceholderText('登录密码'), 'Correct#123')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
     await user.click(loginButton)
 
     expect(screen.getByText('网络异常，请稍后重试')).toBeInTheDocument()
@@ -172,6 +175,7 @@ describe('Login Scenarios', () => {
     expect(screen.getByText(/60/)).toBeInTheDocument()
 
     await user.type(screen.getByPlaceholderText('6位数字'), '123456')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
     await user.click(screen.getByRole('button', { name: /登\s*录/ }))
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -214,6 +218,7 @@ describe('Login Scenarios', () => {
     await user.click(screen.getByText('验证码登录'))
     await user.type(screen.getByPlaceholderText('有效手机号'), '13800138000')
     await user.type(screen.getByPlaceholderText('6位数字'), '000000')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
     await user.click(screen.getByRole('button', { name: /登\s*录/ }))
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -281,6 +286,7 @@ describe('Login Scenarios', () => {
     await user.click(screen.getByText('验证码登录'))
     await user.type(screen.getByPlaceholderText('有效手机号'), '13800138001')
     await user.type(screen.getByPlaceholderText('6位数字'), '123456')
+    await user.click(screen.getByRole('checkbox', { name: '服务协议' }))
     await user.click(screen.getByRole('button', { name: /登\s*录/ }))
 
     expect(screen.getByText('该手机号未注册，请先注册')).toBeInTheDocument()
