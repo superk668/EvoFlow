@@ -123,7 +123,7 @@ describe('TopHeader Auth Scenarios', () => {
       routes: (
         <>
           <Route path="/" element={<TopHeader />} />
-          <Route path="/personal/my-info" element={<div>MY_INFO_PAGE</div>} />
+          <Route path="/user-center/my-info" element={<div>MY_INFO_PAGE</div>} />
         </>
       ),
     })
@@ -131,7 +131,7 @@ describe('TopHeader Auth Scenarios', () => {
     await user.click(screen.getByRole('button', { name: /尊敬的测试用户/ }))
     await user.click(screen.getByRole('link', { name: /测试用户/ }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/personal/my-info')
+    expect(screen.getByTestId('location')).toHaveTextContent('/user-center/my-info')
     expect(screen.getByText('MY_INFO_PAGE')).toBeInTheDocument()
   })
 
@@ -149,7 +149,7 @@ describe('TopHeader Auth Scenarios', () => {
       routes: (
         <>
           <Route path="/" element={<TopHeader />} />
-          <Route path="/personal/common-travelers" element={<div>COMMON_TRAVELERS_PAGE</div>} />
+          <Route path="/user-center/common-info/travelers" element={<div>COMMON_TRAVELERS_PAGE</div>} />
         </>
       ),
     })
@@ -157,7 +157,7 @@ describe('TopHeader Auth Scenarios', () => {
     await user.click(screen.getByRole('button', { name: /尊敬的测试用户/ }))
     await user.click(screen.getByRole('link', { name: '常用信息' }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/personal/common-travelers')
+    expect(screen.getByTestId('location')).toHaveTextContent('/user-center/common-info/travelers')
     expect(screen.getByText('COMMON_TRAVELERS_PAGE')).toBeInTheDocument()
   })
 
@@ -170,14 +170,14 @@ describe('TopHeader Auth Scenarios', () => {
       routes: (
         <>
           <Route path="/" element={<TopHeader />} />
-          <Route path="/orders" element={<div>ORDERS_PAGE</div>} />
+          <Route path="/user-center/orders" element={<div>ORDERS_PAGE</div>} />
         </>
       ),
     })
 
     await user.click(screen.getByRole('link', { name: '我的订单' }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/orders')
+    expect(screen.getByTestId('location')).toHaveTextContent('/user-center/orders')
     expect(screen.getByText('ORDERS_PAGE')).toBeInTheDocument()
   })
 })

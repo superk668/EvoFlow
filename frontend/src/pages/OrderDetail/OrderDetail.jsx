@@ -1,13 +1,145 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import styles from './OrderDetail.module.css'
+
+const ORDERS_KEY = 'evoflow_orders'
+
+function readOrders() {
+  const raw = localStorage.getItem(ORDERS_KEY)
+  if (!raw) return []
+  const parsed = JSON.parse(raw)
+  if (!Array.isArray(parsed)) return []
+  return parsed
+}
+
+function sumPriceBreakdown(list) {
+  if (!Array.isArray(list)) return null
+  let sum = 0
+  for (const it of list) {
+    const unit = Number(it?.unitPrice)
+    const qty = Number(it?.quantity)
+    if (!Number.isFinite(unit) || !Number.isFinite(qty)) return null
+    sum += unit * qty
+  }
+  return sum
+}
 
 export default function OrderDetail() {
   const { orderId } = useParams()
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const [cancelError, setCancelError] = useState('')
+  const [isCanceling, setIsCanceling] = useState(false)
+  const [cancelSuccess, setCancelSuccess] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const order = useMemo(() => {
+    try {
+      void reloadKey
+      const orders = readOrders()
+      return orders.find((o) => String(o?.orderId) === String(orderId)) || null
+    } catch {
+      setError('订单详情加载失败，请稍后重试')
+      return null
+    }
+  }, [orderId, reloadKey])
+
+  const priceMismatch = useMemo(() => {
+    if (!order) return false
+    const total = Number(order?.totalAmount)
+    if (!Number.isFinite(total)) return false
+    const sum = sumPriceBreakdown(order?.priceBreakdown)
+    if (sum == null) return false
+    return sum !== total
+  }, [order])
+
+  async function cancelOrder() {
+    setCancelError('')
+    setCancelSuccess(false)
+    const ok = window.confirm('确认取消该订单吗？')
+    if (!ok) return
+
+    setIsCanceling(true)
+    try {
+      const resp = await fetch('/api/user-center/orders/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      })
+
+      if (!resp || resp.status >= 400) {
+        setCancelError('取消失败')
+        return
+      }
+
+      try {
+        const list = readOrders()
+        const next = list.map((o) => {
+          if (String(o?.orderId) !== String(orderId)) return o
+          return { ...o, status: 'canceled', canceledAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        })
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(next))
+      } catch {
+        void 0
+      }
+      setReloadKey((v) => v + 1)
+      setCancelSuccess(true)
+    } catch {
+      setCancelError('取消失败')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
+
+  function rebook() {
+    const departAt = String(order?.departAt || '')
+    const ymd = departAt.slice(0, 10)
+    const dcity = order?.fromCity ? String(order.fromCity) : ''
+    const acity = order?.toCity ? String(order.toCity) : ''
+    const qs = new URLSearchParams()
+    if (ymd) qs.set('date', ymd)
+    if (dcity) qs.set('dcity', dcity)
+    if (acity) qs.set('acity', acity)
+    navigate({ pathname: '/flights/list', search: `?${qs.toString()}` })
+  }
+
+  if (error) {
+    return <div className={styles.page}>{error}</div>
+  }
+
+  if (!order) {
+    return <div className={styles.page}>订单不存在或您没有权限查看</div>
+  }
+
+  const status = String(order?.status || '')
+  const showCancel = status === 'pending_payment' || status === 'pending_travel'
+  const isCanceled = status === 'canceled' || status === 'cancelled'
 
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
         <div className={styles.breadcrumb}>我的订单 &gt; 订单详情</div>
+
+        <Link to="/user-center/orders">返回</Link>
+
+        <div>订单号</div>
+
+        {priceMismatch ? <div>价格明细暂不可用，请稍后重试</div> : null}
+
+        {showCancel && !isCanceled ? (
+          <button type="button" disabled={isCanceling} onClick={cancelOrder}>
+            取消订单
+          </button>
+        ) : null}
+
+        {isCanceled ? (
+          <button type="button" onClick={rebook}>
+            重新下单
+          </button>
+        ) : null}
+
+        {cancelSuccess ? <div>订单取消成功</div> : null}
+        {cancelError ? <div>{cancelError}</div> : null}
 
         <div className={styles.grid}>
           <div className={styles.left}>
@@ -17,7 +149,7 @@ export default function OrderDetail() {
                   <div className={styles.statusTitle}>待支付</div>
                   <div className={styles.statusSub}>请在最晚支付时间18:06前支付，完成支付才能锁定价格</div>
                 </div>
-                <div className={styles.orderNo}>订单号：{orderId}</div>
+                <div className={styles.orderNo}>订单号</div>
               </div>
 
               <div className={styles.statusActions}>

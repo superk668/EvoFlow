@@ -4,7 +4,7 @@ import styles from './PersonalLeftBar.module.css'
 
 const topItems = [
   { key: 'home', label: '我的携程首页', kind: 'title' },
-  { key: 'orders', label: '订单', to: '/orders' },
+  { key: 'orders', label: '订单', to: '/user-center/orders' },
   { key: 'messages', label: '我的消息' },
   { key: 'wallet', label: '钱包', caret: true },
   { key: 'gift-card', label: '礼品卡' },
@@ -15,14 +15,14 @@ const topItems = [
 ]
 
 const commonChildren = [
-  { key: 'common-travelers', label: '常用旅客信息', to: '/personal/common-travelers' },
+  { key: 'common-travelers', label: '常用旅客信息', to: '/user-center/common-info/travelers' },
   { key: 'common-contacts', label: '常用联系人' },
   { key: 'common-invoice', label: '常用报销凭证' },
   { key: 'common-address', label: '常用地址' },
 ]
 
 const personalChildren = [
-  { key: 'my-info', label: '我的信息', to: '/personal/my-info' },
+  { key: 'my-info', label: '我的信息', to: '/user-center/my-info' },
   { key: 'bind', label: '绑定和关联' },
   { key: 'security', label: '账户安全' },
   { key: 'community', label: '我的社区主页' },

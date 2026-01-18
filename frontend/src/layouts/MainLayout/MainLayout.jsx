@@ -8,8 +8,10 @@ import styles from './MainLayout.module.css'
 export default function MainLayout() {
   const { auth } = useAuth()
   const location = useLocation()
-  const hideLeftSidebar = location.pathname.startsWith('/personal') || location.pathname === '/orders'
-  const requiresAuth = location.pathname.startsWith('/personal') || location.pathname.startsWith('/orders')
+  const hideLeftSidebar =
+    location.pathname.startsWith('/personal') || location.pathname.startsWith('/user-center') || location.pathname === '/orders'
+  const requiresAuth =
+    location.pathname.startsWith('/personal') || location.pathname.startsWith('/orders') || location.pathname.startsWith('/user-center')
 
   if (requiresAuth && !auth.isLoggedIn) {
     try {

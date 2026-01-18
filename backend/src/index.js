@@ -1,6 +1,12 @@
 const http = require('http')
 const crypto = require('crypto')
 
+const {
+  handlePostUserCenterMyInfo,
+  handlePostUserCenterOrdersCancel,
+  handlePostUserCenterCommonTravelers,
+} = require('./routes/userCenter')
+
 const PORT = 5173
 
 const usersById = new Map()
@@ -471,6 +477,15 @@ async function handler(req, res) {
     if (req.method === 'GET' && path === '/api/auth/me') {
       return await handleGetAuthMe(req, res)
     }
+    if (req.method === 'POST' && path === '/api/user-center/my-info') {
+      return await handlePostUserCenterMyInfo(req, res)
+    }
+    if (req.method === 'POST' && path === '/api/user-center/orders/cancel') {
+      return await handlePostUserCenterOrdersCancel(req, res)
+    }
+    if (req.method === 'POST' && path === '/api/user-center/common-travelers') {
+      return await handlePostUserCenterCommonTravelers(req, res)
+    }
   } catch {
     return json(res, 500, { error: 'Internal server error.' })
   }
@@ -478,10 +493,20 @@ async function handler(req, res) {
   return json(res, 404, { error: 'Not found.' })
 }
 
-const server = http.createServer((req, res) => {
-  void handler(req, res)
-})
+function createServer() {
+  return http.createServer((req, res) => {
+    void handler(req, res)
+  })
+}
 
-server.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`)
-})
+module.exports = {
+  createServer,
+  handler,
+}
+
+if (require.main === module) {
+  const server = createServer()
+  server.listen(PORT, () => {
+    console.log(`Backend listening on http://localhost:${PORT}`)
+  })
+}

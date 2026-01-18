@@ -338,3 +338,231 @@
       description: "初始创建。"
     - date: "2026-01-18"
       description: "修正依赖：从读取阶段（DB-ReadBookingStage）获取展示状态。"
+
+- type: Frontend
+  id: UI-UserCenterLeftNav
+  description: 个人中心左侧导航组件，覆盖常用信息与个人中心分组，并保持高亮一致。
+  properties:
+    - name: activeKey
+      type: string
+      description: "当前高亮条目 key（如 orders、common-travelers、my-info）。"
+  state:
+    - expandedGroups
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 在个人中心相关页面保持展示左侧导航。
+    - 支持展开/收起“常用信息”“个人中心”等分组。
+    - 当前页面对应条目高亮展示。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-CommonInfoIndexPage
+  description: 常用信息索引页，展示四个入口并支持导航到常用旅客信息等页面。
+  properties:
+    - name: onNavigate
+      type: function
+      description: "点击入口后的跳转处理。"
+  state:
+    - entries
+    - error
+    - isLoading
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-LoadUserCenterIndexModel
+  acceptanceCriteria:
+    - 展示四个入口：常用旅客信息、常用联系人、常用报销凭证、常用地址。
+    - 点击“常用旅客信息”跳转到 /user-center/common-info/travelers。
+    - 未登录访问时跳转 /login 并支持登录后回跳。
+    - 当入口模型加载失败时提示“网络异常，请稍后重试”并提供刷新入口。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-CommonTravelersListPage
+  description: 常用旅客信息列表页，支持搜索、新增、查看、编辑、删除等入口。
+  properties:
+    - name: onAdd
+      type: function
+      description: "点击新增后的跳转处理。"
+  state:
+    - travelers
+    - keyword
+    - selectedIds
+    - error
+    - isLoading
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-ReadCommonTravelers
+    - DB-DeleteCommonTraveler
+  acceptanceCriteria:
+    - 顶部包含姓名搜索输入框、查询按钮与新增按钮。
+    - 表格展示姓名、手机/电话、证件类型、证件号码（脱敏）、国籍、性别、常旅客卡与操作列。
+    - 点击“新增”跳转 /user-center/common-info/travelers/add。
+    - 删除本人条目时提示“本人信息不可删除”并阻止删除。
+    - 列表加载失败时提示“加载失败，请稍后重试”并提供重试入口。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-CommonTravelerViewPage
+  description: 常用旅客信息查看页（只读），展示旅客信息、证件信息与常旅客卡。
+  properties:
+    - name: travelerId
+      type: string
+      description: "旅客标识（来自路由参数或查询参数）。"
+  state:
+    - traveler
+    - error
+    - isLoading
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-FindCommonTravelerById
+  acceptanceCriteria:
+    - 字段以只读方式展示，并提供返回列表入口。
+    - travelerId 缺失或无效时提示“记录不存在或链接无效”。
+    - 记录不存在时提示“记录已删除”并提供返回入口。
+    - 加载失败时提示“加载失败”并提供重试入口。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-CommonTravelerEditPage
+  description: 常用旅客信息编辑页，支持保存/取消并包含证件信息编辑。
+  properties:
+    - name: travelerId
+      type: string
+      description: "旅客标识。"
+  state:
+    - form
+    - fieldErrors
+    - error
+    - isSaving
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-FindCommonTravelerById
+    - DB-UpdateCommonTraveler
+  acceptanceCriteria:
+    - 支持编辑中文名/英文名、国籍、性别、生日、手机号、Email、证件类型/号码/有效期。
+    - 点击保存后校验通过提示“保存成功”，并返回列表或保留提示。
+    - 日期格式错误应阻止保存并保留用户输入。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-CommonTravelerAddPage
+  description: 常用旅客信息新增页，填写必填信息并创建旅客记录。
+  properties:
+    - name: onCreated
+      type: function
+      description: "新增成功后的回跳处理。"
+  state:
+    - form
+    - fieldErrors
+    - error
+    - isSaving
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-CreateCommonTraveler
+  acceptanceCriteria:
+    - 中文名与英文名至少填写一项。
+    - 保存成功后提示“保存成功”并回到列表页。
+    - 保存失败时提示“网络异常，请稍后重试”并保留用户输入。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-MyInfoPage
+  description: 我的信息页，支持只读展示与编辑保存，并包含基础校验规则。
+  properties:
+    - name: onSaved
+      type: function
+      description: "保存成功后的处理。"
+  state:
+    - mode
+    - profile
+    - form
+    - fieldErrors
+    - error
+    - isSaving
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-ReadUserProfile
+    - DB-UpdateUserProfile
+  acceptanceCriteria:
+    - 路由为 /user-center/my-info，并在左侧导航高亮“我的信息”。
+    - 支持从只读态切换到编辑态，点击“收起”回到只读态。
+    - 昵称必填且不超过 20 字符，姓名必填且不包含数字与特殊字符。
+    - 生日格式为 yyyy-MM-dd 且不得晚于当前日期。
+    - 保存失败时阻止退出编辑态并保留用户输入。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-OrdersListPage
+  description: 订单管理列表页，支持标签切换、类型筛选、分页、取消与下载。
+  properties:
+    - name: query
+      type: object
+      description: "查询参数：tab、productType、page。"
+  state:
+    - orders
+    - filteredOrders
+    - loading
+    - error
+    - selectedOrderIds
+  dependencies:
+    - UI-AuthSessionPersistence
+    - UI-UserCenterLeftNav
+    - DB-ReadEvoflowOrders
+    - DB-CancelOrder
+    - DB-SerializeOrdersForDownload
+  acceptanceCriteria:
+    - 路由为 /user-center/orders，并支持 query 参数 tab/productType/page。
+    - 待支付订单展示“去支付”入口并跳转 /booking/payment/:orderId。
+    - 待支付/未出行订单展示“取消”入口并在成功后更新展示状态。
+    - 数据加载失败时展示重试入口。
+    - 当分页越界时停留在最后一页或第一页且页面不崩溃。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-OrderDetailPage
+  description: 订单详情页，展示订单状态、旅客信息、联系信息、价格明细与操作区。
+  properties:
+    - name: orderId
+      type: string
+      description: "订单号（路由参数）。"
+  state:
+    - order
+    - error
+    - isLoading
+    - isCanceling
+    - priceBreakdownError
+  dependencies:
+    - UI-AuthSessionPersistence
+    - DB-FindOrderById
+    - DB-CancelOrder
+  acceptanceCriteria:
+    - 路由为 /user-center/orders/:orderId，且提供返回列表入口。
+    - 待支付或未出行状态下展示“取消订单”按钮，已取消状态不展示。
+    - 当订单不存在或无权限时提示“订单不存在或您没有权限查看”。
+    - 当明细合计不等于订单总额时提示“价格明细暂不可用，请稍后重试”。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"

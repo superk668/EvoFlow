@@ -248,8 +248,171 @@
     - DB-WriteEvoflowOrders
   acceptanceCriteria:
     - 根据 orderId 定位订单并更新 status 与必要的时间字段。
+    - 支持将订单状态更新为 canceled，并写入 canceledAt 与 updatedAt。
     - 当 orderId 不存在时返回明确错误。
     - 写入失败时返回明确错误且不应破坏原有订单数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+    - date: "2026-01-18"
+      description: "补充状态 canceled 以及取消时间字段约定。"
+
+- type: Database
+  id: DB-FindOrderById
+  description: 从共享订单存储中按 orderId 查找单个订单。
+  dependencies:
+    - DB-ReadEvoflowOrders
+  acceptanceCriteria:
+    - 当 orderId 存在时返回唯一订单记录。
+    - 当 orderId 不存在时返回空结果。
+    - 读取或解析失败时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CancelOrder
+  description: 取消订单并写入共享订单存储（将状态置为 canceled）。
+  dependencies:
+    - DB-FindOrderById
+    - DB-UpdateOrderStatus
+  acceptanceCriteria:
+    - 仅允许取消 status 为 pending_payment 或 pending_travel 的订单。
+    - 取消成功后订单 status 变为 canceled，并写入 canceledAt 与 updatedAt。
+    - 重复取消同一订单返回幂等成功并保持 canceled 状态。
+    - 当订单不存在时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ReadCommonTravelers
+  description: 从 localStorage 读取常用旅客信息列表（evoflow_common_travelers）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 读取并解析 localStorage.evoflow_common_travelers 为 JSON 数组。
+    - 当键不存在时返回空数组。
+    - 解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-WriteCommonTravelers
+  description: 将常用旅客信息列表写入 localStorage（evoflow_common_travelers）。
+  dependencies:
+    - DB-ReadCommonTravelers
+  acceptanceCriteria:
+    - 写入成功后常用旅客列表页可读取并展示。
+    - 写入失败时返回明确错误且不应破坏原有旅客数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-FindCommonTravelerById
+  description: 按 travelerId 查找单个常用旅客记录。
+  dependencies:
+    - DB-ReadCommonTravelers
+  acceptanceCriteria:
+    - 当 travelerId 存在时返回唯一旅客记录。
+    - 当 travelerId 不存在时返回空结果。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateCommonTraveler
+  description: 新增常用旅客记录并写入本地存储。
+  dependencies:
+    - DB-ReadCommonTravelers
+    - DB-WriteCommonTravelers
+  acceptanceCriteria:
+    - 成功新增后返回 travelerId，并在列表页可见。
+    - 记录字段至少包含 travelerId、isSelf、phoneNumber、idType、idNumber、nationality、gender。
+    - 当 isSelf 为 true 时，存储中应确保仅存在一条 isSelf=true 的记录（其余自动置为 false）。
+    - 写入失败时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateCommonTraveler
+  description: 更新常用旅客记录并写入本地存储。
+  dependencies:
+    - DB-FindCommonTravelerById
+    - DB-WriteCommonTravelers
+  acceptanceCriteria:
+    - 根据 travelerId 定位并更新旅客字段。
+    - 当 isSelf 被更新为 true 时，确保仅存在一条 isSelf=true 的记录（其余自动置为 false）。
+    - 当 travelerId 不存在时返回明确错误。
+    - 写入失败时返回明确错误且不应破坏原有旅客数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-DeleteCommonTraveler
+  description: 删除常用旅客记录并写入本地存储。
+  dependencies:
+    - DB-FindCommonTravelerById
+    - DB-WriteCommonTravelers
+  acceptanceCriteria:
+    - 当目标旅客 isSelf=true 时，删除应失败并返回“本人信息不可删除”。
+    - 当 travelerId 不存在时返回明确错误。
+    - 删除成功后列表页不再展示该记录。
+    - 写入失败时返回明确错误且保留原数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ReadUserProfile
+  description: 从 localStorage 读取用户个人信息（evoflow_user_profile）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 读取并解析 localStorage.evoflow_user_profile 为 JSON 对象。
+    - 当键不存在时返回空结果。
+    - 解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateUserProfile
+  description: 更新用户个人信息并写入 localStorage（evoflow_user_profile）。
+  dependencies:
+    - DB-ReadUserProfile
+  acceptanceCriteria:
+    - 支持更新昵称、姓名、性别、生日、邮箱等字段，并写入 updatedAt。
+    - 写入失败时返回明确错误且不应破坏原有个人信息。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-LoadUserCenterIndexModel
+  description: 加载个人中心“常用信息索引页”入口模型（用于渲染四个入口）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回入口列表，至少包含常用旅客信息、常用联系人、常用报销凭证、常用地址。
+    - 当加载失败或解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-SerializeOrdersForDownload
+  description: 将订单数据序列化为可下载的文本内容（CSV 或 JSON）。
+  dependencies:
+    - DB-ReadEvoflowOrders
+  acceptanceCriteria:
+    - 支持将订单数组序列化为可下载内容，并包含 orderId、productType、status、createdAt、departAt、totalAmount。
+    - 当数据读取或序列化失败时返回明确错误。
   changeLog:
     - date: "2026-01-18"
       description: "初始创建。"
