@@ -1,9 +1,0 @@
-{
-  "page": "BuyTicketStep1",
-  "sourceScreenshot": "manual_prompt/buy_ticket/web_constructor_step_1/buy_ticket_step1.png",
-  "focus": ["顶部步骤条", "乘机人区块", "联系人区块", "右侧机票信息汇总", "底部悬浮客服"],
-  "notes": [
-    "本轮仅实现静态布局与视觉样式，不含任何交互或数据请求。",
-    "图标与图片均使用内联 SVG 占位符，已在 image_mapping.json 记录尺寸与标识名。"
-  ]
-}

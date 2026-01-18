@@ -1,9 +1,0 @@
-{
-  "page": "PersonalCenterTravellerForm",
-  "sourceScreenshot": "manual_prompt/personal _information_center/web_constructor_step2/set_information.png",
-  "focus": ["新增常用旅客信息顶部灰条", "旅客信息表单区", "证件信息行", "常旅客卡入口", "保存/取消按钮"],
-  "notes": [
-    "本轮仅实现静态外观与布局，不包含任何交互或数据请求。",
-    "表单控件为静态占位块，仅用于还原视觉布局。"
-  ]
-}

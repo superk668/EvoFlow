@@ -1,9 +1,0 @@
-{
-  "page": "BuyTicketStep2",
-  "sourceScreenshot": "manual_prompt/buy_ticket/web_constructor_step_2/buy_ticket_step2.png",
-  "focus": ["顶部步骤条", "支付倒计时提示条", "乘机人/联系人概览卡", "为行程添加保障模块", "可享优惠/报销凭证/预订须知", "去支付按钮", "右侧机票信息汇总"],
-  "notes": [
-    "本轮仅实现静态布局与视觉样式，不含任何交互或数据请求。",
-    "图片与头像使用内联 SVG 占位符，已在 image_mapping.json 记录尺寸与标识名。"
-  ]
-}
