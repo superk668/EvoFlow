@@ -9,6 +9,64 @@ const sessionsByToken = new Map()
 const smsByKey = new Map()
 const registerTokens = new Map()
 
+function isoDateToday() {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
+function isIsoDateString(s) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(s))
+}
+
+function normalizeCityParam(v) {
+  return String(v ?? '').trim()
+}
+
+function buildMockFlights({ from, to, departDate }) {
+  const f = from.split('(')[0] || from
+  const t = to.split('(')[0] || to
+  const seedBase = `${from}|${to}|${departDate}`
+
+  function hashCode(str) {
+    let h = 0
+    for (let i = 0; i < str.length; i += 1) {
+      h = (h << 5) - h + str.charCodeAt(i)
+      h |= 0
+    }
+    return Math.abs(h)
+  }
+
+  const seed = hashCode(seedBase)
+  const airlines = ['东方航空', '中国联合航空', '春秋航空', '吉祥航空', '南方航空']
+  const aircrafts = ['A320', 'A321', 'B737', 'A319', 'B787']
+  const basePrice = 380 + (seed % 220)
+
+  const templates = [
+    { flightNo: 'MU5185', depTime: '21:05', arrTime: '23:20', depAirport: `${f}浦东国际机场T1`, arrAirport: `${t}首都国际机场T2` },
+    { flightNo: 'KN5987', depTime: '20:50', arrTime: '22:55', depAirport: `${f}大兴国际机场`, arrAirport: `${t}浦东国际机场T1` },
+    { flightNo: 'HO1253', depTime: '18:00', arrTime: '20:30', depAirport: `${f}浦东国际机场T2`, arrAirport: `${t}大兴国际机场` },
+  ]
+
+  const flights = templates.map((tpl, idx) => {
+    const price = basePrice + idx * 30
+    return {
+      airline: airlines[(seed + idx) % airlines.length],
+      flightNo: tpl.flightNo,
+      aircraft: aircrafts[(seed + idx * 3) % aircrafts.length],
+      depTime: tpl.depTime,
+      arrTime: tpl.arrTime,
+      depAirport: tpl.depAirport,
+      arrAirport: tpl.arrAirport,
+      price,
+    }
+  })
+
+  return flights
+}
+
 function nowMs() {
   return Date.now()
 }
@@ -352,6 +410,25 @@ async function handleGetAuthMe(req, res) {
   })
 }
 
+async function handleGetFlightsSearch(req, res, url) {
+  const from = normalizeCityParam(url.searchParams.get('from'))
+  const to = normalizeCityParam(url.searchParams.get('to'))
+  const departDate = normalizeCityParam(url.searchParams.get('departDate'))
+
+  if (!from || !to || !departDate) {
+    return json(res, 400, { error: 'Invalid input or format.' })
+  }
+  if (!isIsoDateString(departDate)) {
+    return json(res, 400, { error: 'Invalid input or format.' })
+  }
+  if (departDate < isoDateToday()) {
+    return json(res, 400, { error: 'Invalid input or format.' })
+  }
+
+  const flights = buildMockFlights({ from, to, departDate })
+  return json(res, 200, { flights })
+}
+
 async function handler(req, res) {
   setCorsHeaders(res)
 
@@ -367,6 +444,9 @@ async function handler(req, res) {
   }
 
   try {
+    if (req.method === 'GET' && path === '/api/flights/search') {
+      return await handleGetFlightsSearch(req, res, url)
+    }
     if (req.method === 'POST' && path === '/api/auth/login/password') {
       return await handlePostAuthLoginPassword(req, res)
     }
@@ -405,4 +485,3 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`)
 })
-

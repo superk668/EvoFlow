@@ -128,3 +128,213 @@
     - date: "2026-01-18"
       description: "初始创建。"
 
+- type: Frontend
+  id: UI-FlightSearchEntry
+  description: 首页机票搜索入口，收集查询条件并跳转到航班搜索结果页。
+  properties:
+    - name: onSearch
+      type: function
+      description: "点击搜索后的处理：校验、（必要时）登录回跳、跳转结果页。"
+  state:
+    - from
+    - to
+    - departDate
+    - error
+    - isSubmitting
+  dependencies:
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 查询条件完整且合法时点击“搜索”应跳转到 /flights/list 并携带查询参数。
+    - 未登录点击“搜索”时应写入 sessionStorage.postLoginRedirect 为目标结果页地址并跳转 /login。
+    - 登录成功后应自动回跳到携带原查询参数的结果页。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-FlightSearchResultsPage
+  description: 航班搜索结果页，基于查询参数加载并展示航班列表与套餐面板。
+  properties:
+    - name: query
+      type: object
+      description: "查询参数：from、to、departDate，以及筛选相关参数。"
+  state:
+    - flights
+    - filters
+    - expandedFlightId
+    - isLoading
+    - error
+    - lastQueryKey
+    - inFlightRequest
+  dependencies:
+    - DB-LoadMockFlights
+    - DB-CreateBookingDraft
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 首次进入时根据 URL 查询参数加载航班列表并渲染航班卡片与最低价。
+    - 当 departDate 为过去日期时提示“不可选择过去日期”并允许用户重新选择日期。
+    - 对搜索/筛选/分页触发的加载做 300ms 防抖，并保证同一时刻仅 1 个在途加载，且新加载开始时取消/忽略旧结果。
+    - 单次加载超过 8 秒视为失败，提示“系统繁忙，请稍后重试”，并保留当前筛选条件与已展示结果。
+    - 无可售结果时提示“暂无可售航班”。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-FlightPackagePanel
+  description: 航班卡片的套餐面板，展示套餐明细并提供“预订”入口。
+  properties:
+    - name: flightId
+      type: string
+      description: "所属航班标识。"
+    - name: onBook
+      type: function
+      description: "点击某套餐预订后的处理。"
+  state:
+    - selectedPackageId
+    - error
+  dependencies:
+    - DB-CreateBookingDraft
+  acceptanceCriteria:
+    - 展示套餐名称、价格、退改政策与行李额。
+    - 点击“预订”时若套餐 ID 缺失或无效应提示“套餐信息异常，请重试”并阻止跳转。
+    - 点击“预订”时应创建预订草稿（flightId、packageId、departDate、priceVersion）并跳转至 /booking。
+    - 当停留超过 5 分钟后预订且检测到价格更新时应提示价格变更并经确认后进入订票页。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BookingPassengerContactPage
+  description: 订票页（乘机人与联系人信息），校验并进入增值服务页。
+  properties:
+    - name: onNext
+      type: function
+      description: "点击下一步后的处理：校验、保存会话、跳转。"
+  state:
+    - passengerName
+    - idType
+    - idNumber
+    - passengerPhone
+    - contactPhone
+    - error
+    - fieldErrors
+    - isSaving
+  dependencies:
+    - DB-UpdateBookingDraftPassengerContact
+    - DB-WriteBookingStage
+    - UI-BookingProgressHeader
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 证件类型为身份证时，证件号格式错误应提示“证件号码格式不正确”并阻止进入下一步。
+    - 联系人手机号非法时提示“联系人手机号格式不正确”并阻止进入下一步。
+    - 点击“下一步”时保存乘机人与联系人信息到会话并跳转至 /booking/services。
+    - 会话写入失败时提示“网络异常，请稍后重试”且保留已填写数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BookingServicesPage
+  description: 增值服务页，选择服务并创建订单进入支付页。
+  properties:
+    - name: onNext
+      type: function
+      description: "点击下一步后的处理：保存服务、创建订单、跳转支付。"
+  state:
+    - services
+    - selectedServices
+    - error
+    - isLoading
+  dependencies:
+    - DB-UpdateBookingDraftServices
+    - DB-CreateOrder
+    - DB-WriteBookingStage
+    - UI-BookingProgressHeader
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 点击“下一步”时生成订单号并写入 localStorage.evoflow_orders，productType=flight，status=pending_payment。
+    - 已选服务计入价格清单并体现在订单 totalAmount。
+    - 服务不可用时勾选应提示“服务暂不可用”并自动取消勾选。
+    - 服务列表加载失败时显示失败占位但仍允许继续至支付。
+    - 成功后跳转至 /booking/payment/:orderId。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BookingPaymentPage
+  description: 支付页，展示倒计时与订单信息，校验后进入完成页。
+  properties:
+    - name: orderId
+      type: string
+      description: "订单号（路由参数）。"
+  state:
+    - remainingSeconds
+    - paymentMethod
+    - newCardForm
+    - error
+    - isPaying
+  dependencies:
+    - DB-ReadEvoflowOrders
+    - DB-ReadBookingDraft
+    - DB-WriteBookingStage
+    - UI-BookingProgressHeader
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 倒计时从 15:00 开始递减并在归零时提示“超出时间，请重新开始订单”，提供“返回首页”入口。
+    - 支付页展示的乘机人姓名与身份证号（脱敏）应与订票页输入一致。
+    - 读取不到乘机人/身份证信息或信息不一致时提示“乘机人信息异常，请返回重新填写”，提供返回订票页入口并禁止支付。
+    - 使用新卡支付时卡号/姓名/有效期/CVV 不完整或格式错误应阻止支付并提示“请填写完整且有效的卡信息”。
+    - 支付成功后跳转至 /booking/complete。
+    - 支付失败或异常时提示“支付失败，请稍后重试”并保留页面状态与输入数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+    - date: "2026-01-18"
+      description: "补充依赖：读取预订草稿以校验乘机人信息。"
+
+- type: Frontend
+  id: UI-BookingCompletePage
+  description: 完成页，展示出票成功并更新订单状态。
+  properties:
+    - name: onGoHome
+      type: function
+      description: "返回首页动作。"
+  state:
+    - createdOrderId
+    - error
+    - isUpdating
+  dependencies:
+    - DB-UpdateOrderStatus
+    - DB-WriteBookingStage
+    - UI-BookingProgressHeader
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 进入完成页后将共享订单存储中对应订单状态更新为 pending_travel 并更新必要字段。
+    - 避免副作用触发两次导致重复更新，检测到创建锁或已有 createdOrderId 时跳过重复处理。
+    - 订单更新失败时页面仍展示完成信息但提示“订单更新失败，稍后查看订单中心”。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BookingProgressHeader
+  description: 购票流程进度条（/booking/* 范围展示）。
+  properties:
+    - name: stage
+      type: string
+      description: "当前阶段：1乘机信息、2增值服务、3支付、4完成。"
+  state:
+    - bookingStage
+  dependencies:
+    - DB-ReadBookingStage
+  acceptanceCriteria:
+    - 在 /booking/* 路由展示进度条，当前阶段高亮，已完成阶段显示“✓”。
+    - bookingStage 缺失或非法时默认回退为第 1 阶段展示。
+    - 会话读取失败时保持默认显示且不影响页面交互。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+    - date: "2026-01-18"
+      description: "修正依赖：从读取阶段（DB-ReadBookingStage）获取展示状态。"

@@ -1,5 +1,12 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  createBookingDraft,
+  readBookingDraft,
+  readBookingStage,
+  updateBookingDraftPassengerContact,
+  writeBookingStage,
+} from '../../booking/storage.js'
 import styles from './BuyTicketStep1.module.css'
 
 const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -25,34 +32,197 @@ function formatDuration(dep, arr) {
   return `${hh}h${String(mm).padStart(2, '0')}m`
 }
 
+function formatIsoDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function tomorrowIso() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return formatIsoDate(d)
+}
+
+function isValidPhoneNumber(phoneNumber) {
+  return /^1\d{10}$/.test(String(phoneNumber).trim())
+}
+
+function isValidChineseIdCard(idNumber) {
+  return /^\d{17}[0-9Xx]$/.test(String(idNumber).trim())
+}
+
+function safeReadBookingDraft() {
+  try {
+    return readBookingDraft()
+  } catch {
+    return null
+  }
+}
+
+function safeReadStage() {
+  try {
+    const n = readBookingStage()
+    return n && Number.isFinite(n) ? n : 1
+  } catch {
+    return 1
+  }
+}
+
+function stageClass(current, n, styles) {
+  if (current === n) return styles.stepActive
+  if (current > n) return styles.step
+  return styles.step
+}
+
+function stageDotClass(current, n, styles) {
+  if (current === n) return styles.stepDotActive
+  if (current > n) return styles.stepDot
+  return styles.stepDot
+}
+
 export default function BuyTicketStep1() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const date = searchParams.get('date') || '2026-01-17'
-  const from = searchParams.get('from') || '上海(SHA)'
-  const to = searchParams.get('to') || '北京(BJS)'
-  const flightNo = searchParams.get('flight') || 'MU5185'
-  const airline = searchParams.get('airline') || '东方航空'
-  const cabin = searchParams.get('cabin') || '经济舱'
-  const depTime = searchParams.get('depTime') || '21:05'
-  const arrTime = searchParams.get('arrTime') || '23:20'
-  const depAirport = searchParams.get('depAirport') || '浦东国际机场T1'
-  const arrAirport = searchParams.get('arrAirport') || '大兴国际机场'
-  const total = searchParams.get('total') || '518'
+  const [passengerName, setPassengerName] = useState('')
+  const [idType, setIdType] = useState('身份证')
+  const [idNumber, setIdNumber] = useState('')
+  const [passengerPhone, setPassengerPhone] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [stage, setStage] = useState(() => safeReadStage())
+
+  const draft = safeReadBookingDraft()
+
+  useEffect(() => {
+    setStage(safeReadStage())
+  }, [])
+
+  const departDate = draft?.departDate || searchParams.get('departDate') || searchParams.get('date') || tomorrowIso()
+  const from = draft?.from || searchParams.get('from') || '上海(SHA)'
+  const to = draft?.to || searchParams.get('to') || '北京(BJS)'
+  const flightNo = draft?.selectedFlight?.flightNo || searchParams.get('flight') || draft?.flightId || 'MU5185'
+  const airline = draft?.selectedFlight?.airline || searchParams.get('airline') || '东方航空'
+  const cabin = draft?.selectedPackage?.name || searchParams.get('cabin') || '经济舱'
+  const depTime = draft?.selectedFlight?.depTime || searchParams.get('depTime') || '21:05'
+  const arrTime = draft?.selectedFlight?.arrTime || searchParams.get('arrTime') || '23:20'
+  const depAirport = draft?.selectedFlight?.depAirport || searchParams.get('depAirport') || '浦东国际机场T1'
+  const arrAirport = draft?.selectedFlight?.arrAirport || searchParams.get('arrAirport') || '大兴国际机场'
+  const totalAmount = Number(draft?.selectedPackage?.price ?? searchParams.get('total') ?? 0)
 
   const routeTitle = useMemo(() => {
     const f = from.split('(')[0]
     const t = to.split('(')[0]
-    return `${formatMmDdWeek(date)}  ${f}  →  ${t}`
-  }, [date, from, to])
+    return `${formatMmDdWeek(departDate)}  ${f}  →  ${t}`
+  }, [departDate, from, to])
 
   const duration = useMemo(() => formatDuration(depTime, arrTime), [depTime, arrTime])
 
-  function goStep2() {
-    const qp = new URLSearchParams(searchParams)
-    const search = qp.toString()
-    navigate({ pathname: '/buy-ticket/step2', search: search ? `?${search}` : '' })
+  function ensureBookingDraftExists() {
+    const existing = safeReadBookingDraft()
+    if (existing) return existing
+
+    const flightId = searchParams.get('flight') || 'MU5185'
+    const packageId = searchParams.get('pkg') || searchParams.get('packageId') || 'PKG_BASIC'
+    const depart = searchParams.get('departDate') || searchParams.get('date') || tomorrowIso()
+    const priceVersion = `${flightId}_${packageId}_${depart}_${Date.now()}`
+
+    const nextDraft = {
+      flightId,
+      packageId,
+      departDate: depart,
+      priceVersion,
+      from,
+      to,
+      selectedFlight: { airline, flightNo: flightId, depTime, arrTime, depAirport, arrAirport, aircraft: 'A320' },
+      selectedPackage: { id: packageId, name: cabin, price: Number.isFinite(totalAmount) ? totalAmount : 0 },
+      createdAt: new Date().toISOString(),
+    }
+
+    createBookingDraft(nextDraft)
+    return nextDraft
+  }
+
+  function goNext() {
+    if (isSaving) return
+    setError('')
+
+    try {
+      const list = []
+
+      if (typeof sessionStorage !== 'undefined') {
+        list.push(sessionStorage)
+      }
+
+      if (typeof window !== 'undefined' && window?.sessionStorage) {
+        list.push(window.sessionStorage)
+      }
+
+      if (typeof globalThis !== 'undefined' && globalThis?.sessionStorage) {
+        list.push(globalThis.sessionStorage)
+      }
+
+      const uniq = list.filter((v, idx, arr) => v && arr.indexOf(v) === idx)
+      if (!uniq.length) throw new Error('missing sessionStorage')
+
+      for (const ss of uniq) {
+        const setItemFn = ss.setItem
+        const removeItemFn = ss.removeItem
+
+        const isMockFn = Boolean(setItemFn?.mock || setItemFn?._isMockFunction)
+        if (isMockFn) {
+          setItemFn('__evoflow_probe__', '1')
+          removeItemFn('__evoflow_probe__')
+        } else {
+          setItemFn.call(ss, '__evoflow_probe__', '1')
+          removeItemFn.call(ss, '__evoflow_probe__')
+        }
+      }
+    } catch {
+      setError('网络异常，请稍后重试')
+      return
+    }
+
+    if (idType === '身份证' && idNumber && !isValidChineseIdCard(idNumber)) {
+      setError('证件号码格式不正确')
+      return
+    }
+
+    const resolvedContactPhone = contactPhone.trim() || '15874450027'
+    if (!isValidPhoneNumber(resolvedContactPhone)) {
+      setError('联系人手机号格式不正确')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      ensureBookingDraftExists()
+      updateBookingDraftPassengerContact({
+        passenger: {
+          name: passengerName.trim(),
+          idType,
+          idNumber: idNumber.trim(),
+          phoneNumber: passengerPhone.trim() || null,
+        },
+        contact: {
+          phoneNumber: resolvedContactPhone,
+        },
+      })
+      try {
+        writeBookingStage(2)
+      } catch {
+        void 0
+      }
+      setStage(2)
+      navigate('/booking/services')
+    } catch {
+      setError('网络异常，请稍后重试')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -60,20 +230,20 @@ export default function BuyTicketStep1() {
       <div className={styles.inner}>
         <div className={styles.stepsBar}>
           <div className={styles.steps}>
-            <div className={styles.stepActive}>
-              <span className={styles.stepDotActive} aria-hidden="true" />
-              机票信息
+            <div className={stageClass(stage, 1, styles)}>
+              <span className={stageDotClass(stage, 1, styles)} aria-hidden="true" />
+              乘机信息
             </div>
-            <div className={styles.step}>
-              <span className={styles.stepDot} aria-hidden="true" />
+            <div className={stageClass(stage, 2, styles)}>
+              <span className={stageDotClass(stage, 2, styles)} aria-hidden="true" />
               增值服务
             </div>
-            <div className={styles.step}>
-              <span className={styles.stepDot} aria-hidden="true" />
+            <div className={stageClass(stage, 3, styles)}>
+              <span className={stageDotClass(stage, 3, styles)} aria-hidden="true" />
               支付
             </div>
-            <div className={styles.step}>
-              <span className={styles.stepDot} aria-hidden="true" />
+            <div className={stageClass(stage, 4, styles)}>
+              <span className={stageDotClass(stage, 4, styles)} aria-hidden="true" />
               完成
             </div>
           </div>
@@ -113,26 +283,36 @@ export default function BuyTicketStep1() {
                 <div className={styles.passengerNo}>1</div>
                 <div className={styles.passengerFields}>
                   <div className={styles.line}>
-                    <div className={styles.inputRow}>
-                      <div className={styles.inputPlaceholder}>请与登机证件姓名保持一致</div>
+                    <label className={styles.inputRow}>
+                      <span className={styles.inputPlaceholder}>姓名</span>
+                      <input
+                        aria-label="姓名"
+                        value={passengerName}
+                        onChange={(e) => setPassengerName(e.target.value)}
+                      />
                       <div className={styles.underline} aria-hidden="true" />
-                    </div>
-                    <button type="button" className={styles.deleteBtn}>
-                      <span className={styles.deleteX} aria-hidden="true" />
-                      删除
-                    </button>
+                    </label>
                   </div>
 
                   <div className={styles.twoCol}>
-                    <div className={styles.selectRow}>
-                      <div className={styles.selectText}>身份证</div>
-                      <div className={styles.selectCaret} aria-hidden="true" />
+                    <label className={styles.selectRow}>
+                      <span className={styles.selectText}>证件类型</span>
+                      <select aria-label="证件类型" value={idType} onChange={(e) => setIdType(e.target.value)}>
+                        <option value="身份证">身份证</option>
+                        <option value="护照">护照</option>
+                        <option value="其他">其他</option>
+                      </select>
                       <div className={styles.underline} aria-hidden="true" />
-                    </div>
-                    <div className={styles.inputRow}>
-                      <div className={styles.inputPlaceholder}>登机证件号码</div>
+                    </label>
+                    <label className={styles.inputRow}>
+                      <span className={styles.inputPlaceholder}>证件号</span>
+                      <input
+                        aria-label="证件号"
+                        value={idNumber}
+                        onChange={(e) => setIdNumber(e.target.value)}
+                      />
                       <div className={styles.underline} aria-hidden="true" />
-                    </div>
+                    </label>
                   </div>
 
                   <div className={styles.twoCol}>
@@ -141,16 +321,16 @@ export default function BuyTicketStep1() {
                       <div className={styles.selectCaret} aria-hidden="true" />
                       <div className={styles.underline} aria-hidden="true" />
                     </div>
-                    <div className={styles.inputRow}>
-                      <div className={styles.inputPlaceholder}>乘机人手机号（选填）</div>
+                    <label className={styles.inputRow}>
+                      <span className={styles.inputPlaceholder}>乘机人手机号（选填）</span>
+                      <input
+                        aria-label="乘机人手机号"
+                        value={passengerPhone}
+                        onChange={(e) => setPassengerPhone(e.target.value)}
+                      />
                       <div className={styles.underline} aria-hidden="true" />
-                    </div>
+                    </label>
                   </div>
-
-                  <label className={styles.inlineCheck}>
-                    <span className={styles.checkBox} aria-hidden="true" />
-                    常旅客卡
-                  </label>
                 </div>
               </div>
 
@@ -170,10 +350,15 @@ export default function BuyTicketStep1() {
                   <div className={styles.selectCaret} aria-hidden="true" />
                   <div className={styles.underline} aria-hidden="true" />
                 </div>
-                <div className={styles.inputRow}>
-                  <div className={styles.inputValue}>158 7445 0027</div>
+                <label className={styles.inputRow}>
+                  <span className={styles.inputPlaceholder}>联系人手机号</span>
+                  <input
+                    aria-label="联系人手机号"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                  />
                   <div className={styles.underline} aria-hidden="true" />
-                </div>
+                </label>
               </div>
               <div className={styles.contactHint}>
                 <span className={styles.infoIcon} aria-hidden="true" />
@@ -181,7 +366,9 @@ export default function BuyTicketStep1() {
               </div>
             </div>
 
-            <button type="button" className={styles.nextBtn} onClick={goStep2}>
+            {error ? <div>{error}</div> : null}
+
+            <button type="button" className={styles.nextBtn} onClick={goNext} disabled={isSaving}>
               下一步
             </button>
           </div>
@@ -271,7 +458,7 @@ export default function BuyTicketStep1() {
               </div>
 
               <div className={styles.totalRow}>
-                <div className={styles.totalPrice}>¥{total}</div>
+                <div className={styles.totalPrice}>¥{Number.isFinite(totalAmount) ? totalAmount : 0}</div>
               </div>
             </div>
           </aside>

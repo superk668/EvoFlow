@@ -1,5 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  createOrder,
+  readBookingDraft,
+  updateBookingDraftServices,
+  writeBookingStage,
+} from '../../booking/storage.js'
 import styles from './BuyTicketStep2.module.css'
 
 const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -30,17 +36,56 @@ export default function BuyTicketStep2() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const date = searchParams.get('date') || '2026-01-17'
-  const from = searchParams.get('from') || '上海(SHA)'
-  const to = searchParams.get('to') || '北京(BJS)'
-  const flightNo = searchParams.get('flight') || 'KN5987'
-  const airline = searchParams.get('airline') || '中国联合航空'
-  const cabin = searchParams.get('cabin') || '经济舱'
-  const depTime = searchParams.get('depTime') || '20:50'
-  const arrTime = searchParams.get('arrTime') || '22:55'
-  const depAirport = searchParams.get('depAirport') || '大兴国际机场'
-  const arrAirport = searchParams.get('arrAirport') || '浦东国际机场T1'
-  const total = searchParams.get('total') || '528'
+  const [selected, setSelected] = useState(() => new Set())
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const draft = (() => {
+    try {
+      return readBookingDraft()
+    } catch {
+      return null
+    }
+  })()
+
+  const date = draft?.departDate || searchParams.get('departDate') || searchParams.get('date') || '2099-01-01'
+  const from = draft?.from || searchParams.get('from') || '上海(SHA)'
+  const to = draft?.to || searchParams.get('to') || '北京(BJS)'
+  const flightNo = draft?.selectedFlight?.flightNo || searchParams.get('flight') || 'KN5987'
+  const airline = draft?.selectedFlight?.airline || searchParams.get('airline') || '中国联合航空'
+  const cabin = draft?.selectedPackage?.name || searchParams.get('cabin') || '经济舱'
+  const depTime = draft?.selectedFlight?.depTime || searchParams.get('depTime') || '20:50'
+  const arrTime = draft?.selectedFlight?.arrTime || searchParams.get('arrTime') || '22:55'
+  const depAirport = draft?.selectedFlight?.depAirport || searchParams.get('depAirport') || '大兴国际机场'
+  const arrAirport = draft?.selectedFlight?.arrAirport || searchParams.get('arrAirport') || '浦东国际机场T1'
+
+  const services = useMemo(
+    () => [
+      { id: 'combo', name: '航意航延组合险', price: 40, available: true },
+      { id: 'accident', name: '航空意外险', price: 39, available: false },
+      { id: 'travel', name: '国内旅行险', price: 75, available: true },
+    ],
+    [],
+  )
+
+  const baseFare = Number(draft?.selectedPackage?.price ?? searchParams.get('total') ?? 0)
+  const servicesTotal = useMemo(() => {
+    let sum = 0
+    for (const s of services) {
+      if (selected.has(s.id)) sum += s.price
+    }
+    return sum
+  }, [selected, services])
+
+  const total = Number.isFinite(baseFare) ? baseFare + servicesTotal : servicesTotal
+
+  useEffect(() => {
+    try {
+      void writeBookingStage(2)
+    } catch {
+      void 0
+    }
+  }, [])
 
   const routeTitle = useMemo(() => {
     const f = from.split('(')[0]
@@ -50,10 +95,66 @@ export default function BuyTicketStep2() {
 
   const duration = useMemo(() => formatDuration(depTime, arrTime), [depTime, arrTime])
 
-  function goPay() {
-    const qp = new URLSearchParams(searchParams)
-    const search = qp.toString()
-    navigate({ pathname: '/buy-ticket/step3', search: search ? `?${search}` : '' })
+  function toggleService(id) {
+    const row = services.find((s) => s.id === id)
+    if (!row) return
+    if (!row.available) {
+      setError('服务暂不可用')
+      setSelected((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+      return
+    }
+
+    setError('')
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function goPay() {
+    if (isLoading) return
+    setError('')
+    setIsLoading(true)
+    try {
+      const currentDraft = (() => {
+        try {
+          return readBookingDraft()
+        } catch {
+          return null
+        }
+      })()
+      if (!currentDraft) throw new Error('missing draft')
+
+      const chosen = services.filter((s) => selected.has(s.id)).map((s) => ({ id: s.id, name: s.name, price: s.price }))
+      await updateBookingDraftServices({ services: { chosen } })
+
+      const order = await createOrder({
+        departAt: currentDraft.departDate,
+        totalAmount: total,
+        details: {
+          flightId: currentDraft.flightId,
+          packageId: currentDraft.packageId,
+          chosenServices: chosen,
+        },
+      })
+
+      try {
+        await writeBookingStage(3)
+      } catch {
+        void 0
+      }
+      navigate(`/booking/payment/${order.orderId}`)
+    } catch {
+      setError('网络异常，请稍后重试')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -101,7 +202,7 @@ export default function BuyTicketStep2() {
                 <div className={styles.contactTag}>联系人</div>
                 <div className={styles.contactValue}>(+86)18879586080</div>
               </div>
-              <Link className={styles.backModify} to={{ pathname: '/buy-ticket/step1', search: location.search }}>
+              <Link className={styles.backModify} to={{ pathname: '/booking', search: location.search }}>
                 返回修改
               </Link>
             </div>
@@ -125,8 +226,8 @@ export default function BuyTicketStep2() {
                       <div className={styles.servicePrice}>¥40/人</div>
                       <div className={styles.caretDown} aria-hidden="true" />
                     </div>
-                    <button type="button" className={styles.addBtnActive}>
-                      添加保障
+                    <button type="button" className={styles.addBtnActive} onClick={() => toggleService('combo')}>
+                      {selected.has('combo') ? '已添加' : '添加保障'}
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
                   </div>
@@ -154,8 +255,8 @@ export default function BuyTicketStep2() {
                     <div className={styles.serviceRowLabel}>标准保障</div>
                     <div className={styles.serviceRowPrice}>¥39/人</div>
                     <div className={styles.caretDownSmall} aria-hidden="true" />
-                    <button type="button" className={styles.addBtn}>
-                      添加保障
+                    <button type="button" className={styles.addBtn} onClick={() => toggleService('accident')}>
+                      {selected.has('accident') ? '已添加' : '添加保障'}
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
                   </div>
@@ -169,8 +270,8 @@ export default function BuyTicketStep2() {
                     <div className={styles.serviceRowLabel}>保2天</div>
                     <div className={styles.serviceRowPrice}>¥75/人</div>
                     <div className={styles.caretDownSmall} aria-hidden="true" />
-                    <button type="button" className={styles.addBtn}>
-                      添加保障
+                    <button type="button" className={styles.addBtn} onClick={() => toggleService('travel')}>
+                      {selected.has('travel') ? '已添加' : '添加保障'}
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
                   </div>
@@ -221,7 +322,9 @@ export default function BuyTicketStep2() {
                 </label>
               </div>
 
-              <button type="button" className={styles.payBtn} onClick={goPay}>
+              {error ? <div>{error}</div> : null}
+
+              <button type="button" className={styles.payBtn} onClick={goPay} disabled={isLoading}>
                 去支付
               </button>
             </div>

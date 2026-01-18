@@ -1,5 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  readBookingDraft,
+  readEvoflowOrders,
+  updateOrderStatus,
+  writeBookingStage,
+} from '../../booking/storage.js'
 import styles from './BuyTicketStep4.module.css'
 
 function formatMoney(value) {
@@ -13,13 +19,73 @@ export default function BuyTicketStep4() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const from = searchParams.get('from') || '上海(SHA)'
-  const to = searchParams.get('to') || '北京(BJS)'
-  const depAirport = searchParams.get('depAirport') || '虹桥'
-  const arrAirport = searchParams.get('arrAirport') || '首都'
-  const depTime = searchParams.get('depTime') || '17:51'
-  const arrTime = searchParams.get('arrTime') || '20:19'
-  const total = searchParams.get('total') || '581'
+  const [error, setError] = useState('')
+  const [createdOrderId, setCreatedOrderId] = useState(() => {
+    try {
+      return sessionStorage.getItem('createdOrderId')
+    } catch {
+      return null
+    }
+  })
+  const updatingRef = useRef(false)
+
+  const orderId = searchParams.get('orderId') || ''
+  const draft = useMemo(() => {
+    try {
+      return readBookingDraft()
+    } catch {
+      return null
+    }
+  }, [])
+
+  const order = useMemo(() => {
+    try {
+      const orders = readEvoflowOrders()
+      return orders.find((o) => String(o?.orderId) === String(orderId)) || null
+    } catch {
+      return null
+    }
+  }, [orderId])
+
+  useEffect(() => {
+    try {
+      void writeBookingStage(4)
+    } catch {
+      void 0
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!orderId) return
+    if (createdOrderId && String(createdOrderId) === String(orderId)) return
+    if (updatingRef.current) return
+
+    updatingRef.current = true
+
+    ;(async () => {
+      try {
+        await updateOrderStatus(orderId, 'pending_travel')
+        try {
+          sessionStorage.setItem('createdOrderId', String(orderId))
+        } catch {
+          void 0
+        }
+        setCreatedOrderId(String(orderId))
+      } catch {
+        setError('订单更新失败，稍后查看订单中心')
+      } finally {
+        updatingRef.current = false
+      }
+    })()
+  }, [createdOrderId, orderId])
+
+  const from = draft?.from || searchParams.get('from') || '上海(SHA)'
+  const to = draft?.to || searchParams.get('to') || '北京(BJS)'
+  const depAirport = draft?.selectedFlight?.depAirport || searchParams.get('depAirport') || '虹桥'
+  const arrAirport = draft?.selectedFlight?.arrAirport || searchParams.get('arrAirport') || '首都'
+  const depTime = draft?.selectedFlight?.depTime || searchParams.get('depTime') || '17:51'
+  const arrTime = draft?.selectedFlight?.arrTime || searchParams.get('arrTime') || '20:19'
+  const total = order?.totalAmount ?? searchParams.get('total') ?? '581'
 
   const fromCity = useMemo(() => from.split('(')[0], [from])
   const toCity = useMemo(() => to.split('(')[0], [to])
@@ -91,9 +157,10 @@ export default function BuyTicketStep4() {
               <div className={styles.airport}>{arrAirport}</div>
             </div>
           </div>
-
-          <div className={styles.personLine}>乘机人：姚欣奕 身份证 430802 2005 1018 1212</div>
-          <div className={styles.personLine}>联系人：(+86)15874450027</div>
+          <div className={styles.personLine}>
+            乘机人：{draft?.passenger?.name || '—'} {draft?.passenger?.idType || ''} {draft?.passenger?.idNumber || ''}
+          </div>
+          <div className={styles.personLine}>联系人：{draft?.contact?.phoneNumber || '—'}</div>
 
           <div className={styles.list}>
             <div className={styles.row}>
@@ -131,6 +198,7 @@ export default function BuyTicketStep4() {
         </div>
 
         <div className={styles.success}>成功出票</div>
+        {error ? <div>{error}</div> : null}
         <button type="button" className={styles.backBtn} onClick={goHome}>
           返回首页
         </button>
@@ -138,4 +206,3 @@ export default function BuyTicketStep4() {
     </div>
   )
 }
-

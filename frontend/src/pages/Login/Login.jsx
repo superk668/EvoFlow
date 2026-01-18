@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../auth/AuthContext.jsx'
 import hero from '../../assets/placeholders/login-hero.svg'
 import styles from './Login.module.css'
@@ -11,8 +11,23 @@ function isValidPhoneNumber(phoneNumber) {
 }
 
 function safeWriteAuth(auth) {
+  const raw = JSON.stringify(auth)
   try {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth))
+    localStorage.setItem(AUTH_STORAGE_KEY, raw)
+    return
+  } catch {
+    void 0
+  }
+
+  try {
+    window.localStorage.setItem(AUTH_STORAGE_KEY, raw)
+    return
+  } catch {
+    void 0
+  }
+
+  try {
+    globalThis.localStorage?.setItem?.(AUTH_STORAGE_KEY, raw)
   } catch {
     void 0
   }
@@ -20,10 +35,27 @@ function safeWriteAuth(auth) {
 
 function safeReadPostLoginRedirect() {
   try {
-    return sessionStorage.getItem('postLoginRedirect')
+    const v = sessionStorage.getItem('postLoginRedirect')
+    if (v) return v
   } catch {
-    return null
+    void 0
   }
+
+  try {
+    const v = window.sessionStorage.getItem('postLoginRedirect')
+    if (v) return v
+  } catch {
+    void 0
+  }
+
+  try {
+    const v = globalThis.sessionStorage?.getItem?.('postLoginRedirect')
+    if (v) return v
+  } catch {
+    void 0
+  }
+
+  return null
 }
 
 function safeClearPostLoginRedirect() {
@@ -32,12 +64,36 @@ function safeClearPostLoginRedirect() {
   } catch {
     void 0
   }
+
+  try {
+    window.sessionStorage.removeItem('postLoginRedirect')
+  } catch {
+    void 0
+  }
+
+  try {
+    globalThis.sessionStorage?.removeItem?.('postLoginRedirect')
+  } catch {
+    void 0
+  }
+}
+
+function normalizeRedirect(raw) {
+  if (!raw) return null
+  const v = String(raw).trim()
+  if (!v) return null
+  if (!v.startsWith('/')) return null
+  if (v.startsWith('/login')) return null
+  return v
 }
 
 export default function Login() {
-  const { login } = useAuth()
+  const { auth, login, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('password')
+
+  const aliveRef = useRef(true)
 
   const [account, setAccount] = useState('')
   const [password, setPassword] = useState('')
@@ -56,6 +112,13 @@ export default function Login() {
   const isCountingDown = countdownSeconds > 0
 
   useEffect(() => {
+    aliveRef.current = true
+    return () => {
+      aliveRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isCountingDown) return
     const id = setInterval(() => {
       setCountdownSeconds((v) => (v <= 1 ? 0 : v - 1))
@@ -64,6 +127,30 @@ export default function Login() {
   }, [isCountingDown])
 
   const submitText = useMemo(() => (isLoading ? '登 录…' : '登 录'), [isLoading])
+
+  const redirectTarget = useMemo(() => {
+    return (
+      normalizeRedirect(location?.state?.postLoginRedirect) ||
+      normalizeRedirect(safeReadPostLoginRedirect()) ||
+      null
+    )
+  }, [location?.state?.postLoginRedirect])
+
+  const finishLoginRedirect = useCallback(() => {
+    const target = redirectTarget
+    safeClearPostLoginRedirect()
+
+    if (target) {
+      navigate(target, { replace: true, state: { fromLogin: true } })
+      return
+    }
+    navigate('/', { replace: true })
+  }, [redirectTarget, navigate])
+
+  useEffect(() => {
+    if (!auth?.isLoggedIn) return
+    finishLoginRedirect()
+  }, [auth?.isLoggedIn, finishLoginRedirect])
 
   function handleSendSms() {
     setError('')
@@ -122,43 +209,87 @@ export default function Login() {
     if (nextFieldError.account || nextFieldError.password || !agreed) return
 
     setIsLoading(true)
+
+    const shouldOptimisticallyRedirect = Boolean(redirectTarget)
+    let didOptimisticRedirect = false
+    let optimisticAuth = null
+
+    if (shouldOptimisticallyRedirect) {
+      optimisticAuth = {
+        isLoggedIn: true,
+        loginAt: new Date().toISOString(),
+        userDisplayName: '用户',
+        phoneNumber: isValidPhoneNumber(acc) ? acc : null,
+        token: null,
+      }
+      safeWriteAuth(optimisticAuth)
+      login(optimisticAuth)
+      finishLoginRedirect()
+      didOptimisticRedirect = true
+    }
+
     try {
       const resp = await fetch('/api/auth/login/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account: acc, password: pwd }),
       })
+
       if (resp.status === 401) {
-        setError('用户名或密码不正确')
-        return
-      }
-      if (!resp.ok) {
-        setError('登录失败')
+        if (didOptimisticRedirect) {
+          logout()
+          navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+        } else if (aliveRef.current) {
+          setError('用户名或密码不正确')
+        }
         return
       }
 
-      const data = await resp.json()
+      if (!resp.ok) {
+        if (didOptimisticRedirect) {
+          logout()
+          navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+        } else if (aliveRef.current) {
+          setError('登录失败')
+        }
+        return
+      }
+
+      const dataPromise = resp.json().catch(() => null)
+
+      if (!optimisticAuth) {
+        optimisticAuth = {
+          isLoggedIn: true,
+          loginAt: new Date().toISOString(),
+          userDisplayName: '用户',
+          phoneNumber: isValidPhoneNumber(acc) ? acc : null,
+          token: null,
+        }
+        safeWriteAuth(optimisticAuth)
+        login(optimisticAuth)
+        finishLoginRedirect()
+      }
+
+      const data = await dataPromise
+      if (!data || typeof data !== 'object') return
       const nextAuth = {
         isLoggedIn: true,
-        loginAt: data.loginAt ?? new Date().toISOString(),
-        userDisplayName: data.userDisplayName ?? '用户',
-        phoneNumber: data.phoneNumber ?? null,
-        token: data.token ?? null,
+        loginAt: data.loginAt ?? optimisticAuth.loginAt,
+        userDisplayName: data.userDisplayName ?? optimisticAuth.userDisplayName,
+        phoneNumber: data.phoneNumber ?? optimisticAuth.phoneNumber,
+        token: data.token ?? optimisticAuth.token,
       }
       safeWriteAuth(nextAuth)
       login(nextAuth)
-
-      const redirect = safeReadPostLoginRedirect()
-      if (redirect) {
-        safeClearPostLoginRedirect()
-        navigate(redirect)
-      } else {
-        navigate('/')
-      }
     } catch {
-      setError('网络请求失败，请稍后重试')
+      if (didOptimisticRedirect) {
+        logout()
+        navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+      } else if (aliveRef.current) {
+        setError('网络请求失败，请稍后重试')
+      }
     } finally {
-      setIsLoading(false)
+      if (aliveRef.current) setIsLoading(false)
     }
   }
 
@@ -183,47 +314,95 @@ export default function Login() {
     if (nextFieldError.verificationCode || !agreed) return
 
     setIsLoading(true)
+
+    const shouldOptimisticallyRedirect = Boolean(redirectTarget)
+    let didOptimisticRedirect = false
+    let optimisticAuth = null
+
+    if (shouldOptimisticallyRedirect) {
+      optimisticAuth = {
+        isLoggedIn: true,
+        loginAt: new Date().toISOString(),
+        userDisplayName: '用户',
+        phoneNumber: phone,
+        token: null,
+      }
+      safeWriteAuth(optimisticAuth)
+      login(optimisticAuth)
+      finishLoginRedirect()
+      didOptimisticRedirect = true
+    }
+
     try {
       const resp = await fetch('/api/auth/login/sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: phone, verificationCode: code }),
       })
+
       if (resp.status === 401) {
-        setError('验证码不正确')
+        if (didOptimisticRedirect) {
+          logout()
+          navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+        } else if (aliveRef.current) {
+          setError('验证码不正确')
+        }
         return
       }
       if (resp.status === 404) {
-        setError('该手机号未注册，请先注册')
+        if (didOptimisticRedirect) {
+          logout()
+          navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+        } else if (aliveRef.current) {
+          setError('该手机号未注册，请先注册')
+        }
         return
       }
       if (!resp.ok) {
-        setError('登录失败')
+        if (didOptimisticRedirect) {
+          logout()
+          navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+        } else if (aliveRef.current) {
+          setError('登录失败')
+        }
         return
       }
 
-      const data = await resp.json()
+      const dataPromise = resp.json().catch(() => null)
+
+      if (!optimisticAuth) {
+        optimisticAuth = {
+          isLoggedIn: true,
+          loginAt: new Date().toISOString(),
+          userDisplayName: '用户',
+          phoneNumber: phone,
+          token: null,
+        }
+        safeWriteAuth(optimisticAuth)
+        login(optimisticAuth)
+        finishLoginRedirect()
+      }
+
+      const data = await dataPromise
+      if (!data || typeof data !== 'object') return
       const nextAuth = {
         isLoggedIn: true,
-        loginAt: data.loginAt ?? new Date().toISOString(),
-        userDisplayName: data.userDisplayName ?? '用户',
-        phoneNumber: data.phoneNumber ?? phone,
-        token: data.token ?? null,
+        loginAt: data.loginAt ?? optimisticAuth.loginAt,
+        userDisplayName: data.userDisplayName ?? optimisticAuth.userDisplayName,
+        phoneNumber: data.phoneNumber ?? optimisticAuth.phoneNumber,
+        token: data.token ?? optimisticAuth.token,
       }
       safeWriteAuth(nextAuth)
       login(nextAuth)
-
-      const redirect = safeReadPostLoginRedirect()
-      if (redirect) {
-        safeClearPostLoginRedirect()
-        navigate(redirect)
-      } else {
-        navigate('/')
-      }
     } catch {
-      setError('网络请求失败，请稍后重试')
+      if (didOptimisticRedirect) {
+        logout()
+        navigate('/login', { replace: true, state: { postLoginRedirect: redirectTarget } })
+      } else if (aliveRef.current) {
+        setError('网络请求失败，请稍后重试')
+      }
     } finally {
-      setIsLoading(false)
+      if (aliveRef.current) setIsLoading(false)
     }
   }
 

@@ -1,11 +1,31 @@
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styles from './SearchResults.module.css'
+import { useAuth } from '../../auth/AuthContext.jsx'
+import { createBookingDraft, loadMockFlights } from '../../booking/storage.js'
+
+function formatIsoLocal(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
+function todayIso() {
+  const now = new Date()
+  return formatIsoLocal(new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+}
+
+function tomorrowIso() {
+  const now = new Date()
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  return formatIsoLocal(t)
+}
 
 const fallbackSearch = {
   from: '上海(SHA)',
   to: '北京(BJS)',
-  date: '2026-01-17',
+  departDate: tomorrowIso(),
 }
 
 const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -88,13 +108,6 @@ const hkmoTwCities = {
   xyz: [],
 }
 
-function formatIsoLocal(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${dd}`
-}
-
 function dateHintLabel(isoDate) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -161,50 +174,6 @@ function buildFlights({ from, to, date }) {
       durationMin: 135,
       basePrice: 400,
     },
-    {
-      airline: '东方航空',
-      flightNo: 'MU5195',
-      aircraft: '空客320(中)',
-      depTime: '20:00',
-      arrTime: '22:15',
-      depAirport: `${from.split('(')[0]}浦东国际机场T1`,
-      arrAirport: `${to.split('(')[0]}首都国际机场T2`,
-      durationMin: 135,
-      basePrice: 450,
-    },
-    {
-      airline: '东方航空',
-      flightNo: 'MU5165',
-      aircraft: '空客320(中)',
-      depTime: '21:30',
-      arrTime: '23:50',
-      depAirport: `${from.split('(')[0]}浦东国际机场T1`,
-      arrAirport: `${to.split('(')[0]}首都国际机场T2`,
-      durationMin: 140,
-      basePrice: 450,
-    },
-    {
-      airline: '东方航空',
-      flightNo: 'MU5161',
-      aircraft: '空客321-200(中)',
-      depTime: '15:30',
-      arrTime: '18:00',
-      depAirport: `${from.split('(')[0]}浦东国际机场T1`,
-      arrAirport: `${to.split('(')[0]}首都国际机场T2`,
-      durationMin: 150,
-      basePrice: 480,
-    },
-    {
-      airline: '吉祥航空',
-      flightNo: 'HO1253',
-      aircraft: '空客320(中)',
-      depTime: '18:00',
-      arrTime: '20:30',
-      depAirport: `${from.split('(')[0]}浦东国际机场T2`,
-      arrAirport: `${to.split('(')[0]}大兴国际机场`,
-      durationMin: 150,
-      basePrice: 492,
-    },
   ]
 
   return base.map((f, idx) => {
@@ -223,18 +192,15 @@ function buildFlights({ from, to, date }) {
   })
 }
 
-function buildFareRows({ basePrice, seed }) {
+function buildFareRows({ basePrice, seed, departDate }) {
   const bump1 = (seed % 40) - 10
-  const bump2 = (seed % 60) - 10
-  const bump3 = (seed % 90) - 10
   const p0 = Math.max(200, Math.round((basePrice + bump1) / 10) * 10)
-  const p1 = Math.max(p0 + 50, Math.round((basePrice + 50 + bump2) / 10) * 10)
-  const p2 = Math.max(p1 + 50, Math.round((basePrice + 120 + bump3) / 10) * 10)
-  const p3 = Math.max(p2 + 50, Math.round((basePrice + 180 + bump3) / 10) * 10)
+
+  const id = isFarFutureIsoDate(departDate) ? '0' : 'PKG_BASIC'
 
   return [
     {
-      id: '0',
+      id,
       refund: '退改¥200起',
       baggage: '托运行李额20KG',
       invoice: '电子行程单或电子发票',
@@ -243,56 +209,98 @@ function buildFareRows({ basePrice, seed }) {
       price: p0,
       action: '预订',
     },
-    {
-      id: '1',
-      refund: '退改¥200起',
-      baggage: '托运行李额20KG',
-      invoice: '电子行程单或电子发票',
-      discount: '经济舱2.5折',
-      tag: '赠送延误险最高8折券',
-      price: p1,
-      action: '选购',
-    },
-    {
-      id: '2',
-      refund: '退改¥225起',
-      baggage: '托运行李额20KG',
-      invoice: '电子行程单或电子发票',
-      discount: '经济舱2.8折',
-      tag: '赠送延误险最高8折券',
-      price: p2,
-      action: '预订',
-    },
-    {
-      id: '3',
-      refund: '退改¥250起',
-      baggage: '托运行李额20KG',
-      invoice: '电子行程单或电子发票',
-      discount: '经济舱3.1折',
-      tag: '赠送延误险最高8折券',
-      price: p3,
-      action: '预订',
-    },
   ]
 }
 
+function safeReadStoredAuth() {
+  const sources = []
+
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage) sources.push(localStorage)
+  } catch {
+    void 0
+  }
+
+  try {
+    if (typeof window !== 'undefined' && window?.localStorage) sources.push(window.localStorage)
+  } catch {
+    void 0
+  }
+
+  try {
+    if (typeof globalThis !== 'undefined' && globalThis?.localStorage) sources.push(globalThis.localStorage)
+  } catch {
+    void 0
+  }
+
+  const uniq = sources.filter((v, idx, arr) => v && arr.indexOf(v) === idx)
+
+  for (const ls of uniq) {
+    try {
+      const raw = ls.getItem.call(ls, 'evoflow_auth')
+      if (!raw) continue
+      const parsed = JSON.parse(raw)
+      if (!parsed || typeof parsed !== 'object') continue
+      return parsed
+    } catch {
+      void 0
+    }
+  }
+
+  return null
+}
+
+function isFarFutureIsoDate(isoDate) {
+  try {
+    const base = new Date(`${todayIso()}T00:00:00`)
+    const d = new Date(`${String(isoDate)}T00:00:00`)
+    if (Number.isNaN(d.getTime())) return false
+    return d.getTime() - base.getTime() > 180 * 24 * 60 * 60 * 1000
+  } catch {
+    return false
+  }
+}
+
 function encodeSearch({ from, to, date }) {
-  const qp = new URLSearchParams({ from, to, date })
-  return `/search-results?${qp.toString()}`
+  const qp = new URLSearchParams({ from, to, departDate: date })
+  return `/flights/list?${qp.toString()}`
 }
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const { auth } = useAuth()
+  const storedAuth = typeof window !== 'undefined' ? safeReadStoredAuth() : null
+  const isAuthed = Boolean(auth?.isLoggedIn || storedAuth?.isLoggedIn)
+
   const from = searchParams.get('from') || fallbackSearch.from
   const to = searchParams.get('to') || fallbackSearch.to
-  const date = searchParams.get('date') || fallbackSearch.date
+  const departDate = searchParams.get('departDate') || searchParams.get('date') || fallbackSearch.departDate
   const openFlight = searchParams.get('open') || ''
   const selectedFare = searchParams.get('fare') || ''
   const panel = searchParams.get('panel') || ''
   const sort = searchParams.get('sort') || 'price'
   const direct = searchParams.get('direct') === '1'
+
+  const [flights, setFlights] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [toast, setToast] = useState('')
+  const [confirmState, setConfirmState] = useState(null)
+
+  const debounceTimerRef = useRef(0)
+  const debounceMs = (() => {
+    try {
+      return import.meta?.env?.MODE === 'test' ? 0 : 300
+    } catch {
+      return 300
+    }
+  })()
+
+  const inFlightRef = useRef(null)
+  const loadedAtRef = useRef(0)
+  const lastKeyRef = useRef('')
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerField, setPickerField] = useState('from')
@@ -301,7 +309,93 @@ export default function SearchResults() {
 
   const groups = pickerArea === 'domestic' ? domesticCityGroups : hkmoTwCities
   const cities = groups[pickerTab] || []
-  const dateHint = dateHintLabel(date)
+  const dateHint = dateHintLabel(departDate)
+
+  const authRedirectTo = useMemo(() => {
+    const path = `${location.pathname}${location.search}`
+    return path
+  }, [location.pathname, location.search])
+
+  useEffect(() => {
+    if (isAuthed) return
+    if (location?.state?.fromLogin) return
+    try {
+      sessionStorage.setItem('postLoginRedirect', authRedirectTo)
+    } catch {
+      void 0
+    }
+    navigate('/login', { replace: true, state: { postLoginRedirect: authRedirectTo } })
+  }, [isAuthed, location?.state?.fromLogin, authRedirectTo, navigate])
+
+  const loadFlights = useCallback(
+    async ({ force }) => {
+      const key = `${from}|${to}|${departDate}`
+      if (!force && lastKeyRef.current === key && flights.length) return
+      lastKeyRef.current = key
+
+      const today = todayIso()
+      if (String(departDate) < today) {
+        setError('不可选择过去日期')
+        setIsLoading(false)
+        return
+      }
+
+      if (inFlightRef.current) {
+        inFlightRef.current.abort()
+      }
+
+      const controller = new AbortController()
+      inFlightRef.current = controller
+      setIsLoading(true)
+      setError('')
+
+      const timeoutId = setTimeout(() => {
+        controller.abort()
+      }, 8000)
+
+      try {
+        const data = await loadMockFlights({ from, to, departDate }, { signal: controller.signal })
+        loadedAtRef.current = Date.now()
+        const normalized = data.flights.map((f) => ({ ...f, tags: Array.isArray(f?.tags) ? f.tags : [] }))
+        setFlights(normalized)
+      } catch {
+        const msg = controller.signal.aborted ? '系统繁忙，请稍后重试' : '搜索失败/网络异常，请稍后重试'
+        setError(msg)
+      } finally {
+        clearTimeout(timeoutId)
+        if (inFlightRef.current === controller) {
+          inFlightRef.current = null
+        }
+        setIsLoading(false)
+      }
+    },
+    [departDate, flights.length, from, to],
+  )
+
+  const scheduleLoadFlights = useCallback(
+    ({ force }) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = 0
+      }
+
+      if (!debounceMs) {
+        void loadFlights({ force })
+        return
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        debounceTimerRef.current = 0
+        void loadFlights({ force })
+      }, debounceMs)
+    },
+    [debounceMs, loadFlights],
+  )
+
+  useEffect(() => {
+    if (!isAuthed) return
+    scheduleLoadFlights({ force: false })
+  }, [isAuthed, scheduleLoadFlights])
 
   function openPicker(field) {
     setPickerField(field)
@@ -316,7 +410,7 @@ export default function SearchResults() {
     const qp = new URLSearchParams(searchParams)
     qp.set('from', next.from)
     qp.set('to', next.to)
-    qp.set('date', next.date)
+    qp.set('departDate', next.date)
     navigate({ pathname: location.pathname, search: `?${qp.toString()}` })
   }
 
@@ -333,15 +427,15 @@ export default function SearchResults() {
     const code = cityCodeMap[name] || 'XXX'
     const value = `${name}(${code})`
     if (pickerField === 'from') {
-      updateSearch({ from: value, to, date })
+      updateSearch({ from: value, to, date: departDate })
     } else {
-      updateSearch({ from, to: value, date })
+      updateSearch({ from, to: value, date: departDate })
     }
     closePicker()
   }
 
   function swapCities() {
-    updateSearch({ from: to, to: from, date })
+    updateSearch({ from: to, to: from, date: departDate })
   }
 
   function toggleOpenBooking(flightNo) {
@@ -350,23 +444,71 @@ export default function SearchResults() {
       return
     }
     updateQuery({ open: flightNo, fare: null })
+    scheduleLoadFlights({ force: true })
   }
 
-  function goBuyStep1({ flight, fareId, farePrice }) {
+  async function persistDraftAndGoBooking({ flight, fareId, farePrice, skipConfirm = false }) {
+    setToast('')
+
+    if (!isAuthed) {
+      try {
+        sessionStorage.setItem('postLoginRedirect', authRedirectTo)
+      } catch {
+        void 0
+      }
+      navigate('/login', { state: { postLoginRedirect: authRedirectTo } })
+      return
+    }
+
+    const isValidPkgId = typeof fareId === 'string' && /^PKG_/.test(fareId)
+    const shouldConfirm = !skipConfirm && (isFarFutureIsoDate(departDate) || (loadedAtRef.current && Date.now() - loadedAtRef.current > 5 * 60_000))
+    if (!isValidPkgId) {
+      if (!skipConfirm) setToast('套餐信息异常，请重试')
+      if (shouldConfirm) {
+        setConfirmState({ flight, fareId, farePrice })
+        return
+      }
+      if (skipConfirm) {
+        fareId = 'PKG_BASIC'
+      } else {
+        return
+      }
+    }
+
+    if (shouldConfirm) {
+      setConfirmState({ flight, fareId, farePrice })
+      return
+    }
+
+    if (!fareId) {
+      setToast('套餐信息异常，请重试')
+      return
+    }
+
+    const draft = {
+      flightId: flight.flightNo,
+      packageId: fareId,
+      departDate,
+      priceVersion: `${flight.flightNo}_${fareId}_${departDate}_${loadedAtRef.current || Date.now()}`,
+      selectedFlight: flight,
+      selectedPackage: { id: fareId, price: farePrice },
+      createdAt: new Date().toISOString(),
+    }
+
+    try {
+      await createBookingDraft(draft)
+    } catch {
+      setToast('网络异常，请稍后重试')
+      return
+    }
+
     const qp = new URLSearchParams()
+    qp.set('flight', flight.flightNo)
+    qp.set('pkg', fareId)
     qp.set('from', from)
     qp.set('to', to)
-    qp.set('date', date)
-    qp.set('flight', flight.flightNo)
-    qp.set('airline', flight.airline)
-    qp.set('cabin', '经济舱')
-    qp.set('depTime', flight.depTime)
-    qp.set('arrTime', flight.arrTime)
-    qp.set('depAirport', flight.depAirport)
-    qp.set('arrAirport', flight.arrAirport)
-    qp.set('fare', fareId)
-    qp.set('total', String(farePrice + 118))
-    navigate({ pathname: '/buy-ticket/step1', search: `?${qp.toString()}` })
+    qp.set('departDate', departDate)
+    navigate({ pathname: '/booking', search: `?${qp.toString()}` })
   }
 
   function togglePanel(name) {
@@ -397,14 +539,15 @@ export default function SearchResults() {
   const cabinLabel = searchParams.get('cabin') || '舱位'
   const moreLabel = searchParams.get('more') || '更多'
 
-  const flights = buildFlights({ from, to, date })
   const days = [-1, 0, 1, 2, 3, 4, 5]
   const dateStrip = days.map((delta) => {
-    const iso = addDays(date, delta)
+    const iso = addDays(departDate, delta)
     const list = buildFlights({ from, to, date: iso })
     const min = Math.min(...list.map((f) => f.price))
     return { iso, min }
   })
+
+  const displayFlights = flights.length ? flights : buildFlights({ from, to, date: departDate })
 
   return (
     <div className={styles.page}>
@@ -429,16 +572,16 @@ export default function SearchResults() {
 
         <div className={styles.topBarWrap}>
           <div className={styles.topBar}>
-            <button type="button" className={styles.cityBlockBtn} onClick={() => openPicker('from')}>
+            <button type="button" className={styles.cityBlockBtn} onClick={() => openPicker('from')} aria-label="出发地">
               <div className={styles.barLabel}>出发地</div>
               <div className={styles.barValue}>{from}</div>
             </button>
             <div className={styles.swapWrap}>
-              <button type="button" className={styles.swapCircleBtn} onClick={swapCities} aria-label="切换出发地和目的地">
+              <button type="button" className={styles.swapCircleBtn} onClick={swapCities} aria-label="切换城市">
                 <span className={styles.swapArrow} aria-hidden="true" />
               </button>
             </div>
-            <button type="button" className={styles.cityBlockBtn} onClick={() => openPicker('to')}>
+            <button type="button" className={styles.cityBlockBtn} onClick={() => openPicker('to')} aria-label="目的地">
               <div className={styles.barLabel}>目的地</div>
               <div className={styles.barValue}>{to}</div>
             </button>
@@ -446,7 +589,7 @@ export default function SearchResults() {
             <div className={styles.dateBlock}>
               <div className={styles.barLabel}>出发日期</div>
               <div className={styles.dateValueRow}>
-                <div className={styles.barValue}>{date}</div>
+                <div className={styles.barValue}>{departDate}</div>
                 <div className={styles.dateHint}>{dateHint}</div>
               </div>
               <div className={styles.addReturn}>+ 添加返程</div>
@@ -465,6 +608,10 @@ export default function SearchResults() {
                 </div>
               </div>
             </div>
+
+            <button type="button" className={styles.cityBlockBtn} onClick={() => scheduleLoadFlights({ force: true })} disabled={isLoading}>
+              <div className={styles.barLabel}>{isLoading ? '加载中' : '搜索'}</div>
+            </button>
           </div>
 
           {pickerOpen ? (
@@ -516,13 +663,32 @@ export default function SearchResults() {
         </div>
       </section>
 
+      {error ? (
+        <section className={styles.results}>
+          <div className={styles.main}>
+            <div>{error}</div>
+            <button type="button" onClick={() => scheduleLoadFlights({ force: true })} disabled={isLoading}>
+              重试
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {toast ? (
+        <section className={styles.results}>
+          <div className={styles.main}>
+            <div>{toast}</div>
+          </div>
+        </section>
+      ) : null}
+
       <section className={styles.dateStrip}>
         <div className={styles.stripArrow} aria-hidden="true">
           ‹
         </div>
         <div className={styles.stripInner}>
           {dateStrip.map((d) => {
-            const active = d.iso === date
+            const active = d.iso === departDate
             return (
               <Link
                 key={d.iso}
@@ -550,7 +716,7 @@ export default function SearchResults() {
           <div className={styles.resultsTitleRow}>
             <div className={styles.resultsTitle}>
               单程 <span className={styles.routeStrong}>{from.split('(')[0]}</span> -{' '}
-              <span className={styles.routeStrong}>{to.split('(')[0]}</span> {formatCnDateTitle(date)}
+              <span className={styles.routeStrong}>{to.split('(')[0]}</span> {formatCnDateTitle(departDate)}
             </div>
             <div className={styles.update}>最近更新时间：22:44:57</div>
           </div>
@@ -692,7 +858,8 @@ export default function SearchResults() {
           </div>
 
           <div className={styles.list}>
-            {flights.map((f) => (
+            {!isLoading && flights.length === 0 ? <div>暂无可售航班</div> : null}
+            {displayFlights.map((f) => (
               <div key={f.flightNo} className={styles.card}>
                 <div className={styles.itemRow}>
                   <div className={styles.airline}>
@@ -724,7 +891,7 @@ export default function SearchResults() {
                   </div>
 
                   <div className={styles.tagCol}>
-                    {f.tags.map((t) => (
+                    {(Array.isArray(f.tags) ? f.tags : []).map((t) => (
                       <div key={t} className={styles.tag}>
                         {t}
                       </div>
@@ -783,7 +950,7 @@ export default function SearchResults() {
                     </div>
 
                     <div className={styles.fareList}>
-                      {buildFareRows({ basePrice: f.price, seed: hashSeed(`${f.flightNo}|${date}`) }).map((r) => (
+                      {buildFareRows({ basePrice: f.price, seed: hashSeed(`${f.flightNo}|${departDate}`), departDate }).map((r) => (
                         <div key={r.id} className={styles.fareRow}>
                           <div className={styles.fareMeta}>
                             <div className={styles.fareMetaLine}>
@@ -810,7 +977,7 @@ export default function SearchResults() {
                             <button
                               type="button"
                               className={r.action === '选购' ? styles.fareBuyAlt : styles.fareBuy}
-                              onClick={() => goBuyStep1({ flight: f, fareId: r.id, farePrice: r.price })}
+                              onClick={() => persistDraftAndGoBooking({ flight: f, fareId: r.id, farePrice: r.price })}
                             >
                               {r.action}
                             </button>
@@ -843,6 +1010,26 @@ export default function SearchResults() {
           <div className={styles.asideTag}>在线客服</div>
         </aside>
       </section>
+
+      {confirmState ? (
+        <div role="dialog" aria-label="价格变更确认">
+          <div>价格变更</div>
+          <button
+            type="button"
+            onClick={async () => {
+              const { flight, fareId, farePrice } = confirmState
+              setConfirmState(null)
+              loadedAtRef.current = Date.now()
+              await persistDraftAndGoBooking({ flight, fareId, farePrice, skipConfirm: true })
+            }}
+          >
+            确认
+          </button>
+          <button type="button" onClick={() => setConfirmState(null)}>
+            取消
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

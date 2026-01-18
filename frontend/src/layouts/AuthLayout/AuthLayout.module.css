@@ -9,3 +9,54 @@
   flex: 1;
 }
 
+.bookingProgress {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-bottom: 1px solid #e6ecf4;
+}
+
+.progressSteps {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  font-size: 12px;
+  color: #9aa6b2;
+}
+
+.progressStep,
+.progressStepActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.progressStepActive {
+  color: #ff8a00;
+}
+
+.progressDot,
+.progressDotActive,
+.progressDotDone {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  background: #cdd7e5;
+  color: #ffffff;
+}
+
+.progressDotActive {
+  background: #ff8a00;
+}
+
+.progressDotDone {
+  background: #2b78ff;
+}

@@ -112,3 +112,144 @@
     - date: "2026-01-18"
       description: "初始创建。"
 
+- type: Database
+  id: DB-LoadMockFlights
+  description: 加载本地模拟航班数据，供搜索结果页渲染。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 返回可用于渲染的航班列表，每条至少包含 flightId、airlineName、flightNo、depTime、arrTime、depAirport、arrAirport、price。
+    - 读取失败或解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateBookingDraft
+  description: 创建并写入预订草稿到会话存储（booking draft）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 草稿写入到 sessionStorage 并可在页面刷新后恢复。
+    - 使用键名 sessionStorage.bookingDraft 保存草稿 JSON。
+    - 草稿至少包含 flightId、packageId、departDate、priceVersion。
+    - 写入失败时返回明确错误，且不应清空用户已选择的信息。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+    - date: "2026-01-18"
+      description: "补充草稿键名约定（bookingDraft）。"
+
+- type: Database
+  id: DB-ReadBookingDraft
+  description: 从会话存储读取预订草稿（booking draft）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 从 sessionStorage.bookingDraft 读取并解析草稿 JSON。
+    - 当草稿不存在时返回空结果。
+    - 解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateBookingDraftPassengerContact
+  description: 更新预订草稿中的乘机人与联系人信息。
+  dependencies:
+    - DB-CreateBookingDraft
+  acceptanceCriteria:
+    - 成功写入 passenger 与 contact 字段（姓名、证件类型、证件号、联系人手机号等）。
+    - 写入失败时返回明确错误并保留当前输入。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateBookingDraftServices
+  description: 更新预订草稿中的已选增值服务与价格清单。
+  dependencies:
+    - DB-CreateBookingDraft
+  acceptanceCriteria:
+    - 支持写入服务选择结果与对应的价格明细。
+    - 服务不可用时应能标记为不可选并保持一致状态。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-WriteBookingStage
+  description: 写入购票进度阶段到会话存储（bookingStage）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 写入 sessionStorage.bookingStage，值为 1-4 的数字或等价可解析值。
+    - 当会话写入失败时返回明确错误且不影响页面继续浏览。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ReadBookingStage
+  description: 从会话存储读取购票进度阶段（bookingStage）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 从 sessionStorage.bookingStage 读取阶段值并解析为 1-4。
+    - 当阶段缺失或非法时返回空结果或默认值指示。
+    - 读取异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ReadEvoflowOrders
+  description: 从 localStorage 读取共享订单存储 evoflow_orders。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 读取并解析 localStorage.evoflow_orders 为 JSON 数组。
+    - 读取失败或解析异常时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-WriteEvoflowOrders
+  description: 将订单数组写入 localStorage 的 evoflow_orders。
+  dependencies:
+    - DB-ReadEvoflowOrders
+  acceptanceCriteria:
+    - 写入成功后可被订单中心读取并展示。
+    - 写入失败时返回明确错误且不应破坏原有订单数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateOrder
+  description: 创建订单并写入共享订单存储（productType=flight, status=pending_payment）。
+  dependencies:
+    - DB-ReadEvoflowOrders
+    - DB-WriteEvoflowOrders
+  acceptanceCriteria:
+    - 创建的订单至少包含 orderId、productType、status、createdAt、departAt、totalAmount。
+    - 创建成功后订单中心可读取到该订单。
+    - 写入失败时返回明确错误。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateOrderStatus
+  description: 更新共享订单存储中的订单状态（例如 pending_payment -> pending_travel）。
+  dependencies:
+    - DB-ReadEvoflowOrders
+    - DB-WriteEvoflowOrders
+  acceptanceCriteria:
+    - 根据 orderId 定位订单并更新 status 与必要的时间字段。
+    - 当 orderId 不存在时返回明确错误。
+    - 写入失败时返回明确错误且不应破坏原有订单数据。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"

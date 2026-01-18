@@ -1,18 +1,50 @@
 import styles from './Home.module.css'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import homeBanner from '../../assets/placeholders/home-banner.svg'
 import dealThumbA from '../../assets/placeholders/deal-thumb-a.svg'
 import dealThumbB from '../../assets/placeholders/deal-thumb-b.svg'
 import dealThumbC from '../../assets/placeholders/deal-thumb-c.svg'
+import { useAuth } from '../../auth/AuthContext.jsx'
+
+function formatIsoDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function tomorrowIso() {
+  const now = new Date()
+  const t = new Date(now)
+  t.setDate(now.getDate() + 1)
+  return formatIsoDate(t)
+}
 
 export default function Home() {
+  const { auth } = useAuth()
+  const navigate = useNavigate()
+
   const search = {
     from: '北京(BJS)',
     to: '上海(SHA)',
-    date: '2025-12-09',
+    departDate: tomorrowIso(),
   }
 
-  const searchTo = `/search-results?from=${encodeURIComponent(search.from)}&to=${encodeURIComponent(search.to)}&date=${encodeURIComponent(search.date)}`
+  const searchTo = `/flights/list?from=${encodeURIComponent(search.from)}&to=${encodeURIComponent(search.to)}&departDate=${encodeURIComponent(search.departDate)}`
+
+  function handleSearchClick(e) {
+    e.preventDefault()
+    if (!auth?.isLoggedIn) {
+      try {
+        sessionStorage.setItem('postLoginRedirect', searchTo)
+      } catch {
+        void 0
+      }
+      navigate('/login')
+      return
+    }
+    navigate(searchTo)
+  }
 
   return (
     <div className={styles.page}>
@@ -73,7 +105,7 @@ export default function Home() {
             <div className={styles.dateBlock}>
               <div className={styles.barLabel}>出发日期</div>
               <div className={styles.dateValueRow}>
-                <div className={styles.barValue}>{search.date}</div>
+                <div className={styles.barValue}>{search.departDate}</div>
                 <div className={styles.dateHint}>明天</div>
               </div>
               <div className={styles.addReturn}>+ 添加返程</div>
@@ -97,7 +129,7 @@ export default function Home() {
           </div>
 
           <div className={styles.searchBtnRow}>
-            <Link className={styles.searchBtn} to={searchTo}>
+            <Link className={styles.searchBtn} to={searchTo} onClick={handleSearchClick}>
               <span className={styles.searchBtnIcon} aria-hidden="true" />
               搜索
             </Link>
