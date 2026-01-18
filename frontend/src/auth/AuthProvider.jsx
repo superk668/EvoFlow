@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AuthContext } from './AuthContext.jsx'
 
-const STORAGE_KEY = 'evf_auth'
+const STORAGE_KEY = 'evoflow_auth'
 
 function readStoredAuth() {
   try {
@@ -27,24 +27,42 @@ export default function AuthProvider({ children }) {
   const stored = typeof window !== 'undefined' ? readStoredAuth() : null
   const [auth, setAuth] = useState(
     stored ?? {
-      isLoggedIn: true,
-      username: '恒色初心',
+      isLoggedIn: false,
+      loginAt: null,
+      userDisplayName: null,
+      phoneNumber: null,
+      token: null,
       tier: '白银贵宾',
-      points: 2114,
+      points: 0,
     },
   )
 
   const value = useMemo(() => {
     function logout() {
-      const next = { ...auth, isLoggedIn: false }
+      const next = {
+        isLoggedIn: false,
+        loginAt: null,
+        userDisplayName: null,
+        phoneNumber: null,
+        token: null,
+        tier: auth.tier,
+        points: auth.points,
+      }
       setAuth(next)
-      writeStoredAuth(next)
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch {
+        void 0
+      }
     }
 
     function login(nextUser) {
       const next = {
         isLoggedIn: true,
-        username: nextUser?.username ?? auth.username,
+        loginAt: nextUser?.loginAt ?? new Date().toISOString(),
+        userDisplayName: nextUser?.userDisplayName ?? auth.userDisplayName,
+        phoneNumber: nextUser?.phoneNumber ?? auth.phoneNumber,
+        token: nextUser?.token ?? auth.token,
         tier: nextUser?.tier ?? auth.tier,
         points: nextUser?.points ?? auth.points,
       }
@@ -57,4 +75,3 @@ export default function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-

@@ -7,6 +7,8 @@ export default function TopHeader() {
   const { auth, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const displayName = auth.userDisplayName ?? auth.username
+
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
@@ -34,7 +36,7 @@ export default function TopHeader() {
                   onClick={() => setMenuOpen((v) => !v)}
                 >
                   <span className={styles.navIconUser} aria-hidden="true" />
-                  尊敬的{auth.username}
+                  尊敬的{displayName}
                   <span className={styles.navCaret} aria-hidden="true">
                     ▾
                   </span>
@@ -46,7 +48,7 @@ export default function TopHeader() {
                       <div className={styles.menuAvatar} aria-hidden="true" />
                       <div className={styles.menuHeaderText}>
                         <div className={styles.menuTitleRow}>
-                          <div className={styles.menuTitle}>{auth.username}</div>
+                          <div className={styles.menuTitle}>{displayName}</div>
                           <div className={styles.menuChevron} aria-hidden="true">
                             &gt;
                           </div>

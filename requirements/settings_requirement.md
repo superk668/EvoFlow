@@ -768,10 +768,11 @@
 - 跳转目标：进入机票支付页 `/booking/payment/:orderId`。
 
 #### Scenario: 待支付订单进入支付页（正常流程）
-
     Given 用户位于订单管理列表页，且存在状态为 `pending_payment` 的订单
     When 用户点击该订单的“去支付”入口
     Then 系统应跳转到支付页面（`/booking/payment/:orderId`）
+    # 强调：跳转后的支付页 URL 中的订单号必须与列表页该订单的订单号完全一致
+    And 支付页 URL 中的 `:orderId` 必须与列表页该订单的订单号完全一致
 
 ---
 

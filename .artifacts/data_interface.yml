@@ -1,0 +1,114 @@
+- type: Database
+  id: DB-FindUserByAccount
+  description: 根据账号标识查询用户（手机号/邮箱/用户名）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当账号存在时返回唯一用户记录（包含 userId、userDisplayName、phoneNumber、passwordHash）。
+    - 当账号不存在时返回空结果。
+    - 账号匹配规则支持手机号/邮箱/用户名其一命中。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-FindUserByPhone
+  description: 根据手机号查询用户。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当手机号存在时返回唯一用户记录。
+    - 当手机号不存在时返回空结果。
+    - users.phoneNumber 字段具备唯一性约束。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateUser
+  description: 创建用户记录并写入密码哈希。
+  dependencies:
+    - DB-FindUserByPhone
+  acceptanceCriteria:
+    - 成功执行后 users 表新增一条记录，包含 userId、userDisplayName、phoneNumber、passwordHash、createdAt。
+    - 当手机号已存在时操作失败并返回唯一性冲突。
+    - passwordHash 不可逆保存，明文密码不落库。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateUserPassword
+  description: 更新用户密码哈希。
+  dependencies:
+    - DB-FindUserByPhone
+  acceptanceCriteria:
+    - 仅当用户存在时更新 passwordHash。
+    - 更新成功后 updatedAt 被刷新。
+    - 明文密码不落库。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-StoreSmsCode
+  description: 生成并保存短信验证码（按手机号与用途区分）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 保存字段至少包含 phoneNumber、purpose(login/register)、code、expiresAt、createdAt、usedAt(可空)。
+    - 支持基于 phoneNumber+purpose 的 60 秒内限频校验所需数据。
+    - code 以明文或可比对方式保存，以支持校验。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-VerifySmsCode
+  description: 校验短信验证码有效性（用途、过期、是否已使用）。
+  dependencies:
+    - DB-StoreSmsCode
+  acceptanceCriteria:
+    - 当 code 匹配且未过期且未被使用时返回校验通过。
+    - 当 code 不匹配或已过期或已使用时返回校验失败。
+    - 校验用途必须匹配（login/register）。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-MarkSmsCodeUsed
+  description: 将短信验证码标记为已使用。
+  dependencies:
+    - DB-VerifySmsCode
+  acceptanceCriteria:
+    - 当验证码校验通过后可写入 usedAt 时间。
+    - 重复标记不应导致系统异常。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateAuthSession
+  description: 创建登录会话并发放 token。
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 成功后生成 token（JWT 或不透明 token）并与 userId 关联。
+    - token 具备过期策略并可被吊销。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-RevokeAuthSession
+  description: 吊销登录会话 token。
+  dependencies:
+    - DB-CreateAuthSession
+  acceptanceCriteria:
+    - 吊销后 token 不再可用于鉴权。
+    - 多次吊销同一 token 返回幂等成功。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+

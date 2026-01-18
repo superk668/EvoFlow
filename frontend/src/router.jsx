@@ -50,6 +50,7 @@ export const router = createHashRouter([
     path: '/buy-ticket',
     element: <AuthLayout />,
     children: [
+      { index: true, element: <Navigate to="step1" replace /> },
       { path: 'step1', element: <BuyTicketStep1 /> },
       { path: 'step2', element: <BuyTicketStep2 /> },
       { path: 'step3', element: <BuyTicketStep3 /> },

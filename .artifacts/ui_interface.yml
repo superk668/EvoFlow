@@ -1,0 +1,130 @@
+- type: Frontend
+  id: UI-AuthSessionPersistence
+  description: 登录态持久化与回跳能力（localStorage 与 sessionStorage 约定）。
+  properties:
+    - name: onLoginSuccess
+      type: function
+      description: "登录成功后的统一处理（保存登录态、处理回跳）。"
+    - name: onLogout
+      type: function
+      description: "退出登录后的统一处理（清理登录态、回到入口页）。"
+  state:
+    - evoflow_auth
+    - postLoginRedirect
+  dependencies:
+    - API-GET-AuthMe
+  acceptanceCriteria:
+    - localStorage 使用键名 evoflow_auth 保存 isLoggedIn、loginAt、userDisplayName、phoneNumber、token。
+    - 未登录访问受限页面时写入 sessionStorage.postLoginRedirect 并跳转 /login。
+    - 登录成功后若存在 postLoginRedirect 则回跳并清理该键。
+    - 退出登录时清理 evoflow_auth 与用户相关缓存并回到未登录入口页。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-LoginPage
+  description: 登录页面，支持账号密码登录与短信验证码登录切换。
+  properties:
+    - name: defaultTab
+      type: string
+      description: "默认登录方式：password 或 sms。"
+  state:
+    - activeTab
+    - account
+    - password
+    - phoneNumber
+    - verificationCode
+    - agreePolicy
+    - isSendingCode
+    - countdownSeconds
+    - error
+    - isLoading
+  dependencies:
+    - API-POST-AuthLoginPassword
+    - API-POST-AuthLoginSmsSend
+    - API-POST-AuthLoginSms
+    - UI-AuthSessionPersistence
+  acceptanceCriteria:
+    - 页面包含账号密码登录与验证码登录两个 Tab，默认展示账号密码登录。
+    - 未勾选服务协议时点击登录应提示并阻止提交。
+    - 账号密码登录失败时展示“用户名或密码不正确”。
+    - 验证码登录发送验证码后按钮进入 60 秒倒计时且不可重复触发。
+    - 验证码错误时展示“验证码不正确”，手机号未注册时展示“该手机号未注册，请先注册”。
+    - 点击“免费注册”导航至 /register。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-RegisterStep1VerifyPhone
+  description: 注册步骤1页面，输入手机号与验证码并进入设置密码步骤2。
+  properties:
+    - name: onVerified
+      type: function
+      description: "手机号验证成功后的回调（进入步骤2）。"
+  state:
+    - phoneNumber
+    - smsCode
+    - agreePolicy
+    - isSendingCode
+    - countdownSeconds
+    - error
+    - isLoading
+  dependencies:
+    - API-POST-AuthRegisterSmsSend
+    - API-POST-AuthRegisterVerifyPhone
+  acceptanceCriteria:
+    - 手机号不合法时提示“手机号格式不正确，请重新输入”。
+    - 发送验证码后按钮进入 60 秒倒计时且不可重复触发。
+    - 未勾选服务协议时点击下一步应提示“请阅读并同意服务协议”。
+    - 验证码错误时在验证码输入框下方提示“验证码错误”。
+    - 验证通过后进入 /register/set-password 并携带 registerToken。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-RegisterStep2SetPassword
+  description: 注册步骤2页面，设置密码并完成注册。
+  properties:
+    - name: registerToken
+      type: string
+      description: "步骤1验证通过后获取的 registerToken。"
+  state:
+    - password
+    - confirmPassword
+    - passwordVisible
+    - confirmPasswordVisible
+    - passwordStrength
+    - error
+    - isLoading
+  dependencies:
+    - API-POST-AuthRegisterComplete
+  acceptanceCriteria:
+    - 密码不符合 8-20 位字母/数字/符号组合时提示“密码需为8-20位字母、数字和符号的组合”。
+    - 两次密码不一致时提示“两次输入密码不一致”，完成按钮不可点。
+    - 支持密码可视化切换。
+    - 注册成功后跳转至 /login。
+    - 点击返回上一步回到 /register。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-RegisterSuccessPage
+  description: 注册成功展示页面。
+  properties:
+    - name: onGoLogin
+      type: function
+      description: "引导用户前往登录页。"
+  state:
+    - none
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 页面展示注册成功状态与引导入口。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+

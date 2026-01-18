@@ -1,0 +1,238 @@
+- type: Backend
+  id: API-POST-AuthLoginPassword
+  route: POST /api/auth/login/password
+  description: 使用账号与密码登录。
+  input:
+    type: JSON
+    body:
+      account: string
+      password: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        token: string
+        userId: uuid
+        userDisplayName: string
+        phoneNumber: string
+        loginAt: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Invalid credentials." }
+  dependencies:
+    - DB-FindUserByAccount
+    - DB-CreateAuthSession
+  acceptanceCriteria:
+    - 当账号与密码匹配时返回 200，并返回 token 与用户基础信息。
+    - 当账号不存在或密码不匹配时返回 401。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthLoginSmsSend
+  route: POST /api/auth/login/sms/send
+  description: 为短信验证码登录发送 6 位验证码（开发期在后端终端输出）。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 400
+        body: { error: "Invalid phone number." }
+      - statusCode: 429
+        body: { error: "Too many requests." }
+  dependencies:
+    - DB-StoreSmsCode
+  acceptanceCriteria:
+    - 当手机号格式合法时生成 6 位验证码并在后端终端输出。
+    - 60 秒内重复请求返回 429，不生成新验证码。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthLoginSms
+  route: POST /api/auth/login/sms
+  description: 使用手机号与短信验证码登录。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      verificationCode: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        token: string
+        userId: uuid
+        userDisplayName: string
+        phoneNumber: string
+        loginAt: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid phone number." }
+      - statusCode: 401
+        body: { error: "Invalid verification code." }
+      - statusCode: 404
+        body: { error: "Phone number not registered." }
+  dependencies:
+    - DB-FindUserByPhone
+    - DB-VerifySmsCode
+    - DB-MarkSmsCodeUsed
+    - DB-CreateAuthSession
+  acceptanceCriteria:
+    - 当手机号已注册且验证码正确时返回 200，并返回 token 与用户基础信息。
+    - 当验证码不正确时返回 401。
+    - 当手机号未注册时返回 404。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthRegisterSmsSend
+  route: POST /api/auth/register/sms/send
+  description: 为手机号注册步骤1发送 6 位短信验证码（开发期在后端终端输出）。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 400
+        body: { error: "Invalid phone number." }
+      - statusCode: 429
+        body: { error: "Too many requests." }
+  dependencies:
+    - DB-StoreSmsCode
+  acceptanceCriteria:
+    - 当手机号格式合法时生成验证码并在后端终端输出，不要求检查手机号是否已注册。
+    - 60 秒内重复请求返回 429。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthRegisterVerifyPhone
+  route: POST /api/auth/register/verify-phone
+  description: 校验注册步骤1的手机号与验证码，签发注册流程 token 进入设置密码步骤2。
+  input:
+    type: JSON
+    body:
+      phoneNumber: string
+      verificationCode: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        registerToken: string
+        phoneNumberMasked: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Invalid verification code." }
+  dependencies:
+    - DB-VerifySmsCode
+    - DB-MarkSmsCodeUsed
+  acceptanceCriteria:
+    - 当手机号格式合法且验证码正确时返回 registerToken，并允许进入步骤2。
+    - 当验证码错误时返回 401。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthRegisterComplete
+  route: POST /api/auth/register/complete
+  description: 完成注册（设置密码并创建用户）。
+  input:
+    type: JSON
+    body:
+      registerToken: string
+      password: string
+      confirmPassword: string
+  output:
+    success:
+      statusCode: 201
+      body:
+        userId: uuid
+        phoneNumber: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid password or mismatch." }
+      - statusCode: 401
+        body: { error: "Invalid register token." }
+      - statusCode: 409
+        body: { error: "Phone number already registered." }
+  dependencies:
+    - DB-FindUserByPhone
+    - DB-CreateUser
+  acceptanceCriteria:
+    - 当密码满足 8-20 位字母/数字/符号组合且两次输入一致时返回 201。
+    - 当手机号已注册时返回 409。
+    - 当密码不合法或两次不一致时返回 400。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-AuthLogout
+  route: POST /api/auth/logout
+  description: 退出登录并吊销当前 token。
+  input:
+    type: Header
+    headers:
+      Authorization: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+  dependencies:
+    - DB-RevokeAuthSession
+  acceptanceCriteria:
+    - 当用户已登录时返回 204，并使 token 失效。
+    - 当 token 缺失或无效时返回 401。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-AuthMe
+  route: GET /api/auth/me
+  description: 获取当前登录用户信息，用于刷新后恢复登录态。
+  input:
+    type: Header
+    headers:
+      Authorization: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        userId: uuid
+        userDisplayName: string
+        phoneNumber: string
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 当 token 有效时返回 200 与用户信息。
+    - 当 token 无效时返回 401。
+  changeLog:
+    - date: "2026-01-18"
+      description: "初始创建。"
+

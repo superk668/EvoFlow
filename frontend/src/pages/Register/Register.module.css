@@ -154,12 +154,36 @@
   white-space: nowrap;
 }
 
+.send:disabled {
+  color: #9aa6b2;
+  cursor: not-allowed;
+}
+
+.fieldError {
+  margin: -12px 0 8px;
+  padding-left: 138px;
+  font-size: 12px;
+  color: #d93026;
+}
+
 .agreeRow {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 10px 0 24px;
   padding-left: 138px;
+}
+
+.agreeLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .check {
@@ -198,6 +222,20 @@
   color: #6d7a8a;
 }
 
+.agreeError {
+  padding-left: 138px;
+  margin: -18px 0 10px;
+  font-size: 12px;
+  color: #d93026;
+}
+
+.error {
+  padding-left: 138px;
+  margin: -18px 0 10px;
+  font-size: 12px;
+  color: #d93026;
+}
+
 .link {
   color: #2b78ff;
   text-decoration: none;
@@ -230,6 +268,15 @@
 }
 
 .company {
+  display: inline-block;
+  margin-left: 138px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #2b78ff;
+  text-decoration: none;
+}
+
+.loginLink {
   display: inline-block;
   margin-left: 138px;
   margin-top: 10px;
