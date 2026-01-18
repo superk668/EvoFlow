@@ -1,0 +1,52 @@
+.sidebar {
+  width: 170px;
+  background: #f5f7fb;
+  border-right: 1px solid #e6ecf4;
+  min-height: calc(100vh - 56px);
+}
+
+.group {
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #2c3440;
+  font-size: 13px;
+}
+
+.itemActive {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1770ff;
+  font-size: 13px;
+  background: #e9f1ff;
+  border: 1px solid #cfe0ff;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: #dfe9fb;
+  border: 1px solid #ccdcf9;
+}
+
+.label {
+  line-height: 1;
+}
+

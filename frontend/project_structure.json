@@ -1,0 +1,137 @@
+{
+  "frontend": {
+    "src": {
+      "pages": {
+        "Home": {
+          "Home.jsx": true,
+          "Home.module.css": true,
+          "assets": {}
+        },
+        "Orders": {
+          "Orders.jsx": true,
+          "Orders.module.css": true,
+          "assets": {}
+        },
+        "OrderDetail": {
+          "OrderDetail.jsx": true,
+          "OrderDetail.module.css": true,
+          "assets": {}
+        },
+        "SearchResults": {
+          "SearchResults.jsx": true,
+          "SearchResults.module.css": true,
+          "assets": {}
+        },
+        "PersonalMyInfo": {
+          "PersonalMyInfo.jsx": true,
+          "PersonalMyInfo.module.css": true,
+          "assets": {}
+        },
+        "PersonalCommonTravelers": {
+          "PersonalCommonTravelers.jsx": true,
+          "PersonalCommonTravelers.module.css": true,
+          "assets": {}
+        },
+        "PersonalAddTraveler": {
+          "PersonalAddTraveler.jsx": true,
+          "PersonalAddTraveler.module.css": true,
+          "assets": {}
+        },
+        "Login": {
+          "Login.jsx": true,
+          "Login.module.css": true,
+          "assets": {}
+        },
+        "Register": {
+          "Register.jsx": true,
+          "Register.module.css": true,
+          "assets": {}
+        },
+        "RegisterSetPassword": {
+          "RegisterSetPassword.jsx": true,
+          "RegisterSetPassword.module.css": true,
+          "assets": {}
+        },
+        "RegisterSuccess": {
+          "RegisterSuccess.jsx": true,
+          "RegisterSuccess.module.css": true,
+          "assets": {}
+        },
+        "BuyTicketStep1": {
+          "BuyTicketStep1.jsx": true,
+          "BuyTicketStep1.module.css": true,
+          "assets": {}
+        },
+        "BuyTicketStep2": {
+          "BuyTicketStep2.jsx": true,
+          "BuyTicketStep2.module.css": true,
+          "assets": {}
+        },
+        "BuyTicketStep3": {
+          "BuyTicketStep3.jsx": true,
+          "BuyTicketStep3.module.css": true,
+          "assets": {}
+        },
+        "BuyTicketStep4": {
+          "BuyTicketStep4.jsx": true,
+          "BuyTicketStep4.module.css": true,
+          "assets": {}
+        }
+      },
+      "components": {
+        "TopHeader": {
+          "TopHeader.jsx": true,
+          "TopHeader.module.css": true
+        },
+        "LeftSidebar": {
+          "LeftSidebar.jsx": true,
+          "LeftSidebar.module.css": true
+        },
+        "BottomBar": {
+          "BottomBar.jsx": true,
+          "BottomBar.module.css": true
+        },
+        "PersonalLeftBar": {
+          "PersonalLeftBar.jsx": true,
+          "PersonalLeftBar.module.css": true
+        }
+      },
+      "layouts": {
+        "MainLayout": {
+          "MainLayout.jsx": true,
+          "MainLayout.module.css": true
+        },
+        "AuthLayout": {
+          "AuthLayout.jsx": true,
+          "AuthLayout.module.css": true
+        }
+      },
+      "styles": {
+        "tokens.css": true,
+        "globals.css": true,
+        "reset.css": true,
+        "typography.css": true
+      },
+      "assets": {
+        "placeholders": {
+          "home-banner.svg": true,
+          "deal-thumb-a.svg": true,
+          "deal-thumb-b.svg": true,
+          "deal-thumb-c.svg": true,
+          "footer-qr.svg": true,
+          "login-hero.svg": true
+        },
+        "image_mapping.json": true
+      },
+      "auth": {
+        "AuthContext.jsx": true,
+        "AuthProvider.jsx": true
+      },
+      "App.css": true,
+      "App.jsx": true,
+      "index.css": true,
+      "main.jsx": true,
+      "router.jsx": true
+    }
+  }
+}

@@ -1,0 +1,295 @@
+.page {
+  min-height: 100vh;
+  background: #f2f4f7;
+}
+
+.header {
+  height: 52px;
+  background: #ffffff;
+  border-bottom: 1px solid #e9eef5;
+}
+
+.headerInner {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: 180px 1fr 360px;
+  align-items: center;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #2b78ff;
+  position: relative;
+}
+
+.brandIcon::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.brandText {
+  font-size: 18px;
+  font-weight: 900;
+  color: #2b78ff;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 46px;
+  color: #5b6a7a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.stepDone,
+.stepActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepDone {
+  color: #2b78ff;
+}
+
+.stepActive {
+  color: #ff8a00;
+}
+
+.stepDotDone {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2b78ff;
+  position: relative;
+}
+
+.stepDotDone::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(40deg);
+}
+
+.stepDotActive {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff8a00;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  color: #6b7786;
+  font-size: 12px;
+}
+
+.navItem {
+  cursor: default;
+}
+
+.navSep {
+  width: 1px;
+  height: 12px;
+  background: #dde5f0;
+}
+
+.user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d7e0ec;
+}
+
+.main {
+  padding: 46px 0 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 640px;
+  background: #ffffff;
+  border: 1px solid #e9eef5;
+  border-radius: 10px;
+  padding: 26px 28px 22px;
+  box-shadow: 0 10px 24px rgba(20, 35, 60, 0.06);
+  text-align: center;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #2b3440;
+}
+
+.price {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ff8a00;
+}
+
+.route {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6d7a8a;
+}
+
+.timesRow {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+}
+
+.timeCol {
+  width: 160px;
+}
+
+.time {
+  font-size: 26px;
+  font-weight: 900;
+  color: #2b3440;
+}
+
+.airport {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a97a6;
+}
+
+.arrow {
+  font-size: 22px;
+  color: #2b3440;
+  font-weight: 900;
+}
+
+.personLine {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6d7a8a;
+}
+
+.list {
+  margin-top: 18px;
+  border-top: 1px solid #eef3f8;
+  padding-top: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f6fb;
+  align-items: center;
+}
+
+.item {
+  font-size: 12px;
+  color: #2b3440;
+  text-align: left;
+}
+
+.qty {
+  font-size: 12px;
+  color: #2b3440;
+  text-align: right;
+}
+
+.gift {
+  margin-top: 14px;
+  text-align: left;
+}
+
+.giftHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #17a34a;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.giftBadge {
+  color: #17a34a;
+}
+
+.giftRow {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  font-size: 12px;
+  color: #6d7a8a;
+}
+
+.giftItem {
+  color: #6d7a8a;
+}
+
+.giftFree {
+  color: #17a34a;
+  font-weight: 900;
+}
+
+.success {
+  margin-top: 22px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #17a34a;
+}
+
+.backBtn {
+  margin-top: 16px;
+  width: 140px;
+  height: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: #2b78ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+

@@ -1,0 +1,273 @@
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.shell {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e6ecf4;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(31, 48, 78, 0.08);
+  overflow: hidden;
+}
+
+.head {
+  padding: 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid #eef2f8;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #1e2632;
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: #6d7a8a;
+}
+
+.profile {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 140px 1fr 240px;
+  gap: 18px;
+  align-items: center;
+  background: #fbfdff;
+  border-bottom: 1px solid #eef2f8;
+}
+
+.avatarCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: #f2f5fb;
+  border: 1px solid #e6ecf4;
+}
+
+.avatarHint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #2b78ff;
+  font-weight: 900;
+}
+
+.profileMain {
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.username {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1e2632;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tier {
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #2b78ff;
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+}
+
+.uidRow {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.uidLabel {
+  color: #6d7a8a;
+  font-weight: 900;
+}
+
+.uidValue {
+  color: #1e2632;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+
+.tagRow {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tag,
+.tagMuted {
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e6ecf4;
+}
+
+.tag {
+  color: #1e2632;
+  background: #ffffff;
+}
+
+.tagMuted {
+  color: #6d7a8a;
+  background: #ffffff;
+}
+
+.actionRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.primaryBtn,
+.ghostBtn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background: #2b78ff;
+  color: #ffffff;
+  border: 1px solid #2b78ff;
+}
+
+.ghostBtn {
+  background: #ffffff;
+  color: #1e2632;
+  border: 1px solid #d7dde6;
+}
+
+.profileSide {
+  height: 86px;
+  background: #ffffff;
+  border: 1px solid #e6ecf4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.sideItem {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.sideLabel {
+  font-size: 12px;
+  color: #6d7a8a;
+  font-weight: 900;
+}
+
+.sideValue {
+  margin-top: 8px;
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.sideDivider {
+  width: 1px;
+  height: 42px;
+  background: #eef2f8;
+}
+
+.section {
+  padding: 14px 18px 18px;
+  border-top: 1px solid #eef2f8;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: #1e2632;
+}
+
+.form {
+  margin-top: 10px;
+  border: 1px solid #eef2f8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.row {
+  min-height: 44px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: 110px 1fr 44px;
+  align-items: center;
+  background: #ffffff;
+}
+
+.row + .row {
+  border-top: 1px solid #eef2f8;
+}
+
+.label {
+  font-size: 12px;
+  color: #6d7a8a;
+  font-weight: 900;
+  text-align: right;
+  padding-right: 14px;
+}
+
+.value {
+  font-size: 12px;
+  color: #1e2632;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link {
+  justify-self: end;
+  font-size: 12px;
+  color: #2b78ff;
+  text-decoration: none;
+  font-weight: 900;
+}

@@ -1,0 +1,431 @@
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.searchWrap {
+  width: 100%;
+}
+
+.searchTabs {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  background: #2f353d;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
+}
+
+.tabActive {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 13px;
+  color: #ffffff;
+  background: #1f252d;
+}
+
+.tab {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 13px;
+  color: #c7ced8;
+}
+
+.searchBody {
+  border: 1px solid #e6ecf4;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: #eef1f4;
+  padding: 12px 14px 22px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 12px;
+}
+
+.radioGroup {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #2c3440;
+  font-size: 13px;
+}
+
+.radioOption,
+.radioOptionActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radioDot,
+.radioDotActive {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #b8c1cf;
+  position: relative;
+}
+
+.radioDotActive {
+  border-color: #2b78ff;
+}
+
+.radioDotActive::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2b78ff;
+}
+
+.helpIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eaf2ff;
+  border: 1px solid #cfe0ff;
+  color: #2b78ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.cabin {
+  font-size: 12px;
+  color: #2c3440;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cabinCaret {
+  color: #8b98a9;
+  font-size: 12px;
+}
+
+.bar {
+  display: flex;
+  align-items: stretch;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 18px rgba(31, 48, 78, 0.10);
+  padding: 14px;
+}
+
+.cityBlock {
+  width: 210px;
+  padding: 6px 10px;
+}
+
+.barLabel {
+  font-size: 12px;
+  color: #9aa6b2;
+  line-height: 16px;
+}
+
+.barValue {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e2632;
+}
+
+.swapWrap {
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swapCircle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #d7dde6;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swapArrow {
+  width: 14px;
+  height: 8px;
+  position: relative;
+}
+
+.swapArrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 14px;
+  height: 2px;
+  background: #7c8898;
+}
+
+.swapArrow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 1px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid #7c8898;
+  border-bottom: 2px solid #7c8898;
+  transform: rotate(-45deg);
+}
+
+.sep {
+  width: 1px;
+  background: #e6ecf4;
+  margin: 8px 10px;
+}
+
+.dateBlock {
+  width: 290px;
+  padding: 6px 10px;
+}
+
+.dateValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.dateHint {
+  font-size: 12px;
+  color: #7c8898;
+}
+
+.addReturn {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9aa6b2;
+}
+
+.passenger {
+  width: 230px;
+  padding: 6px 10px;
+}
+
+.passengerRow {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.passengerCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c3440;
+}
+
+.checkBox {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid #cdd7e5;
+  background: #ffffff;
+}
+
+.searchBtnRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.searchBtn {
+  height: 54px;
+  width: 200px;
+  border-radius: 28px;
+  background: #ff8a00;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 12px 18px rgba(255, 138, 0, 0.24);
+  text-decoration: none;
+}
+
+.searchBtnIcon {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  position: relative;
+}
+
+.searchBtnIcon::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 9px;
+  height: 2px;
+  background: #ffffff;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+.banner {
+  margin-top: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e6ecf4;
+}
+
+.bannerImg {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.deals {
+  margin-top: 16px;
+}
+
+.dealsHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dealsTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e2632;
+}
+
+.dealsLink {
+  font-size: 12px;
+  color: #1770ff;
+  text-decoration: none;
+}
+
+.dealsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.dealCol {
+  border: 1px solid #e6ecf4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.dealColHeadGreen {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  background: linear-gradient(90deg, #25bfa6 0%, #33d0b9 100%);
+}
+
+.dealColHeadRed {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  background: linear-gradient(90deg, #ff5b58 0%, #ff7b78 100%);
+}
+
+.dealColHeadBlue {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  background: linear-gradient(90deg, #5a8dff 0%, #6aa2ff 100%);
+}
+
+.dealList {
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dealItem {
+  display: grid;
+  grid-template-columns: 18px 66px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.rank {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #f1f4f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c8898;
+}
+
+.thumb {
+  width: 66px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e6ecf4;
+}
+
+.dealInfo {
+  min-width: 0;
+}
+
+.route {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e2632;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  font-size: 12px;
+  color: #6d7a8a;
+  margin-top: 2px;
+}
+
+.price {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1770ff;
+}

@@ -1,0 +1,585 @@
+.page {
+  width: 100%;
+  background: #eef2f8;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 0 26px;
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: #6d7a8a;
+  padding: 0 10px 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  padding: 0 10px;
+}
+
+.statusCard,
+.flightCard,
+.sectionCard,
+.infoCard,
+.payCard {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(31, 48, 78, 0.06);
+}
+
+.left {
+  display: grid;
+  gap: 14px;
+}
+
+.right {
+  align-self: start;
+}
+
+.statusCard {
+  padding: 22px 22px 16px;
+}
+
+.statusTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.statusTitle {
+  font-size: 34px;
+  color: #ff6a00;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.statusSub {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #1e2632;
+  font-weight: 700;
+}
+
+.orderNo {
+  font-size: 16px;
+  color: #1e2632;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.statusActions {
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.payBtn {
+  width: 170px;
+  height: 48px;
+  border-radius: 6px;
+  background: #ff6a00;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.cancelBtn {
+  width: 170px;
+  height: 48px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 2px solid #2b78ff;
+  color: #2b78ff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.remindBar {
+  margin-top: 16px;
+  height: 52px;
+  border-radius: 10px;
+  background: #f2f5fb;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.remindIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #ff6a00;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.remindIcon::after {
+  content: '!';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -56%);
+  font-size: 12px;
+  color: #ff6a00;
+  font-weight: 900;
+}
+
+.remindStrong {
+  font-size: 16px;
+  color: #ff6a00;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.remindText {
+  font-size: 14px;
+  color: #1e2632;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.remindDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #9aa6b2;
+  flex: 0 0 auto;
+}
+
+.remindCaret {
+  margin-left: auto;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 8px solid #c0c9d6;
+  flex: 0 0 auto;
+}
+
+.flightCard {
+  padding: 18px 18px 16px;
+}
+
+.flightHead {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.flightTitle {
+  font-size: 34px;
+  font-weight: 900;
+  color: #1e2632;
+}
+
+.flightLink {
+  font-size: 14px;
+  color: #2b78ff;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.itin {
+  margin-top: 14px;
+  background: #fbfdff;
+  border: 1px solid #eef2f8;
+  border-radius: 12px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 160px 1fr 300px;
+  gap: 16px;
+  align-items: center;
+}
+
+.itinLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.itinTag {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #1770ff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.itinDate {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1e2632;
+}
+
+.timeline {
+  display: grid;
+  row-gap: 10px;
+}
+
+.trow {
+  display: grid;
+  grid-template-columns: 80px 26px 1fr;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.tTime {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1e2632;
+  text-align: right;
+}
+
+.tLine {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: #c0c9d6;
+  box-shadow: 0 28px 0 #c0c9d6;
+  justify-self: center;
+}
+
+.tPlace {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tCity {
+  font-size: 22px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.tStation {
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.tmid {
+  display: grid;
+  grid-template-columns: 80px 26px 1fr;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.tDur {
+  grid-column: 1;
+  font-size: 16px;
+  color: #6d7a8a;
+  font-weight: 900;
+  text-align: right;
+}
+
+.itinRight {
+  padding-left: 10px;
+}
+
+.airlineRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.airlineIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ef4444;
+  position: relative;
+}
+
+.airlineIcon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 12px;
+  height: 10px;
+  border-radius: 10px 10px 10px 0;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-left: 0;
+}
+
+.airlineText {
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.airlineSub {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #6d7a8a;
+  font-weight: 900;
+}
+
+.flightAlert {
+  margin-top: 14px;
+  height: 56px;
+  border-radius: 10px;
+  background: #fff1f2;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 12px;
+}
+
+.alertText {
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.alertStrong {
+  color: #ef4444;
+}
+
+.alertLink {
+  margin-left: 10px;
+  font-size: 18px;
+  color: #2b78ff;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.sectionCard {
+  padding: 18px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.serviceList {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.serviceItem {
+  height: 64px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #eef2f8;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+}
+
+.serviceText {
+  font-size: 14px;
+  color: #1e2632;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serviceLink {
+  margin-left: auto;
+  font-size: 14px;
+  color: #6d7a8a;
+  text-decoration: none;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.serviceIconShield,
+.serviceIconBag,
+.serviceIconTicket {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #e5f0ff;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.serviceIconShield::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 10px;
+  height: 14px;
+  border-radius: 0 0 8px 8px;
+  border: 2px solid #2b78ff;
+  border-top: 0;
+}
+
+.serviceIconBag::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 2px solid #2b78ff;
+}
+
+.serviceIconTicket::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  width: 14px;
+  height: 8px;
+  border-radius: 3px;
+  border: 2px solid #2b78ff;
+}
+
+.infoCard {
+  padding: 18px;
+}
+
+.infoBody {
+  margin-top: 14px;
+}
+
+.infoName {
+  font-size: 24px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.infoRow {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.infoLabel {
+  width: 90px;
+  color: #1e2632;
+}
+
+.infoValue {
+  color: #1e2632;
+}
+
+.payCard {
+  padding: 22px;
+}
+
+.payTitle {
+  font-size: 28px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.payDivider {
+  margin-top: 14px;
+  height: 1px;
+  background: #eef2f8;
+}
+
+.payTopRow {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.payAmountLabel {
+  font-size: 22px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.payAmountTime {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6d7a8a;
+  font-weight: 900;
+}
+
+.payAmountValue {
+  font-size: 28px;
+  color: #2b78ff;
+  font-weight: 900;
+}
+
+.payBox {
+  margin-top: 16px;
+  background: #f7f9fc;
+  border-radius: 12px;
+  padding: 16px 16px 12px;
+}
+
+.payLine,
+.payLineMuted {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  gap: 12px;
+}
+
+.payLineMuted {
+  color: #9aa6b2;
+}
+
+.payLeft {
+  font-size: 18px;
+  font-weight: 900;
+  color: inherit;
+}
+
+.payRight {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.payMoney {
+  font-size: 18px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.payMoneyMuted {
+  font-size: 18px;
+  color: #9aa6b2;
+  font-weight: 900;
+}
+
+.payCount {
+  font-size: 16px;
+  color: #1e2632;
+  font-weight: 900;
+}
+
+.payHr {
+  height: 1px;
+  background: #eef2f8;
+  margin: 8px 0 6px;
+}

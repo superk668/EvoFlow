@@ -1,0 +1,420 @@
+.header {
+  height: 56px;
+  border-bottom: 1px solid #e9edf3;
+  background: #ffffff;
+}
+
+.inner {
+  max-width: 1200px;
+  height: 56px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.brandMark {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 28% 34%, #ffd66b 0%, #ff8a00 30%, #1a7bff 70%, #0aa9ff 100%);
+}
+
+.brandText {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #1770ff;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.navItem {
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c3440;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navIconHome {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: #eaf2ff;
+  border: 1px solid #d2e0ff;
+  position: relative;
+}
+
+.navIconHome::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  background: #7ba9ff;
+  clip-path: polygon(50% 0%, 100% 40%, 100% 100%, 0% 100%, 0% 40%);
+}
+
+.navIconUser {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eaf2ff;
+  border: 1px solid #d2e0ff;
+  position: relative;
+}
+
+.navIconUser::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7ba9ff;
+}
+
+.navIconUser::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  width: 8px;
+  height: 4px;
+  border-radius: 6px 6px 0 0;
+  background: #7ba9ff;
+}
+
+.navCaret {
+  margin-left: 2px;
+  font-size: 12px;
+  color: #7c8898;
+}
+
+.vSep {
+  width: 1px;
+  height: 16px;
+  background: #e3eaf4;
+}
+
+.authSlot {
+  min-width: 140px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.loginRegister {
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #2c3440;
+}
+
+.authLink {
+  color: #2c3440;
+  text-decoration: none;
+}
+
+.authSep {
+  color: #9aa6b2;
+}
+
+.iconRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIconPhone,
+.headerIconHeart,
+.headerIconMessage {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f2f5fb;
+  border: 1px solid #e3eaf4;
+  position: relative;
+}
+
+.headerIconPhone::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 6px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #93a3b5;
+}
+
+.headerIconHeart::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 8px;
+  height: 6px;
+  background: #93a3b5;
+  transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.headerIconHeart::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #93a3b5;
+  box-shadow: -4px 0 0 #93a3b5;
+}
+
+.headerIconMessage::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 5px;
+  width: 10px;
+  height: 7px;
+  border-radius: 3px;
+  border: 1px solid #93a3b5;
+}
+
+.headerIconMessage::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 11px;
+  width: 4px;
+  height: 4px;
+  background: #93a3b5;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.userMenu {
+  position: relative;
+}
+
+.userButton {
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2c3440;
+  white-space: nowrap;
+}
+
+.menuPanel {
+  display: none;
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 280px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(31, 48, 78, 0.18);
+  border: 1px solid #e6ecf4;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.menuPanelOpen {
+  display: block;
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 280px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(31, 48, 78, 0.18);
+  border: 1px solid #e6ecf4;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.menuHeader {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid #eef2f8;
+}
+
+.menuHeaderMain {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+}
+
+.menuAvatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #61d9c1 0%, #2aa6ff 65%, #1f75ff 100%);
+}
+
+.menuHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menuTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1e2632;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menuChevron {
+  font-size: 18px;
+  color: #8b98a9;
+}
+
+.menuSubRow {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tierIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #eaf2ff;
+  border: 1px solid #d2e0ff;
+  position: relative;
+}
+
+.tierIcon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #7ba9ff;
+}
+
+.menuTier {
+  font-size: 14px;
+  color: #2c3440;
+  font-weight: 700;
+}
+
+.menuItems {
+  padding: 10px 0;
+}
+
+.menuItem {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e2632;
+}
+
+.menuItemLink {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e2632;
+  text-decoration: none;
+}
+
+.menuIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: #eaf0fb;
+  border: 1px solid #d5e0f3;
+}
+
+.menuLabel {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.menuValue {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1770ff;
+}
+
+.menuDivider {
+  height: 1px;
+  background: #eef2f8;
+  margin: 10px 0;
+}
+
+.menuLogout {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e2632;
+}
+
+.menuLogoutIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #9aa6b2;
+  position: relative;
+}
+
+.menuLogoutIcon::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 3px;
+  width: 8px;
+  height: 2px;
+  background: #9aa6b2;
+}

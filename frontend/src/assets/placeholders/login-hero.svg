@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+  <rect width="1200" height="360" fill="#dbeafe"/>
+  <rect x="0" y="0" width="1200" height="360" fill="url(#g)"/>
+  <circle cx="280" cy="160" r="110" fill="#c7ddff"/>
+  <rect x="120" y="140" width="20" height="120" rx="6" fill="#b9d2ff"/>
+  <rect x="170" y="110" width="26" height="150" rx="6" fill="#b9d2ff"/>
+  <rect x="230" y="90" width="34" height="170" rx="6" fill="#b9d2ff"/>
+  <rect x="310" y="120" width="26" height="140" rx="6" fill="#b9d2ff"/>
+  <path d="M455 80 L520 100 L560 92" stroke="#ffffff" stroke-width="4" fill="none" opacity="0.6"/>
+  <path d="M520 100 l18 -10 l-8 18" fill="#ffffff" opacity="0.7"/>
+  <text x="600" y="190" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" fill="#5b6776">占位 - login_hero (1200×360)</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#cfe2ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+

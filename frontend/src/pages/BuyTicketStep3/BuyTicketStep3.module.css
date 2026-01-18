@@ -1,0 +1,334 @@
+.page {
+  min-height: 100vh;
+  background: #eaf0f7;
+}
+
+.topBar {
+  height: 52px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6ecf4;
+}
+
+.topInner {
+  max-width: 1120px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: #2b78ff;
+  letter-spacing: 0.5px;
+}
+
+.topRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #7f8b99;
+}
+
+.accessIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: #c7d2df;
+}
+
+.main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 0 44px;
+}
+
+.panel {
+  width: 960px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e1e8f3;
+  box-shadow: 0 8px 18px rgba(26, 41, 77, 0.08);
+}
+
+.panelTop {
+  padding: 16px 22px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.amountLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.amountLabel {
+  font-size: 14px;
+  color: #3b4a5a;
+}
+
+.amountValue {
+  font-size: 28px;
+  font-weight: 900;
+  color: #ff8a00;
+}
+
+.amountRight {
+  font-size: 12px;
+  color: #7c8a99;
+  white-space: nowrap;
+}
+
+.remainLabel {
+  color: #7c8a99;
+}
+
+.remainTime {
+  color: #ff8a00;
+  font-weight: 800;
+}
+
+.remainTail {
+  color: #7c8a99;
+}
+
+.divider {
+  height: 1px;
+  background: #eef3f8;
+}
+
+.infoBlock {
+  padding: 16px 22px 10px;
+}
+
+.infoTitle {
+  font-size: 16px;
+  font-weight: 900;
+  color: #2d3a48;
+  margin-bottom: 8px;
+}
+
+.infoLine {
+  font-size: 12px;
+  color: #6d7a8a;
+  line-height: 20px;
+}
+
+.noticeBar {
+  margin: 8px 22px 0;
+  height: 34px;
+  background: #fff5e8;
+  border: 1px solid rgba(255, 138, 0, 0.25);
+  border-radius: 2px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #7b5a32;
+  font-size: 12px;
+}
+
+.noticeDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: #ff8a00;
+}
+
+.payBox {
+  margin: 14px 22px 0;
+  border: 1px solid #e1e8f3;
+}
+
+.payOptionActive {
+  height: 58px;
+  border: 2px solid #a8d1ff;
+  margin: 14px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.payOption {
+  height: 48px;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2d3a48;
+}
+
+.radioChecked {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #2b78ff;
+  position: relative;
+}
+
+.radioChecked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #2b78ff;
+}
+
+.radio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #c6d0dc;
+}
+
+.bankIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff3b30;
+  position: relative;
+}
+
+.bankIcon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 8px;
+  height: 10px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.payText {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.payDivider {
+  height: 1px;
+  background: #eef3f8;
+  margin: 0 14px;
+}
+
+.payBtn {
+  margin: 18px 0 18px 60px;
+  width: 220px;
+  height: 44px;
+  border: 0;
+  border-radius: 2px;
+  background: #ff8a00;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.alipayBox {
+  height: 52px;
+  margin: 18px 22px 18px;
+  border: 1px solid #e1e8f3;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.alipayLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #2d3a48;
+}
+
+.alipayIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: #00a0e9;
+  position: relative;
+}
+
+.alipayIcon::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.morePay {
+  font-size: 12px;
+  color: #7c8a99;
+}
+
+.moreArrow {
+  font-size: 16px;
+  line-height: 0;
+  vertical-align: -1px;
+}
+
+.secureRow {
+  width: 960px;
+  margin: 18px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  color: #9aa6b2;
+  font-size: 12px;
+}
+
+.secureItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shieldIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #3a78ff;
+  position: relative;
+}
+
+.shieldIcon::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 6px;
+  height: 10px;
+  border-radius: 0 0 6px 6px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.badgeIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff8a00;
+  position: relative;
+}
+
+.badgeIcon::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+

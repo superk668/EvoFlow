@@ -1,0 +1,35 @@
+{
+  "page": "Home",
+  "source_image": "manual_prompt/login_register/web_constructor_step_0/homepage.png",
+  "implementation": "frontend/src/pages/Home/Home.jsx",
+  "notes": [
+    "当前实现为静态布局，还原顶部栏+左侧栏+机票搜索卡片+横幅+低价速报三列卡片。",
+    "已补充登录态顶部用户名区域与下拉菜单样式，并按需求接入基础路由跳转。",
+    "顶部栏已按 header.png 调整为：Logo + 首页/用户/订单/客服/通知 + 右侧图标组。",
+    "已按 bottom_bar.png 添加全局静态底边栏，并固定在页面最底端。",
+    "已按 login_overview.png/login_core.png 构建登录页主体：背景区 + 登录卡片 + 扫码登录侧标签。",
+    "已按 register_overview.png/register_core1.png/register_core2.png 构建注册第一步：验证手机 + 短信验证码 + 协议复选。",
+    "已按 register2_overview.png/register2_core1.png/register2_core2.png 构建注册第二步：设置密码 + 强度提示 + 完成按钮。",
+    "已按 searching_bar_homepage.png 调整主页机票搜索栏：顶部导航 + 单程/往返/多程 + 城市/日期/乘客类型栏。",
+    "已按 search_result_overview.png 构建搜索结果页：日期价格条 + 航班列表，并随查询参数变化。",
+    "截图中文字在小尺寸下可读性有限，已按可辨识内容进行逐字落地；若提供更高清特写可进一步校准。"
+  ],
+  "known_gaps": [
+    "部分细小文案与图标为占位近似。",
+    "横向菜单与搜索卡片的次级选项细节可能与截图存在轻微差异。"
+  ],
+  "additional_sources": [
+    "manual_prompt/login_register/web_constructor_step_0/logined_page.png",
+    "manual_prompt/login_register/web_constructor_step_0/Dropdown menu.png",
+    "manual_prompt/login_register/web_constructor_step_2/login_overview.png",
+    "manual_prompt/login_register/web_constructor_step_2/login_core.png",
+    "manual_prompt/login_register/web_constructor_step_3/register_overview.png",
+    "manual_prompt/login_register/web_constructor_step_3/register_core1.png",
+    "manual_prompt/login_register/web_constructor_step_3/register_core2.png",
+    "manual_prompt/login_register/web_constructor_step_4/register2_overview.png",
+    "manual_prompt/login_register/web_constructor_step_4/register2_core1.png",
+    "manual_prompt/login_register/web_constructor_step_4/register2_core2.png",
+    "manual_prompt/buy_ticket/web_constructor_step_0/searching_bar_homepage.png",
+    "manual_prompt/buy_ticket/web_constructor_step_0/search_result_overview.png"
+  ]
+}

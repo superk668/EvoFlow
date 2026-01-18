@@ -1,0 +1,38 @@
+{
+  "home_banner": {
+    "path": "src/assets/placeholders/home-banner.svg",
+    "width": 980,
+    "height": 160,
+    "source": "manual_prompt/login_register/web_constructor_step_0/homepage.png#banner"
+  },
+  "deal_thumb_a": {
+    "path": "src/assets/placeholders/deal-thumb-a.svg",
+    "width": 66,
+    "height": 44,
+    "source": "manual_prompt/login_register/web_constructor_step_0/homepage.png#deal_thumbs"
+  },
+  "deal_thumb_b": {
+    "path": "src/assets/placeholders/deal-thumb-b.svg",
+    "width": 66,
+    "height": 44,
+    "source": "manual_prompt/login_register/web_constructor_step_0/homepage.png#deal_thumbs"
+  },
+  "deal_thumb_c": {
+    "path": "src/assets/placeholders/deal-thumb-c.svg",
+    "width": 66,
+    "height": 44,
+    "source": "manual_prompt/login_register/web_constructor_step_0/homepage.png#deal_thumbs"
+  },
+  "footer_qr": {
+    "path": "src/assets/placeholders/footer-qr.svg",
+    "width": 120,
+    "height": 120,
+    "source": "manual_prompt/login_register/web_constructor_step_1/bottom_bar.png#qr"
+  },
+  "login_hero": {
+    "path": "src/assets/placeholders/login-hero.svg",
+    "width": 1200,
+    "height": 360,
+    "source": "manual_prompt/login_register/web_constructor_step_2/login_overview.png#hero"
+  }
+}
