@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep1.module.css'
 
@@ -25,9 +25,40 @@ function formatDuration(dep, arr) {
   return `${hh}h${String(mm).padStart(2, '0')}m`
 }
 
+function isValidIdCardNumber(value) {
+  return /^\d{17}[\dXx]$/.test(String(value).trim())
+}
+
+function isValidPhoneNumber(value) {
+  return /^1\d{10}$/.test(String(value).trim())
+}
+
+function readBookingDraft() {
+  try {
+    const raw = sessionStorage.getItem('bookingDraft')
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function writeBookingDraft(draft) {
+  sessionStorage.setItem('bookingDraft', JSON.stringify(draft))
+}
+
 export default function BuyTicketStep1() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+
+  const [name, setName] = useState('')
+  const [idNumber, setIdNumber] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [error, setError] = useState('')
+  const [fieldError, setFieldError] = useState({ name: '', idNumber: '', contactPhone: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const date = searchParams.get('date') || '2026-01-17'
   const from = searchParams.get('from') || '上海(SHA)'
@@ -49,10 +80,69 @@ export default function BuyTicketStep1() {
 
   const duration = useMemo(() => formatDuration(depTime, arrTime), [depTime, arrTime])
 
-  function goStep2() {
-    const qp = new URLSearchParams(searchParams)
-    const search = qp.toString()
-    navigate({ pathname: '/buy-ticket/step2', search: search ? `?${search}` : '' })
+  async function goStep2() {
+    setError('')
+    setFieldError({ name: '', idNumber: '', contactPhone: '' })
+
+    const existingDraft = readBookingDraft()
+    if (existingDraft && !existingDraft.packageId) {
+      setError('套餐信息异常，请重试')
+      return
+    }
+
+    const nextFieldError = { name: '', idNumber: '', contactPhone: '' }
+    const nextName = String(name).trim()
+    const nextId = String(idNumber).trim()
+    const nextContact = String(contactPhone).trim()
+
+    if (!nextName) nextFieldError.name = '请输入姓名'
+    if (!isValidIdCardNumber(nextId)) nextFieldError.idNumber = '证件号码格式不正确'
+    if (!isValidPhoneNumber(nextContact)) nextFieldError.contactPhone = '联系人手机号格式不正确'
+
+    setFieldError(nextFieldError)
+    if (nextFieldError.name || nextFieldError.idNumber || nextFieldError.contactPhone) return
+
+    const currentDraft = existingDraft ?? {
+      flightId: searchParams.get('flight') || null,
+      packageId: searchParams.get('fare') || null,
+      departDate: searchParams.get('date') || null,
+      priceVersion: `v${Date.now()}`,
+    }
+
+    const nextDraft = {
+      ...currentDraft,
+      passenger: {
+        name: nextName,
+        idType: '身份证',
+        idNumber: nextId,
+      },
+      contact: {
+        phoneNumber: nextContact,
+      },
+    }
+
+    setIsSubmitting(true)
+    try {
+      const resp = await fetch('/api/booking/draft', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextDraft),
+      })
+      if (!resp.ok && resp.status !== 204) {
+        setError('网络异常，请稍后重试')
+        return
+      }
+
+      writeBookingDraft(nextDraft)
+
+      const qp = new URLSearchParams(searchParams)
+      const search = qp.toString()
+      navigate({ pathname: '/buy-ticket/step2', search: search ? `?${search}` : '' })
+    } catch {
+      setError('网络异常，请稍后重试')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -114,8 +204,13 @@ export default function BuyTicketStep1() {
                 <div className={styles.passengerFields}>
                   <div className={styles.line}>
                     <div className={styles.inputRow}>
-                      <div className={styles.inputPlaceholder}>请与登机证件姓名保持一致</div>
+                      <input
+                        placeholder="请与登机证件姓名保持一致"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
                       <div className={styles.underline} aria-hidden="true" />
+                      {fieldError.name ? <div>{fieldError.name}</div> : null}
                     </div>
                     <button type="button" className={styles.deleteBtn}>
                       <span className={styles.deleteX} aria-hidden="true" />
@@ -130,8 +225,9 @@ export default function BuyTicketStep1() {
                       <div className={styles.underline} aria-hidden="true" />
                     </div>
                     <div className={styles.inputRow}>
-                      <div className={styles.inputPlaceholder}>登机证件号码</div>
+                      <input placeholder="登机证件号码" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} />
                       <div className={styles.underline} aria-hidden="true" />
+                      {fieldError.idNumber ? <div>{fieldError.idNumber}</div> : null}
                     </div>
                   </div>
 
@@ -171,8 +267,9 @@ export default function BuyTicketStep1() {
                   <div className={styles.underline} aria-hidden="true" />
                 </div>
                 <div className={styles.inputRow}>
-                  <div className={styles.inputValue}>158 7445 0027</div>
+                  <input placeholder="联系人手机号" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
                   <div className={styles.underline} aria-hidden="true" />
+                  {fieldError.contactPhone ? <div>{fieldError.contactPhone}</div> : null}
                 </div>
               </div>
               <div className={styles.contactHint}>
@@ -181,7 +278,9 @@ export default function BuyTicketStep1() {
               </div>
             </div>
 
-            <button type="button" className={styles.nextBtn} onClick={goStep2}>
+            {error ? <div>{error}</div> : null}
+
+            <button type="button" className={styles.nextBtn} onClick={goStep2} disabled={isSubmitting}>
               下一步
             </button>
           </div>

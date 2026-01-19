@@ -128,3 +128,190 @@
     - date: "2026-01-18"
       description: "初始创建。"
 
+- type: Frontend
+  id: UI-BookingProgressHeader
+  description: 订票流程全局进度条（在 /buy-ticket/step1-4 或 /booking/* 展示）。
+  properties:
+    - name: currentStage
+      type: string
+      description: "当前阶段：passenger/services/payment/complete。"
+  state:
+    - bookingStage
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 阶段顺序固定为 1乘机信息、2增值服务、3支付、4完成。
+    - 当前阶段高亮，已完成阶段展示 ✓。
+    - 当 bookingStage 缺失或非法时默认回退为 passenger。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BookingDraftStorage
+  description: 订票草稿的单一数据源与一致性约定（sessionStorage.bookingDraft）。
+  properties:
+    - name: onDraftUpdated
+      type: function
+      description: "草稿更新后的回调（用于刷新摘要与按钮状态）。"
+  state:
+    - bookingDraft
+    - draftError
+  dependencies:
+    - API-GET-BookingDraft
+    - API-PUT-BookingDraft
+    - API-DELETE-BookingDraft
+  acceptanceCriteria:
+    - 会话键名固定为 sessionStorage.bookingDraft。
+    - 草稿结构包含 flightId、packageId、departDate、priceVersion、passenger、contact、services、stage。
+    - 除订票输入页外，展示证件号与手机号必须使用脱敏值。
+    - 任一页面读取不到草稿时按“草稿缺失”处理并阻止流程继续。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BuyTicketStep1PassengerContact
+  description: 订票页面（乘机人与联系人信息），校验通过后写入 bookingDraft 并进入增值服务页。
+  properties:
+    - name: onNext
+      type: function
+      description: "点击下一步且校验通过后的导航回调。"
+  state:
+    - passengerName
+    - passengerIdType
+    - passengerIdNumber
+    - passengerPhoneNumber
+    - contactPhoneNumber
+    - error
+    - isLoading
+  dependencies:
+    - UI-BookingDraftStorage
+    - API-PUT-BookingDraft
+  acceptanceCriteria:
+    - 点击下一步且校验通过后必须将 passenger/contact 写入 bookingDraft。
+    - 当证件号格式错误时提示“证件号码格式不正确”并阻止进入下一步。
+    - 当联系人手机号非法时提示“联系人手机号格式不正确”并阻止进入下一步。
+    - 写入失败时提示“网络异常，请稍后重试”并保留已填写数据。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BuyTicketStep2Services
+  description: 增值服务页，展示航班摘要与乘机人/联系人摘要（脱敏），生成订单并进入支付。
+  properties:
+    - name: onCreateOrderSuccess
+      type: function
+      description: "订单创建成功后的导航回调（进入支付页）。"
+  state:
+    - selectedServices
+    - priceBreakdown
+    - error
+    - isLoading
+  dependencies:
+    - UI-BookingDraftStorage
+    - API-GET-BookingDraft
+    - API-PUT-BookingDraft
+    - API-POST-OrdersFlight
+  acceptanceCriteria:
+    - 页面乘机人/联系人摘要必须从 bookingDraft 读取并脱敏展示。
+    - 点击下一步后创建订单并写入共享订单存储 evoflow_orders，状态为 pending_payment。
+    - 订单 details.passenger/contact 必须由 bookingDraft 生成快照且脱敏后落盘。
+    - 当草稿缺失或解析失败时提示“订单信息异常，请返回重新填写”，并禁止进入支付。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BuyTicketStep3Payment
+  description: 支付页，展示倒计时（15:00）与支付方式，校验信息一致后发起支付。
+  properties:
+    - name: orderId
+      type: string
+      description: "订单号（来自路由参数或会话 createdOrderId）。"
+  state:
+    - remainingSeconds
+    - payMethod
+    - newCardForm
+    - error
+    - isPaying
+  dependencies:
+    - UI-BookingDraftStorage
+    - API-GET-OrderById
+    - API-GET-BookingDraft
+    - API-POST-OrderPay
+  acceptanceCriteria:
+    - 倒计时为 15 分钟并基于订单 expiresAt 计算。
+    - 展示乘机人姓名、证件类型与证件号脱敏值，来源为 bookingDraft 或订单 details 快照。
+    - 当乘机人信息缺失或不一致时提示“乘机人信息异常，请返回重新填写”并禁止支付。
+    - 倒计时到期弹窗提示“超出时间，请重新开始订单”，并提供返回首页入口。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-BuyTicketStep4Complete
+  description: 完成页（出票成功），展示订单摘要并将订单状态更新为 pending_travel。
+  properties:
+    - name: orderId
+      type: string
+      description: "订单号（用于查询与更新状态）。"
+  state:
+    - order
+    - error
+    - isUpdating
+  dependencies:
+    - API-GET-OrderById
+    - API-PATCH-OrderStatus
+    - API-DELETE-BookingDraft
+  acceptanceCriteria:
+    - 页面展示金额、路线、起降信息、乘机人/联系人摘要与价格明细（保持现有 UI 架构）。
+    - 乘机人/联系人摘要优先来自订单 details（已脱敏），不足时使用 bookingDraft 生成脱敏摘要。
+    - 完成页副作用重复触发时应检测创建锁或已有 createdOrderId 并避免重复更新。
+    - 订单更新失败时提示“订单更新失败，稍后查看订单中心”，不影响完成页 UI。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-OrdersPage
+  description: 订单中心列表页，展示本地共享订单存储中的订单。
+  properties:
+    - name: initialFilter
+      type: string
+      description: "初始筛选：all/pending_payment/pending_travel。"
+  state:
+    - activeFilter
+    - orders
+    - error
+    - isLoading
+  dependencies:
+    - API-GET-Orders
+  acceptanceCriteria:
+    - 列表数据来源为共享订单存储 evoflow_orders，默认展示近一年。
+    - 支持按状态筛选：待支付/未出行。
+    - 点击订单进入订单详情页。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-OrderDetailPage
+  description: 订单详情页，展示订单状态、行程、乘机人/联系人摘要与价格明细。
+  properties:
+    - name: orderId
+      type: string
+      description: "订单号（来自路由参数）。"
+  state:
+    - order
+    - error
+    - isLoading
+  dependencies:
+    - API-GET-OrderById
+  acceptanceCriteria:
+    - 乘机人/联系人摘要展示必须使用脱敏值并来自订单 details。
+    - 订单不存在时提示“订单不存在或已失效”并提供返回订单列表入口。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"

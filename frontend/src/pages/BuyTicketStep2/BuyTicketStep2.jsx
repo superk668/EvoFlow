@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep2.module.css'
 
@@ -25,10 +25,61 @@ function formatDuration(dep, arr) {
   return `${hh}h${String(mm).padStart(2, '0')}m`
 }
 
+function maskPhone(phone) {
+  const p = String(phone ?? '').replace(/\s+/g, '')
+  if (p.length < 7) return p
+  return `${p.slice(0, 3)}****${p.slice(-4)}`
+}
+
+function maskId(idNumber) {
+  const s = String(idNumber ?? '').replace(/\s+/g, '')
+  if (s.length < 5) return s
+  return `${s.slice(0, 3)}**********${s.slice(-2)}`
+}
+
+function readBookingDraft() {
+  try {
+    const raw = sessionStorage.getItem('bookingDraft')
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function writeSession(key, value) {
+  try {
+    sessionStorage.setItem(key, value)
+  } catch {
+    void 0
+  }
+}
+
+function readOrders() {
+  try {
+    const raw = localStorage.getItem('evoflow_orders')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeOrders(next) {
+  localStorage.setItem('evoflow_orders', JSON.stringify(next))
+}
+
 export default function BuyTicketStep2() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
+
+  const [serviceToast, setServiceToast] = useState('')
+  const [servicesError, setServicesError] = useState('')
+  const [isPaying, setIsPaying] = useState(false)
 
   const date = searchParams.get('date') || '2026-01-17'
   const from = searchParams.get('from') || '上海(SHA)'
@@ -50,10 +101,88 @@ export default function BuyTicketStep2() {
 
   const duration = useMemo(() => formatDuration(depTime, arrTime), [depTime, arrTime])
 
-  function goPay() {
-    const qp = new URLSearchParams(searchParams)
-    const search = qp.toString()
-    navigate({ pathname: '/buy-ticket/step3', search: search ? `?${search}` : '' })
+  const draft = useMemo(() => readBookingDraft(), [])
+
+  const passengerName = draft?.passenger?.name ?? ''
+  const passengerIdType = draft?.passenger?.idType ?? ''
+  const passengerIdNumber = draft?.passenger?.idNumber ?? ''
+  const contactPhone = draft?.contact?.phoneNumber ?? ''
+
+  const draftValid = Boolean(passengerName && passengerIdType && passengerIdNumber && contactPhone)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/services/flight')
+      .then((resp) => {
+        if (!alive) return
+        if (!resp.ok) setServicesError('加载失败')
+      })
+      .catch(() => {
+        if (!alive) return
+        setServicesError('加载失败')
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  async function handlePickService() {
+    setServiceToast('')
+    try {
+      const resp = await fetch('/api/services/flight/select', { method: 'POST' })
+      if (resp.status === 503) {
+        setServiceToast('服务暂不可用')
+      }
+    } catch {
+      setServiceToast('服务暂不可用')
+    }
+  }
+
+  async function goPay() {
+    if (!draftValid) return
+    setIsPaying(true)
+    try {
+      const resp = await fetch('/api/orders/flight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft }),
+      })
+      if (!resp.ok) return
+      const data = await resp.json()
+
+      const orderId = data.orderId
+      const status = data.status
+      const expiresAt = data.expiresAt
+      const nowIso = new Date().toISOString()
+      const amount = Number.parseFloat(String(total))
+      const nextOrder = {
+        id: orderId,
+        productType: 'flight',
+        status,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        expiresAt,
+        amount: Number.isFinite(amount) ? amount : 0,
+        details: {
+          passenger: { name: passengerName, idType: passengerIdType, idNumberMasked: maskId(passengerIdNumber) },
+          contact: { phoneNumberMasked: maskPhone(contactPhone) },
+        },
+      }
+
+      const orders = readOrders()
+      const without = orders.filter((o) => o?.id !== orderId)
+      writeOrders([...without, nextOrder])
+      writeSession('createdOrderId', String(orderId))
+
+      const qp = new URLSearchParams(searchParams)
+      qp.set('orderId', String(orderId))
+      const search = qp.toString()
+      navigate({ pathname: '/buy-ticket/step3', search: search ? `?${search}` : '' })
+    } catch {
+      void 0
+    } finally {
+      setIsPaying(false)
+    }
   }
 
   return (
@@ -91,20 +220,24 @@ export default function BuyTicketStep2() {
               <div className={styles.profileLeft}>
                 <div className={styles.profileNo}>1</div>
                 <div className={styles.profileType}>成人</div>
-                <div className={styles.profileName}>刘旭航</div>
-                <div className={styles.profileIdLabel}>身份证</div>
-                <div className={styles.profileIdValue}>360924 2005 0910 0812</div>
+                <div className={styles.profileName}>{passengerName}</div>
+                <div className={styles.profileIdLabel}>{passengerIdType}</div>
+                <div className={styles.profileIdValue}>{maskId(passengerIdNumber)}</div>
               </div>
               <div className={styles.profileSep} aria-hidden="true" />
               <div className={styles.profileRight}>
                 <div className={styles.avatar} aria-hidden="true" />
                 <div className={styles.contactTag}>联系人</div>
-                <div className={styles.contactValue}>(+86)18879586080</div>
+                <div className={styles.contactValue}>{maskPhone(contactPhone)}</div>
               </div>
               <Link className={styles.backModify} to={{ pathname: '/buy-ticket/step1', search: location.search }}>
                 返回修改
               </Link>
             </div>
+
+            {!draftValid ? <div>订单信息异常，请返回重新填写</div> : null}
+            {servicesError ? <div>{servicesError}</div> : null}
+            {serviceToast ? <div>{serviceToast}</div> : null}
 
             <div className={styles.serviceCard}>
               <div className={styles.serviceSide}>
@@ -125,7 +258,7 @@ export default function BuyTicketStep2() {
                       <div className={styles.servicePrice}>¥40/人</div>
                       <div className={styles.caretDown} aria-hidden="true" />
                     </div>
-                    <button type="button" className={styles.addBtnActive}>
+                    <button type="button" className={styles.addBtnActive} onClick={handlePickService}>
                       添加保障
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
@@ -154,7 +287,7 @@ export default function BuyTicketStep2() {
                     <div className={styles.serviceRowLabel}>标准保障</div>
                     <div className={styles.serviceRowPrice}>¥39/人</div>
                     <div className={styles.caretDownSmall} aria-hidden="true" />
-                    <button type="button" className={styles.addBtn}>
+                    <button type="button" className={styles.addBtn} onClick={handlePickService}>
                       添加保障
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
@@ -169,7 +302,7 @@ export default function BuyTicketStep2() {
                     <div className={styles.serviceRowLabel}>保2天</div>
                     <div className={styles.serviceRowPrice}>¥75/人</div>
                     <div className={styles.caretDownSmall} aria-hidden="true" />
-                    <button type="button" className={styles.addBtn}>
+                    <button type="button" className={styles.addBtn} onClick={handlePickService}>
                       添加保障
                       <span className={styles.addCircle} aria-hidden="true" />
                     </button>
@@ -221,7 +354,7 @@ export default function BuyTicketStep2() {
                 </label>
               </div>
 
-              <button type="button" className={styles.payBtn} onClick={goPay}>
+              <button type="button" className={styles.payBtn} onClick={goPay} disabled={!draftValid || isPaying}>
                 去支付
               </button>
             </div>

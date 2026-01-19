@@ -112,3 +112,95 @@
     - date: "2026-01-18"
       description: "初始创建。"
 
+- type: Database
+  id: DB-GetBookingDraft
+  description: 从会话存储读取订票草稿 bookingDraft。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 读取 sessionStorage.bookingDraft 并解析为对象。
+    - 关键字段至少包含 flightId、packageId、departDate、priceVersion。
+    - 若不存在或解析失败则返回空结果与错误原因（not_found/parse_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpsertBookingDraft
+  description: 写入/更新会话存储中的订票草稿 bookingDraft。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 写入键名固定为 sessionStorage.bookingDraft。
+    - 仅允许更新既定字段：flightId、packageId、departDate、priceVersion、passenger、contact、services、stage。
+    - 写入 passenger 字段包含 name、idType、idNumber、phoneNumber(可空)。
+    - 写入 contact 字段包含 phoneNumber。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-DeleteBookingDraft
+  description: 删除会话存储中的订票草稿 bookingDraft。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 删除 sessionStorage.bookingDraft 键。
+    - 多次删除返回幂等成功。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateFlightOrder
+  description: 在共享订单存储中创建机票订单（本地落盘 evoflow_orders）。
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 订单写入 localStorage.evoflow_orders（数组）。
+    - 订单字段至少包含 id、productType=flight、status=pending_payment、createdAt、expiresAt、amount、details。
+    - details.passenger 与 details.contact 必须由 bookingDraft.passenger/contact 生成快照，且证件号与手机号已脱敏后落盘。
+    - 若写入失败返回错误原因（storage_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetOrderById
+  description: 根据订单号从共享订单存储读取订单。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 从 localStorage.evoflow_orders 按 id 精确匹配返回订单。
+    - 当订单不存在时返回空结果。
+    - 读取失败或解析失败返回错误原因（parse_error/storage_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListOrders
+  description: 读取共享订单存储中的订单列表，并支持按 productType 过滤。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 默认返回按 createdAt 倒序。
+    - 可选过滤条件 productType=flight。
+    - 解析失败时返回空列表与错误原因（parse_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateOrderStatus
+  description: 更新订单状态并持久化到共享订单存储。
+  dependencies:
+    - DB-GetOrderById
+  acceptanceCriteria:
+    - 支持状态从 pending_payment 更新为 pending_travel。
+    - 更新时刷新 updatedAt。
+    - 当订单不存在时返回 not_found。
+    - 同一状态重复更新返回幂等成功。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"

@@ -24,19 +24,26 @@ export function renderWithAuth(ui, { route = '/', auth, login, logout, routes } 
     setAuth: vi.fn(),
   }
 
-  return render(
-    <AuthContext.Provider value={value}>
-      <MemoryRouter initialEntries={[route]}>
-        <Routes>
-          {routes ? (
-            <Route element={<TestShell />}>{routes}</Route>
-          ) : (
-            <Route element={<TestShell />}>
-              <Route path="*" element={ui} />
-            </Route>
-          )}
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>,
-  )
+  function Wrapper({ children }) {
+    return (
+      <AuthContext.Provider value={value}>
+        <MemoryRouter initialEntries={[route]}>
+          <Routes>
+            {routes ? (
+              <Route element={<TestShell />}>
+                {routes}
+                <Route path="*" element={<div />} />
+              </Route>
+            ) : (
+              <Route element={<TestShell />}>
+                <Route path="*" element={children} />
+              </Route>
+            )}
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    )
+  }
+
+  return render(ui, { wrapper: Wrapper })
 }

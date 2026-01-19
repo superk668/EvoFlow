@@ -1,6 +1,15 @@
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '../../auth/AuthContext.jsx'
 import styles from './SearchResults.module.css'
+
+function safeWriteSession(key, value) {
+  try {
+    sessionStorage.setItem(key, value)
+  } catch {
+    void 0
+  }
+}
 
 const fallbackSearch = {
   from: '上海(SHA)',
@@ -285,6 +294,7 @@ export default function SearchResults() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const { auth } = useAuth()
   const from = searchParams.get('from') || fallbackSearch.from
   const to = searchParams.get('to') || fallbackSearch.to
   const date = searchParams.get('date') || fallbackSearch.date
@@ -353,6 +363,20 @@ export default function SearchResults() {
   }
 
   function goBuyStep1({ flight, fareId, farePrice }) {
+    if (!auth.isLoggedIn) {
+      safeWriteSession('postLoginRedirect', location.pathname + location.search)
+      navigate({ pathname: '/login' })
+      return
+    }
+
+    const draft = {
+      flightId: flight.flightNo,
+      packageId: String(fareId ?? ''),
+      departDate: date,
+      priceVersion: `v${date}:${flight.flightNo}:${String(fareId ?? '')}`,
+    }
+    safeWriteSession('bookingDraft', JSON.stringify(draft))
+
     const qp = new URLSearchParams()
     qp.set('from', from)
     qp.set('to', to)

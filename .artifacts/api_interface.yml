@@ -236,3 +236,250 @@
     - date: "2026-01-18"
       description: "初始创建。"
 
+- type: Backend
+  id: API-GET-BookingDraft
+  route: GET /api/booking/draft
+  description: 获取当前会话中的订票草稿（用于订票/增值服务/支付/完成页一致性校验）。
+  input:
+    type: Header
+    headers:
+      Authorization: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        bookingDraft: object
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 404
+        body: { error: "Booking draft not found." }
+      - statusCode: 422
+        body: { error: "Booking draft parse failed." }
+  dependencies:
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 当草稿存在且解析成功时返回 200 与 bookingDraft。
+    - 当草稿不存在时返回 404。
+    - 当草稿解析失败时返回 422。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-PUT-BookingDraft
+  route: PUT /api/booking/draft
+  description: 写入/更新订票草稿（由结果页预订/订票页下一步触发）。
+  input:
+    type: JSON
+    body:
+      flightId: string
+      packageId: string
+      departDate: string
+      priceVersion: string
+      passenger: object
+      contact: object
+      services: array
+      stage: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 500
+        body: { error: "Storage error." }
+  dependencies:
+    - DB-UpsertBookingDraft
+  acceptanceCriteria:
+    - 写入时字段名必须与既定草稿结构一致。
+    - 写入失败返回 500。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-DELETE-BookingDraft
+  route: DELETE /api/booking/draft
+  description: 清理订票草稿（用于完成后或流程中断时回收）。
+  input:
+    type: Header
+    headers:
+      Authorization: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+  dependencies:
+    - DB-DeleteBookingDraft
+  acceptanceCriteria:
+    - 多次调用返回幂等成功。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrdersFlight
+  route: POST /api/orders/flight
+  description: 从订票草稿与已选增值服务生成订单并落盘到共享订单存储。
+  input:
+    type: JSON
+    body:
+      bookingDraftSnapshot: object
+  output:
+    success:
+      statusCode: 201
+      body:
+        orderId: string
+        status: string
+        expiresAt: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 409
+        body: { error: "Duplicate order create." }
+      - statusCode: 500
+        body: { error: "Storage error." }
+  dependencies:
+    - DB-CreateFlightOrder
+  acceptanceCriteria:
+    - 创建成功返回 201 并返回 orderId、status=pending_payment、expiresAt（15分钟倒计时基准）。
+    - 当检测到重复创建（同一会话已创建 createdOrderId）返回 409。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-Orders
+  route: GET /api/orders
+  description: 查询订单列表（默认查询机票订单）。
+  input:
+    type: Query
+    query:
+      productType: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        orders: array
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 422
+        body: { error: "Orders parse failed." }
+  dependencies:
+    - DB-ListOrders
+  acceptanceCriteria:
+    - 当 productType=flight 时仅返回机票订单。
+    - 解析失败返回 422。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-GET-OrderById
+  route: GET /api/orders/:orderId
+  description: 获取订单详情（用于订单详情页/支付页渲染）。
+  input:
+    type: Path
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        order: object
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 404
+        body: { error: "Order not found." }
+      - statusCode: 422
+        body: { error: "Order parse failed." }
+  dependencies:
+    - DB-GetOrderById
+  acceptanceCriteria:
+    - 订单存在时返回 200。
+    - 订单不存在返回 404。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-PATCH-OrderStatus
+  route: PATCH /api/orders/:orderId/status
+  description: 更新订单状态（完成页将 pending_payment 更新为 pending_travel）。
+  input:
+    type: JSON
+    body:
+      orderId: string
+      status: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 400
+        body: { error: "Invalid status." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 404
+        body: { error: "Order not found." }
+      - statusCode: 500
+        body: { error: "Storage error." }
+  dependencies:
+    - DB-UpdateOrderStatus
+  acceptanceCriteria:
+    - 更新成功返回 204。
+    - 状态不合法返回 400。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrderPay
+  route: POST /api/orders/:orderId/pay
+  description: 模拟支付下单（校验倒计时、卡信息与乘机人一致性）。
+  input:
+    type: JSON
+    body:
+      orderId: string
+      payMethod: string
+      newCard: object
+  output:
+    success:
+      statusCode: 200
+      body:
+        paidAt: string
+        nextRoute: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 404
+        body: { error: "Order not found." }
+      - statusCode: 409
+        body: { error: "Payment expired." }
+      - statusCode: 422
+        body: { error: "Passenger info inconsistent." }
+      - statusCode: 500
+        body: { error: "Payment failed." }
+  dependencies:
+    - DB-GetOrderById
+    - DB-GetBookingDraft
+  acceptanceCriteria:
+    - 倒计时到期返回 409。
+    - 乘机人与联系人信息缺失或与草稿不一致返回 422。
+    - 成功支付返回 200 且 nextRoute 指向 /buy-ticket/step4 或 /booking/complete。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
