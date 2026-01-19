@@ -204,3 +204,149 @@
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+
+- type: Database
+  id: DB-ReadCommonTravelersStorage
+  description: 从本地持久化读取常用旅客列表（localStorage.evoflow_common_travelers）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 从 localStorage 键名 evoflow_common_travelers 读取 JSON 数组。
+    - 当键不存在时返回空数组。
+    - 解析失败时返回空数组与错误原因（parse_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-WriteCommonTravelersStorage
+  description: 将常用旅客列表写入本地持久化（localStorage.evoflow_common_travelers）。
+  dependencies:
+    - DB-ReadCommonTravelersStorage
+  acceptanceCriteria:
+    - 写入 localStorage 键名固定为 evoflow_common_travelers。
+    - 写入失败返回错误原因（storage_error）。
+    - 写入成功后可被下一次读取回读。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ListCommonTravelers
+  description: 列出常用旅客并支持按姓名关键字筛选。
+  dependencies:
+    - DB-ReadCommonTravelersStorage
+  acceptanceCriteria:
+    - 返回数据来源为 evoflow_common_travelers。
+    - 支持按姓名关键字筛选（中文名或英文名任一包含）。
+    - 当搜索关键字仅含特殊字符时返回输入异常（invalid_query）。
+    - 对缺失 travelerId/isSelf/nameZh/lastName/firstName 的脏数据应忽略或标记为数据异常且不影响其他记录。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GetCommonTravelerById
+  description: 根据 travelerId 读取单个常用旅客记录。
+  dependencies:
+    - DB-ReadCommonTravelersStorage
+  acceptanceCriteria:
+    - travelerId 缺失或为空时返回 not_found。
+    - 找到匹配 travelerId 时返回完整记录。
+    - 未找到返回 not_found。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-CreateCommonTraveler
+  description: 新增常用旅客记录并持久化，保证本人唯一与证件唯一。
+  dependencies:
+    - DB-ReadCommonTravelersStorage
+    - DB-WriteCommonTravelersStorage
+  acceptanceCriteria:
+    - 新增时生成唯一 travelerId。
+    - 中文名与英文名（lastName/firstName）两者至少填写一项。
+    - 当 birthday 非空时必须满足 yyyy-MM-dd。
+    - 当设置 isSelf=true 时，其他记录必须自动变更为 isSelf=false。
+    - 当存在 idType 与 idNumber 时，集合内 idType+idNumber 必须唯一，否则返回 conflict。
+    - 存在证件号时必须落盘 idNumberMasked（保留前三位与后两位，中间用 *）。
+    - 写入成功后可回读且刷新页面不丢失。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpdateCommonTraveler
+  description: 编辑常用旅客记录并持久化，保证本人唯一与证件唯一。
+  dependencies:
+    - DB-GetCommonTravelerById
+    - DB-WriteCommonTravelersStorage
+  acceptanceCriteria:
+    - 当 travelerId 不存在时返回 not_found。
+    - 保存时执行与新增相同的字段校验与约束（本人唯一、证件唯一、生日格式）。
+    - 更新成功后刷新 updatedAt（如字段存在）。
+    - 存在证件号时必须同步更新 idNumberMasked。
+    - 写入失败返回 storage_error 并保留用户输入用于再次提交。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-DeleteCommonTraveler
+  description: 删除常用旅客记录（本人不可删除）。
+  dependencies:
+    - DB-GetCommonTravelerById
+    - DB-WriteCommonTravelersStorage
+  acceptanceCriteria:
+    - travelerId 不存在返回 not_found。
+    - 当记录 isSelf=true 时返回 forbidden 并提示“本人信息不可删除”。
+    - 删除成功后列表不再包含该记录。
+    - 删除失败返回 storage_error 并保留当前选择状态。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ReadUserProfileStorage
+  description: 从本地持久化读取个人信息（localStorage.evoflow_user_profile）。
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 从 localStorage 键名 evoflow_user_profile 读取 JSON 对象。
+    - 当键不存在时返回空对象。
+    - 解析失败时返回空对象与错误原因（parse_error）。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-WriteUserProfileStorage
+  description: 将个人信息写入本地持久化（localStorage.evoflow_user_profile）。
+  dependencies:
+    - DB-ReadUserProfileStorage
+  acceptanceCriteria:
+    - 写入 localStorage 键名固定为 evoflow_user_profile。
+    - 写入失败返回错误原因（storage_error）。
+    - 写入成功后可被下一次读取回读。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-UpsertUserProfile
+  description: 更新个人信息并持久化（校验昵称/姓名/性别/生日）。
+  dependencies:
+    - DB-ReadUserProfileStorage
+    - DB-WriteUserProfileStorage
+  acceptanceCriteria:
+    - nickname 必填且长度不超过 20 字符，否则返回 invalid_nickname。
+    - name 必填且长度不超过 30 字符，否则返回 invalid_name。
+    - gender 必须为 男 或 女，否则返回 invalid_gender。
+    - birthday 允许为空；非空时格式必须为 yyyy-MM-dd，否则返回 invalid_birthday。
+    - 当 nicknameStatus=reviewing 时，不允许修改 nickname（返回 forbidden）。
+    - 写入成功后刷新 updatedAt（如字段存在）。
+    - 写入失败返回 storage_error 并保留用户输入用于再次提交。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"

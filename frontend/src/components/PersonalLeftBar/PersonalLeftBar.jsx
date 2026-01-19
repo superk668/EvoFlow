@@ -15,7 +15,7 @@ const topItems = [
 ]
 
 const commonChildren = [
-  { key: 'common-travelers', label: '常用旅客信息', to: '/personal/common-travelers' },
+  { key: 'common-travelers', label: '常用旅客信息', to: '/user-center/common-info/travelers' },
   { key: 'common-contacts', label: '常用联系人' },
   { key: 'common-invoice', label: '常用报销凭证' },
   { key: 'common-address', label: '常用地址' },

@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import { AuthContext } from '../../src/auth/AuthContext.jsx'
 import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
@@ -17,6 +17,7 @@ function TestShell() {
 }
 
 export function renderWithAuth(ui, { route = '/', auth, login, logout, routes } = {}) {
+  cleanup()
   const value = {
     auth: auth ?? { isLoggedIn: false },
     login: login ?? vi.fn(),

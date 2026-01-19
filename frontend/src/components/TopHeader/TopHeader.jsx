@@ -75,7 +75,7 @@ export default function TopHeader() {
                       <div className={styles.menuIcon} aria-hidden="true" />
                       <div className={styles.menuLabel}>我的收藏</div>
                     </div>
-                    <Link className={styles.menuItemLink} to="/personal/common-travelers">
+                    <Link className={styles.menuItemLink} to="/user-center/common-info">
                       <div className={styles.menuIcon} aria-hidden="true" />
                       <div className={styles.menuLabel}>常用信息</div>
                     </Link>

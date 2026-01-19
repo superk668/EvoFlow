@@ -9,6 +9,9 @@ import SearchResults from './pages/SearchResults/SearchResults.jsx'
 import PersonalMyInfo from './pages/PersonalMyInfo/PersonalMyInfo.jsx'
 import PersonalCommonTravelers from './pages/PersonalCommonTravelers/PersonalCommonTravelers.jsx'
 import PersonalAddTraveler from './pages/PersonalAddTraveler/PersonalAddTraveler.jsx'
+import CommonInfoIndex from './pages/CommonInfoIndex/CommonInfoIndex.jsx'
+import CommonTravelerView from './pages/CommonTravelerView/CommonTravelerView.jsx'
+import CommonTravelerEdit from './pages/CommonTravelerEdit/CommonTravelerEdit.jsx'
 import Login from './pages/Login/Login.jsx'
 import Register from './pages/Register/Register.jsx'
 import RegisterSetPassword from './pages/RegisterSetPassword/RegisterSetPassword.jsx'
@@ -30,6 +33,11 @@ export const router = createHashRouter([
       { path: 'personal/my-info', element: <PersonalMyInfo /> },
       { path: 'personal/common-travelers', element: <PersonalCommonTravelers /> },
       { path: 'personal/common-travelers/add', element: <PersonalAddTraveler /> },
+      { path: 'user-center/common-info', element: <CommonInfoIndex /> },
+      { path: 'user-center/common-info/travelers', element: <PersonalCommonTravelers /> },
+      { path: 'user-center/common-info/travelers/add', element: <PersonalAddTraveler /> },
+      { path: 'user-center/common-info/travelers/view', element: <CommonTravelerView /> },
+      { path: 'user-center/common-info/travelers/edit', element: <CommonTravelerEdit /> },
     ],
   },
   {

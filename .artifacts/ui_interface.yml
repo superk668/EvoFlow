@@ -315,3 +315,140 @@
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+
+- type: Frontend
+  id: UI-PersonalCommonTravelersList
+  description: 常用旅客信息列表页，支持搜索、新增入口与删除（本人不可删）。
+  properties:
+    - name: onAdd
+      type: function
+      description: "点击新增后的导航回调。"
+    - name: onView
+      type: function
+      description: "点击查看后的导航回调。"
+    - name: onEdit
+      type: function
+      description: "点击编辑后的导航回调。"
+  state:
+    - keyword
+    - travelers
+    - selectedIds
+    - error
+    - isLoading
+  dependencies:
+    - DB-ListCommonTravelers
+    - DB-DeleteCommonTraveler
+  acceptanceCriteria:
+    - 表格展示证件号必须使用 idNumberMasked，不得展示 idNumber 原文。
+    - 当搜索关键字仅含特殊字符时提示“请输入合法的姓名关键字”并保留原列表。
+    - 删除本人条目时提示“本人信息不可删除”并取消操作。
+    - 列表加载失败或解析异常时提示“加载失败，请稍后重试”并提供重试入口。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-PersonalCommonTravelerView
+  description: 常用旅客信息查看页（只读），按 travelerId 展示完整字段与脱敏证件号。
+  properties:
+    - name: travelerId
+      type: string
+      description: "旅客标识（来自路由或列表点击）。"
+    - name: onBack
+      type: function
+      description: "返回列表页的回调。"
+  state:
+    - traveler
+    - error
+    - isLoading
+  dependencies:
+    - DB-GetCommonTravelerById
+  acceptanceCriteria:
+    - 证件号码展示必须使用 idNumberMasked。
+    - travelerId 缺失或无法识别时提示“记录不存在或链接无效”并提供返回入口。
+    - 记录不存在时提示“记录已删除”并返回列表页。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-PersonalCommonTravelerAdd
+  description: 常用旅客信息新增页，校验必填项与证件唯一后写入本地持久化。
+  properties:
+    - name: onSaved
+      type: function
+      description: "新增成功后的回调（返回列表页）。"
+    - name: onCancel
+      type: function
+      description: "取消新增的回调（返回列表页）。"
+  state:
+    - form
+    - error
+    - isSaving
+  dependencies:
+    - DB-CreateCommonTraveler
+  acceptanceCriteria:
+    - 中文名与英文名两者至少填写一项，否则提示并阻止提交。
+    - 日期字段非空时必须满足 yyyy-MM-dd，否则提示“日期格式应为 yyyy-MM-dd”。
+    - 当设置为本人且已存在本人时提示“已存在本人旅客，不能重复设置”并阻止提交或取消勾选。
+    - 本地写入失败提示“系统繁忙，请稍后重试”并保留用户输入。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-PersonalCommonTravelerEdit
+  description: 常用旅客信息编辑页，按 travelerId 载入并保存，保证本人唯一与证件唯一。
+  properties:
+    - name: travelerId
+      type: string
+      description: "旅客标识（来自路由或列表点击）。"
+    - name: onSaved
+      type: function
+      description: "保存成功后的回调（返回列表页或停留提示）。"
+    - name: onCancel
+      type: function
+      description: "取消编辑的回调。"
+  state:
+    - form
+    - error
+    - isLoading
+    - isSaving
+  dependencies:
+    - DB-GetCommonTravelerById
+    - DB-UpdateCommonTraveler
+  acceptanceCriteria:
+    - 日期字段非空时必须满足 yyyy-MM-dd，否则提示“日期格式应为 yyyy-MM-dd”。
+    - 当证件类型与证件号码重复时提示“证件号已存在”并阻止提交。
+    - 保存失败提示“系统繁忙，请稍后重试”并保留用户输入用于再次提交。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Frontend
+  id: UI-PersonalMyInfo
+  description: 我的信息页（只读与编辑态切换），本地持久化为主并支持后端同步兜底。
+  properties:
+    - name: onSaved
+      type: function
+      description: "保存成功后的回调（回到只读态或提示已保存）。"
+  state:
+    - profile
+    - isEditing
+    - form
+    - error
+    - isSaving
+    - syncToast
+  dependencies:
+    - DB-ReadUserProfileStorage
+    - DB-UpsertUserProfile
+    - API-POST-UserCenterMyInfo
+  acceptanceCriteria:
+    - 手机号展示必须按前三后四脱敏规则。
+    - 点击保存后必须先完成本地写入成功才允许提示成功并更新只读态。
+    - 当后端同步失败但本地已保存时提示“已保存，本次同步失败，请稍后重试”，不得回滚本地数据。
+    - 昵称为空或超过 20 字符时提示“请输入昵称（不超过20字符）”并阻止保存。
+    - 生日非空且格式错误时提示“日期格式应为 yyyy-MM-dd”并阻止保存。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"

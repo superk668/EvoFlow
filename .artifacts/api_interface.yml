@@ -331,7 +331,7 @@
   input:
     type: JSON
     body:
-      bookingDraftSnapshot: object
+      draft: object
   output:
     success:
       statusCode: 201
@@ -356,6 +356,8 @@
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "调整请求体字段为 draft，与前端实现保持一致。"
 
 - type: Backend
   id: API-GET-Orders
@@ -418,10 +420,9 @@
   route: PATCH /api/orders/:orderId/status
   description: 更新订单状态（完成页将 pending_payment 更新为 pending_travel）。
   input:
-    type: JSON
-    body:
+    type: Path
+    params:
       orderId: string
-      status: string
   output:
     success:
       statusCode: 204
@@ -443,6 +444,8 @@
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "调整为仅依赖路径参数 orderId，适配完成页无请求体调用。"
 
 - type: Backend
   id: API-POST-OrderPay
@@ -451,7 +454,6 @@
   input:
     type: JSON
     body:
-      orderId: string
       payMethod: string
       newCard: object
   output:
@@ -480,6 +482,41 @@
     - 倒计时到期返回 409。
     - 乘机人与联系人信息缺失或与草稿不一致返回 422。
     - 成功支付返回 200 且 nextRoute 指向 /buy-ticket/step4 或 /booking/complete。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+    - date: "2026-01-19"
+      description: "移除请求体中的 orderId 字段，订单号由路径参数提供。"
+
+- type: Backend
+  id: API-POST-UserCenterMyInfo
+  route: POST /api/user-center/my-info
+  description: 同步“我的信息”编辑结果到后端（本地已保存后可失败兜底）。
+  input:
+    type: JSON
+    body:
+      nickname: string
+      name: string
+      gender: string
+      birthday: string
+  output:
+    success:
+      statusCode: 204
+      body: {}
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 409
+        body: { error: "Profile conflict." }
+      - statusCode: 500
+        body: { error: "Server error." }
+  dependencies:
+    - none
+  acceptanceCriteria:
+    - 当请求字段校验通过时返回 2xx。
+    - 当发生版本冲突时返回 409 且不要求覆盖本地最新数据。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
