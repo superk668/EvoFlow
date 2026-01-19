@@ -107,6 +107,59 @@ describe('BuyTicketStep3 Scenarios', () => {
     expect(screen.getByText(maskId('110105199001011234'))).toBeInTheDocument()
   })
 
+  it('Scenario 4.1.3 待支付订单从订单中心进入也可支付', async () => {
+    const user = userEvent.setup()
+
+    localStorage.setItem(
+      'evoflow_orders',
+      JSON.stringify([
+        {
+          id: 'ORDER_001',
+          productType: 'flight',
+          status: 'pending_payment',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          amount: 518,
+          totalAmount: 518,
+          details: {
+            flightId: 'MU5185',
+            airline: '东方航空',
+            cabin: '经济舱',
+            departDate: '2026-01-17',
+            depTime: '21:05',
+            depAirport: '虹桥国际机场T2',
+            arrAirport: '首都国际机场T3',
+            route: { fromCity: '上海', toCity: '北京' },
+            passenger: { name: '张三', idType: '身份证', idNumberMasked: maskId('110105199001011234') },
+            contact: { phoneNumberMasked: maskPhone('13800138000') },
+          },
+        },
+      ]),
+    )
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ paidAt: new Date().toISOString(), nextRoute: '/buy-ticket/step4' }), { status: 200 }),
+    )
+
+    renderWithAuth(<BuyTicketStep3 />, {
+      route: '/booking/payment/ORDER_001',
+      routes: (
+        <>
+          <Route path="/booking/payment/:orderId" element={<BuyTicketStep3 />} />
+          <Route path="/buy-ticket/step4" element={<BuyTicketStep4 />} />
+        </>
+      ),
+    })
+
+    expect(await screen.findByText(/航班 东方航空 MU5185 经济舱/)).toBeInTheDocument()
+    expect(screen.getByText(/虹桥国际机场T2-首都国际机场T3/)).toBeInTheDocument()
+    expect(screen.getByText(/2026-01-17 21:05:00/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /支付/ }))
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/buy-ticket/step4?orderId=ORDER_001'))
+  })
+
   it('Scenario 4.1.3 状态异常（乘机人信息缺失或不一致）', async () => {
     renderWithAuth(<BuyTicketStep3 />, {
       route: '/buy-ticket/step3?orderId=ORDER_001',
@@ -118,7 +171,7 @@ describe('BuyTicketStep3 Scenarios', () => {
       ),
     })
 
-    expect(await screen.findByText('乘机人信息异常，请返回重新填写')).toBeInTheDocument()
+    expect(await screen.findByText('订单信息异常，请返回重新填写')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /支付/ })).toBeDisabled()
     await userEvent.setup().click(screen.getByRole('link', { name: /返回订票页|返回重新填写|返回/ }))
     expect(screen.getByTestId('location')).toHaveTextContent('/buy-ticket/step1')

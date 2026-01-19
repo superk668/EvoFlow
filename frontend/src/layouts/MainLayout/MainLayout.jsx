@@ -14,12 +14,13 @@ export default function MainLayout() {
     location.pathname.startsWith('/personal') || location.pathname.startsWith('/orders') || location.pathname.startsWith('/user-center')
 
   if (requiresAuth && !auth.isLoggedIn) {
+    const redirectTo = location.pathname + location.search
     try {
-      sessionStorage.setItem('postLoginRedirect', location.pathname + location.search)
+      sessionStorage.setItem('postLoginRedirect', redirectTo)
     } catch {
       void 0
     }
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace state={{ from: redirectTo }} />
   }
 
   return (

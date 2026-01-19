@@ -367,6 +367,9 @@
     type: Query
     query:
       productType: string
+      tab: string
+      page: number
+      pageSize: number
   output:
     success:
       statusCode: 200
@@ -375,16 +378,27 @@
     error:
       - statusCode: 401
         body: { error: "Unauthorized." }
+      - statusCode: 429
+        body: { error: "Too many requests." }
+      - statusCode: 503
+        body: { error: "Service busy." }
       - statusCode: 422
         body: { error: "Orders parse failed." }
   dependencies:
     - DB-ListOrders
   acceptanceCriteria:
-    - 当 productType=flight 时仅返回机票订单。
+    - 支持按 productType 筛选（all/flight/train/hotel）。
+    - 支持按 tab 筛选（all/pending_payment/pending_travel/pending_review）。
+    - 支持分页 page/pageSize，后端对 pageSize 上限强校验。
     - 解析失败返回 422。
+    - 当触发限流或服务繁忙时返回 429/503。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "补充分页与 tab/productType 筛选参数。"
+    - date: "2026-01-19"
+      description: "补充限流/服务繁忙错误码，用于前端降级提示与重试。"
 
 - type: Backend
   id: API-GET-OrderById
@@ -418,11 +432,13 @@
 - type: Backend
   id: API-PATCH-OrderStatus
   route: PATCH /api/orders/:orderId/status
-  description: 更新订单状态（完成页将 pending_payment 更新为 pending_travel）。
+  description: 更新订单状态（完成页转为 pending_travel，订单中心支持取消）。
   input:
-    type: Path
+    type: JSON
     params:
       orderId: string
+    body:
+      status: string
   output:
     success:
       statusCode: 204
@@ -434,18 +450,24 @@
         body: { error: "Unauthorized." }
       - statusCode: 404
         body: { error: "Order not found." }
+      - statusCode: 403
+        body: { error: "Forbidden." }
       - statusCode: 500
         body: { error: "Storage error." }
   dependencies:
     - DB-UpdateOrderStatus
   acceptanceCriteria:
+    - status=pending_travel 用于完成页推进订单状态。
+    - status=canceled 用于订单中心取消订单。
     - 更新成功返回 204。
-    - 状态不合法返回 400。
+    - 状态不合法返回 400，状态不允许变更返回 403。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
     - date: "2026-01-19"
       description: "调整为仅依赖路径参数 orderId，适配完成页无请求体调用。"
+    - date: "2026-01-19"
+      description: "增加请求体 status 以支持取消订单与通用状态变更。"
 
 - type: Backend
   id: API-POST-OrderPay
@@ -489,6 +511,70 @@
       description: "移除请求体中的 orderId 字段，订单号由路径参数提供。"
 
 - type: Backend
+  id: API-GET-OrderExportTxt
+  route: GET /api/orders/:orderId/export/txt
+  description: 导出单个订单 TXT 内容（用于列表/详情页下载）。
+  input:
+    type: Path
+    params:
+      orderId: string
+  output:
+    success:
+      statusCode: 200
+      body:
+        filename: string
+        content: string
+    error:
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 404
+        body: { error: "Order not found." }
+      - statusCode: 500
+        body: { error: "Generate failed." }
+  dependencies:
+    - DB-GenerateOrderTxt
+  acceptanceCriteria:
+    - 成功时返回 200，filename 默认为 order-:orderId.txt。
+    - 当订单不存在时返回 404。
+    - 当生成失败时返回 500。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
+  id: API-POST-OrdersExportTxt
+  route: POST /api/orders/export/txt
+  description: 批量导出订单 TXT 内容（用于批量下载/历史订单下载）。
+  input:
+    type: JSON
+    body:
+      orderIds: array
+  output:
+    success:
+      statusCode: 200
+      body:
+        filename: string
+        content: string
+    error:
+      - statusCode: 400
+        body: { error: "Invalid input or format." }
+      - statusCode: 401
+        body: { error: "Unauthorized." }
+      - statusCode: 422
+        body: { error: "Orders parse failed." }
+      - statusCode: 500
+        body: { error: "Generate failed." }
+  dependencies:
+    - DB-GenerateOrdersTxt
+  acceptanceCriteria:
+    - 当 orderIds 为空数组时导出近一年全部订单。
+    - 当 orderIds 非空时仅导出指定订单集合。
+    - 解析失败返回 422。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Backend
   id: API-POST-UserCenterMyInfo
   route: POST /api/user-center/my-info
   description: 同步“我的信息”编辑结果到后端（本地已保存后可失败兜底）。
@@ -499,6 +585,7 @@
       name: string
       gender: string
       birthday: string
+      profileVersion: string
   output:
     success:
       statusCode: 204
@@ -513,10 +600,13 @@
       - statusCode: 500
         body: { error: "Server error." }
   dependencies:
-    - none
+    - DB-UpdateUserProfile
   acceptanceCriteria:
-    - 当请求字段校验通过时返回 2xx。
-    - 当发生版本冲突时返回 409 且不要求覆盖本地最新数据。
+    - nickname 必填且长度不超过 20 字符；name 必填且长度不超过 30 且不含数字/特殊字符；gender 为 男/女；birthday 为空或 yyyy-MM-dd 且不得为未来日期。
+    - 当请求字段校验通过且更新成功时返回 204。
+    - 当 profileVersion 存在且版本不一致时返回 409，且后端不落库该次更新。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "补充 profileVersion 用于 409 冲突检测，并对齐字段校验规则。"

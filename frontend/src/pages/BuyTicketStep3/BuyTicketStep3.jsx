@@ -1,11 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep3.module.css'
+import { useAuth } from '../../auth/AuthContext.jsx'
 
 function formatMoney(value) {
   const n = Number.parseFloat(String(value))
-  if (!Number.isFinite(n)) return '528.00'
+  if (!Number.isFinite(n)) return '0.00'
   return n.toFixed(2)
+}
+
+function safeText(value) {
+  const s = String(value ?? '').trim()
+  return s ? s : '—'
+}
+
+function normalizeCityLabel(value) {
+  const s = String(value ?? '').trim()
+  if (!s) return ''
+  return s.split('(')[0].trim()
+}
+
+function formatIsoDateTime(iso) {
+  const ms = Date.parse(String(iso ?? ''))
+  if (!Number.isFinite(ms)) return '—'
+  const d = new Date(ms)
+  const yyyy = String(d.getFullYear())
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:00`
 }
 
 function maskId(idNumber) {
@@ -37,8 +61,63 @@ function readOrders() {
   }
 }
 
+function findLatestPendingPaymentOrderId() {
+  const orders = readOrders()
+  const list = orders
+    .map((o) => {
+      if (!o || typeof o !== 'object') return null
+      const orderId = pickOrderId(o)
+      const status = String(o.status ?? '').trim()
+      const createdAt = Date.parse(String(o.createdAt ?? ''))
+      if (!orderId || status !== 'pending_payment') return null
+      return { orderId, createdAt: Number.isFinite(createdAt) ? createdAt : 0 }
+    })
+    .filter(Boolean)
+  list.sort((a, b) => b.createdAt - a.createdAt)
+  return list[0]?.orderId || ''
+}
+
+function writeOrders(next) {
+  try {
+    localStorage.setItem('evoflow_orders', JSON.stringify(next))
+  } catch {
+    void 0
+  }
+}
+
+function readSession(key) {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function removeSession(key) {
+  try {
+    sessionStorage.removeItem(key)
+  } catch {
+    void 0
+  }
+}
+
+function pickOrderId(raw) {
+  return String(raw?.orderId ?? raw?.id ?? '').trim()
+}
+
+function formatRemainHhMmSs(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000))
+  const hh = Math.floor(total / 3600)
+  const mm = Math.floor((total % 3600) / 60)
+  const ss = total % 60
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+}
+
 export default function BuyTicketStep3() {
+  const { auth } = useAuth()
   const [searchParams] = useSearchParams()
+  const params = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
 
   const [payMethod, setPayMethod] = useState('saved')
@@ -49,29 +128,97 @@ export default function BuyTicketStep3() {
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => Date.now())
   const [isPaying, setIsPaying] = useState(false)
+  const [expiredByServer, setExpiredByServer] = useState(false)
 
-  const from = searchParams.get('from') || '北京(BJS)'
-  const to = searchParams.get('to') || '上海(SHA)'
-  const depAirport = searchParams.get('depAirport') || '大兴国际机场'
-  const arrAirport = searchParams.get('arrAirport') || '浦东国际机场T1'
-  const date = searchParams.get('date') || '2025-11-25'
-  const depTime = searchParams.get('depTime') || '20:50'
-  const total = searchParams.get('total') || '528'
-  const orderId = searchParams.get('orderId') || ''
+  const from = searchParams.get('from') || ''
+  const to = searchParams.get('to') || ''
+  const flightNo = searchParams.get('flight') || ''
+  const airline = searchParams.get('airline') || ''
+  const cabin = searchParams.get('cabin') || ''
+  const depAirport = searchParams.get('depAirport') || ''
+  const arrAirport = searchParams.get('arrAirport') || ''
+  const date = searchParams.get('date') || ''
+  const depTime = searchParams.get('depTime') || ''
+  const total = searchParams.get('total') || ''
+  const orderIdFromRoute = String(params.orderId || searchParams.get('orderId') || '').trim()
 
   const draft = useMemo(() => readBookingDraft(), [])
   const passengerName = draft?.passenger?.name ?? ''
   const passengerIdType = draft?.passenger?.idType ?? ''
   const passengerIdNumber = draft?.passenger?.idNumber ?? ''
-  const draftValid = Boolean(passengerName && passengerIdType && passengerIdNumber && draft?.contact?.phoneNumber)
+
+  useEffect(() => {
+    if (orderIdFromRoute) return
+    const bySession = String(readSession('createdOrderId') || '').trim()
+    const byLocal = String(findLatestPendingPaymentOrderId() || '').trim()
+    const resolved = bySession || byLocal
+    if (!resolved) return
+    const qp = new URLSearchParams(searchParams)
+    qp.set('orderId', resolved)
+    const search = qp.toString()
+    navigate({ pathname: location.pathname, search: search ? `?${search}` : '' }, { replace: true })
+  }, [location.pathname, navigate, orderIdFromRoute, searchParams])
+
+  const orderId = orderIdFromRoute
 
   const order = useMemo(() => {
     const orders = readOrders()
-    return orders.find((o) => String(o?.id ?? '') === String(orderId)) ?? null
+    return orders.find((o) => pickOrderId(o) === orderId) ?? null
   }, [orderId])
 
-  const expiresAt = order?.expiresAt ? Date.parse(String(order.expiresAt)) : null
-  const isExpired = expiresAt ? now >= expiresAt : false
+  const fromCity = safeText(order?.details?.route?.fromCity || normalizeCityLabel(from))
+  const toCity = safeText(order?.details?.route?.toCity || normalizeCityLabel(to))
+  const passengerNameText = safeText(order?.details?.passenger?.name || passengerName)
+  const passengerIdTypeText = safeText(order?.details?.passenger?.idType || passengerIdType)
+  const passengerIdMaskedText = safeText(
+    order?.details?.passenger?.idNumberMasked || (passengerIdNumber ? maskId(passengerIdNumber) : ''),
+  )
+  const passengerDisplayOk =
+    passengerNameText !== '—' && passengerIdTypeText !== '—' && passengerIdMaskedText !== '—'
+  const moneyText = useMemo(
+    () => formatMoney(Number.isFinite(Number(order?.totalAmount)) ? order.totalAmount : total),
+    [order?.totalAmount, total],
+  )
+  const depText = useMemo(() => {
+    const detailsDate = String(order?.details?.departDate ?? '').trim()
+    const detailsTime = String(order?.details?.depTime ?? '').trim()
+    if (detailsDate && detailsTime) return `${detailsDate} ${detailsTime}:00`
+    if (order?.departAt) return formatIsoDateTime(order.departAt)
+    if (!date || !depTime) return '—'
+    return `${date} ${depTime}:00`
+  }, [date, depTime, order?.departAt, order?.details?.depTime, order?.details?.departDate])
+
+  const flightMetaText = useMemo(() => {
+    const a = String(order?.details?.airline ?? airline).trim()
+    const f = String(order?.details?.flightId ?? flightNo).trim()
+    const c = String(order?.details?.cabin ?? cabin).trim()
+    const parts = [a, f, c].filter(Boolean)
+    return parts.join(' ')
+  }, [airline, cabin, flightNo, order?.details?.airline, order?.details?.cabin, order?.details?.flightId])
+
+  const depAirportText = useMemo(() => {
+    const v = String(order?.details?.depAirport ?? depAirport).trim()
+    return safeText(v)
+  }, [depAirport, order?.details?.depAirport])
+
+  const arrAirportText = useMemo(() => {
+    const v = String(order?.details?.arrAirport ?? arrAirport).trim()
+    return safeText(v)
+  }, [arrAirport, order?.details?.arrAirport])
+
+  const expiresAtMsRaw = order?.expiresAt ? Date.parse(String(order.expiresAt)) : NaN
+  const expiresAtMs = Number.isFinite(expiresAtMsRaw) ? expiresAtMsRaw : null
+  const isExpired = expiredByServer || (expiresAtMs ? now >= expiresAtMs : false)
+  const remainText = expiresAtMs ? formatRemainHhMmSs(expiresAtMs - now) : '00:15:00'
+
+  useEffect(() => {
+    if (!isExpired || !orderId) return
+    const createdId = String(readSession('createdOrderId') || '').trim()
+    if (createdId && createdId === orderId) removeSession('createdOrderId')
+    const orders = readOrders()
+    const next = orders.filter((o) => pickOrderId(o) !== orderId)
+    if (next.length !== orders.length) writeOrders(next)
+  }, [isExpired, orderId])
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
@@ -79,17 +226,8 @@ export default function BuyTicketStep3() {
   }, [])
 
   const routeText = useMemo(() => {
-    const f = from.split('(')[0]
-    const t = to.split('(')[0]
-    return `${f} - ${t}`
-  }, [from, to])
-
-  const depText = useMemo(() => {
-    if (!date || !depTime) return '2025-11-25 20:50:00'
-    return `${date} ${depTime}:00`
-  }, [date, depTime])
-
-  const moneyText = useMemo(() => formatMoney(total), [total])
+    return `${fromCity} - ${toCity}`
+  }, [fromCity, toCity])
 
   const newCardValid = useMemo(() => {
     const no = String(cardNumber).replace(/\s+/g, '')
@@ -103,7 +241,7 @@ export default function BuyTicketStep3() {
     return true
   }, [cardCvv, cardExpiry, cardName, cardNumber])
 
-  const payDisabled = !draftValid || isExpired || isPaying || (payMethod === 'new' && !newCardValid)
+  const payDisabled = !orderId || !passengerDisplayOk || isExpired || isPaying || (payMethod === 'new' && !newCardValid)
 
   async function goStep4() {
     if (payDisabled || !orderId) return
@@ -112,14 +250,32 @@ export default function BuyTicketStep3() {
     try {
       const resp = await fetch(`/api/orders/${orderId}/pay`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payMethod }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+        },
+        body: JSON.stringify({ payMethod, newCard: payMethod === 'new' ? { cardNumber, cardName, cardExpiry, cardCvv } : undefined }),
       })
+      if (resp.status === 401) {
+        const redirectTo = location.pathname + location.search
+        navigate('/login', { state: { from: redirectTo } })
+        return
+      }
+      if (resp.status === 409) {
+        setExpiredByServer(true)
+        setError('超出时间，请重新开始订单')
+        return
+      }
+      if (resp.status === 422) {
+        setError('乘机人信息异常，请返回重新填写')
+        return
+      }
       if (!resp.ok) {
         setError('支付失败，请稍后重试')
         return
       }
       const qp = new URLSearchParams(searchParams)
+      if (!qp.get('orderId')) qp.set('orderId', orderId)
       const search = qp.toString()
       navigate({ pathname: '/buy-ticket/step4', search: search ? `?${search}` : '' })
     } catch {
@@ -150,7 +306,7 @@ export default function BuyTicketStep3() {
             </div>
             <div className={styles.amountRight}>
               <span className={styles.remainLabel}>剩余时间:</span>
-              <span className={styles.remainTime}>00:14:47</span>
+              <span className={styles.remainTime}>{remainText}</span>
               <span className={styles.remainTail}>，超时订单可能会被取消</span>
             </div>
           </div>
@@ -160,19 +316,27 @@ export default function BuyTicketStep3() {
           <div className={styles.infoBlock}>
             <div className={styles.infoTitle}>单程机票 {routeText}</div>
             <div className={styles.infoLine}>
-              飞机 {depAirport}-{arrAirport} 出发时间：{depText}
+              {flightMetaText ? `航班 ${flightMetaText}` : '航班信息'} {depAirportText}-{arrAirportText} 出发时间：{depText}
             </div>
-            {draftValid ? (
+            {!orderId ? (
+              <div className={styles.infoLine}>
+                <div>订单信息异常，请返回重新填写</div>
+                <Link to="/buy-ticket/step1">返回订票页</Link>
+                <span> </span>
+                <Link to="/user-center/orders">前往订单中心</Link>
+              </div>
+            ) : null}
+            {passengerDisplayOk ? (
               <div className={styles.infoLine}>
                 <span>乘机人：</span>
-                <span>{passengerName}</span>
+                <span>{passengerNameText}</span>
                 <span> 乘机证件：</span>
-                <span>{passengerIdType}</span>
-                <span>{maskId(passengerIdNumber)}</span>
+                <span>{passengerIdTypeText}</span>
+                <span>{passengerIdMaskedText}</span>
               </div>
             ) : (
               <div className={styles.infoLine}>
-                <div>乘机人信息异常，请返回重新填写</div>
+                <div>订单信息异常，请返回重新填写</div>
                 <Link to="/buy-ticket/step1">返回订票页</Link>
               </div>
             )}
@@ -181,13 +345,15 @@ export default function BuyTicketStep3() {
           {isExpired ? (
             <div>
               <div>超出时间，请重新开始订单</div>
+              <Link to={{ pathname: '/buy-ticket/step1', search: location.search }}>重新开始</Link>
+              <span> </span>
               <Link to="/">返回首页</Link>
             </div>
           ) : null}
 
           <div className={styles.noticeBar}>
             <span className={styles.noticeDot} aria-hidden="true" />
-            机票价格变动频繁，请在16:19前完成付款
+            机票价格变动频繁，请在 {remainText} 内完成付款
           </div>
 
           <div className={styles.payBox}>

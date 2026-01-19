@@ -242,6 +242,7 @@
     - API-GET-BookingDraft
     - API-POST-OrderPay
   acceptanceCriteria:
+    - 支持从 /booking/payment/:orderId 进入，orderId 必须与订单列表入口一致。
     - 倒计时为 15 分钟并基于订单 expiresAt 计算。
     - 展示乘机人姓名、证件类型与证件号脱敏值，来源为 bookingDraft 或订单 details 快照。
     - 当乘机人信息缺失或不一致时提示“乘机人信息异常，请返回重新填写”并禁止支付。
@@ -288,13 +289,36 @@
     - isLoading
   dependencies:
     - API-GET-Orders
+    - DB-GenerateOrderTxt
+    - DB-GenerateOrdersTxt
+    - API-PATCH-OrderStatus
   acceptanceCriteria:
+    - 页面路由为 /user-center/orders，未登录访问时跳转 /login，登录后回跳。
+    - 列表筛选使用 Query 参数承载：tab(all/pending_travel/pending_payment/pending_review)、productType(all/flight/train/hotel)、page(从1开始)。
     - 列表数据来源为共享订单存储 evoflow_orders，默认展示近一年。
-    - 支持按状态筛选：待支付/未出行。
+    - 页面提示“可查看近一年订单”，并提供“下载历史所有订单”入口。
+    - 支持标签：all/pending_travel/pending_payment/pending_review，且 pending_travel 与 pending_review 基于 departAt 动态归类。
+    - 支持按 productType 筛选：all/flight/train/hotel。
+    - 支持分页与越界页码回退（最后一页或第一页），页面不崩溃。
+    - 加载中显示 Loading，且标签/筛选/分页按钮置灰或展示忙碌态。
+    - 加载需防抖 200ms、去重、取消前序请求结果，且同一时刻仅允许 1 个在途加载任务。
+    - 加载超过 8 秒视为失败，提示“系统繁忙，请稍后重试”，保留当前筛选条件与已展示结果（如有）。
+    - 本地读取失败或解析异常时提示“订单加载失败，请稍后重试”，并提供“重试”按钮。
+    - 当无订单时展示“您还没有相关订单哦”，不显示订单卡片与分页控件。
+    - 每条订单卡片至少展示：订单号、下单时间、订单状态、行程标题、出发日期、出行人、订单总金额。
+    - 当订单状态为 pending_payment 时展示“去支付”入口，跳转 /booking/payment/:orderId。
+    - 当订单状态为 pending_payment 或符合“未出行”定义时展示“取消订单”入口。
+    - 点击“取消订单”需二次确认，取消成功提示“订单取消成功”，失败提示“取消失败”。
+    - 支持“下载历史所有订单”入口与批量下载选中订单（文件格式 TXT）；生成失败提示“下载失败”。
+    - 支持单条下载订单 TXT（文件格式 TXT）；生成失败提示“下载失败”。
     - 点击订单进入订单详情页。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "对齐订单管理列表页标签/筛选/分页/取消/下载与加载稳定性约定。"
+    - date: "2026-01-19"
+      description: "补充 Query 参数约定与历史订单下载入口。"
 
 - type: Frontend
   id: UI-OrderDetailPage
@@ -309,12 +333,22 @@
     - isLoading
   dependencies:
     - API-GET-OrderById
+    - API-PATCH-OrderStatus
+    - DB-ValidateOrderPriceTotal
   acceptanceCriteria:
     - 乘机人/联系人摘要展示必须使用脱敏值并来自订单 details。
-    - 订单不存在时提示“订单不存在或已失效”并提供返回订单列表入口。
+    - 页面路由为 /user-center/orders/:orderId。
+    - 若 details 或其子字段缺失，对应区域展示“—”占位且页面不崩溃。
+    - 订单不存在或不属于当前用户时提示“订单不存在或您没有权限查看”。
+    - 本地读取失败或解析异常时提示“订单详情加载失败，请稍后重试”。
+    - 待支付或未出行状态下展示“取消订单”，取消需二次确认并更新状态为 canceled。
+    - 已取消状态隐藏取消按钮并展示“重新下单”。
+    - 当价格明细求和不等于订单总额时提示“价格明细暂不可用，请稍后重试”，其余信息仍可查看。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "对齐订单详情页字段完整性、取消订单与价格明细一致性校验。"
 
 - type: Frontend
   id: UI-PersonalCommonTravelersList
@@ -444,11 +478,21 @@
     - DB-UpsertUserProfile
     - API-POST-UserCenterMyInfo
   acceptanceCriteria:
+    - 页面路由为 /user-center/my-info，未登录访问时跳转 /login。
     - 手机号展示必须按前三后四脱敏规则。
+    - 只读态展示：手机(脱敏)+“修改”(占位)、邮箱状态+“验证”(占位)、昵称/姓名/性别/生日当前值或“未设置”。
+    - 编辑态展示：昵称/姓名必填输入框、性别单选（男/女）、生日输入框（占位 yyyy-MM-dd）与“保存”按钮。
+    - 点击标题栏“收起”应切换回只读态。
     - 点击保存后必须先完成本地写入成功才允许提示成功并更新只读态。
     - 当后端同步失败但本地已保存时提示“已保存，本次同步失败，请稍后重试”，不得回滚本地数据。
     - 昵称为空或超过 20 字符时提示“请输入昵称（不超过20字符）”并阻止保存。
+    - 姓名为空或包含数字/特殊字符时提示“请输入合法姓名”并阻止保存。
+    - 性别必须选择男或女，否则阻止保存。
     - 生日非空且格式错误时提示“日期格式应为 yyyy-MM-dd”并阻止保存。
+    - 生日非空且为未来日期时提示“日期格式应为 yyyy-MM-dd，且不得为未来日期”并阻止保存。
+    - 当 nicknameStatus=reviewing 时，昵称输入框置灰不可编辑并展示“审核中”，尝试进入编辑时提示“昵称审核中，暂不可修改”，且允许修改其他字段。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "对齐我的信息页只读/编辑态元素、校验与昵称审核中限制。"

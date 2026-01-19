@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep4.module.css'
+import { useAuth } from '../../auth/AuthContext.jsx'
 
 function maskPhone(phone) {
   const p = String(phone).replace(/\s+/g, '')
@@ -55,6 +56,7 @@ function formatMoney(value) {
 export default function BuyTicketStep4() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { auth } = useAuth()
 
   const [updateError, setUpdateError] = useState('')
   const hasUpdatedRef = useRef(false)
@@ -75,7 +77,7 @@ export default function BuyTicketStep4() {
   const order = useMemo(() => {
     if (!orderId) return null
     const orders = readOrders()
-    return orders.find((o) => String(o?.id ?? '') === String(orderId)) ?? null
+    return orders.find((o) => String(o?.orderId ?? o?.id ?? '') === String(orderId)) ?? null
   }, [orderId])
 
   const draft = useMemo(() => readBookingDraft(), [])
@@ -107,19 +109,22 @@ export default function BuyTicketStep4() {
     const nowIso = new Date().toISOString()
     const orders = readOrders()
     const nextOrders = orders.map((o) => {
-      if (String(o?.id ?? '') !== String(orderId)) return o
+      if (String(o?.orderId ?? o?.id ?? '') !== String(orderId)) return o
       return { ...o, status: 'pending_travel', updatedAt: nowIso }
     })
     writeOrders(nextOrders)
 
-    fetch(`/api/orders/${orderId}/status`, { method: 'PATCH' })
+    fetch(`/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : {},
+    })
       .then((resp) => {
         if (!resp.ok) setUpdateError('订单更新失败，稍后查看订单中心')
       })
       .catch(() => {
         setUpdateError('订单更新失败，稍后查看订单中心')
       })
-  }, [orderId])
+  }, [orderId, auth?.token])
 
   function goHome() {
     navigate({ pathname: '/' })

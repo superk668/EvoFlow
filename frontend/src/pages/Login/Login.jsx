@@ -1,5 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useAuth } from '../../auth/AuthContext.jsx'
 import hero from '../../assets/placeholders/login-hero.svg'
 import styles from './Login.module.css'
@@ -36,8 +37,9 @@ function safeClearPostLoginRedirect() {
 
 export default function Login() {
   const { login } = useAuth()
-  const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('password')
+  const [redirectTo, setRedirectTo] = useState('')
 
   const [account, setAccount] = useState('')
   const [password, setPassword] = useState('')
@@ -146,14 +148,20 @@ export default function Login() {
         token: data.token ?? null,
       }
       safeWriteAuth(nextAuth)
-      login(nextAuth)
+      flushSync(() => {
+        login(nextAuth)
+      })
 
-      const redirect = safeReadPostLoginRedirect()
+      const fromState =
+        location?.state && typeof location.state === 'object' && typeof location.state.from === 'string'
+          ? location.state.from
+          : ''
+      const redirect = fromState || safeReadPostLoginRedirect() || ''
       if (redirect) {
         safeClearPostLoginRedirect()
-        navigate(redirect)
+        setRedirectTo(redirect)
       } else {
-        navigate('/')
+        setRedirectTo('/')
       }
     } catch {
       setError('网络请求失败，请稍后重试')
@@ -211,14 +219,20 @@ export default function Login() {
         token: data.token ?? null,
       }
       safeWriteAuth(nextAuth)
-      login(nextAuth)
+      flushSync(() => {
+        login(nextAuth)
+      })
 
-      const redirect = safeReadPostLoginRedirect()
+      const fromState =
+        location?.state && typeof location.state === 'object' && typeof location.state.from === 'string'
+          ? location.state.from
+          : ''
+      const redirect = fromState || safeReadPostLoginRedirect() || ''
       if (redirect) {
         safeClearPostLoginRedirect()
-        navigate(redirect)
+        setRedirectTo(redirect)
       } else {
-        navigate('/')
+        setRedirectTo('/')
       }
     } catch {
       setError('网络请求失败，请稍后重试')
@@ -226,6 +240,8 @@ export default function Login() {
       setIsLoading(false)
     }
   }
+
+  if (redirectTo) return <Navigate to={redirectTo} replace />
 
   return (
     <div className={styles.page}>
@@ -271,7 +287,11 @@ export default function Login() {
               {activeTab === 'password' ? (
                 <>
                   <div className={styles.field}>
+                    <label className={styles.srOnly} htmlFor="loginAccount">
+                      账号
+                    </label>
                     <input
+                      id="loginAccount"
                       className={styles.input}
                       value={account}
                       onChange={(e) => setAccount(e.target.value)}
@@ -281,7 +301,11 @@ export default function Login() {
                   {fieldError.account ? <div className={styles.fieldError}>{fieldError.account}</div> : null}
 
                   <div className={styles.field}>
+                    <label className={styles.srOnly} htmlFor="loginPassword">
+                      密码
+                    </label>
                     <input
+                      id="loginPassword"
                       className={styles.input}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -352,7 +376,10 @@ export default function Login() {
               {error ? <div className={styles.error}>{error}</div> : null}
 
               <div className={styles.agreeRow}>
-                <label className={styles.agreeLabel} htmlFor="loginAgree">
+                <label className={styles.srOnly} htmlFor="loginAgree">
+                  已阅读并同意服务协议
+                </label>
+                <label className={styles.agreeLabel}>
                   <input
                     id="loginAgree"
                     type="checkbox"
@@ -363,7 +390,7 @@ export default function Login() {
                   />
                   <span className={agreed ? styles.checkOn : styles.check} aria-hidden="true" />
                   <span className={styles.agreeText}>
-                    阅读并同意携程的<a className={styles.agreeLink} href="#/">服务协议</a>和<a className={styles.agreeLink} href="#/">个人信息保护政策</a>
+                    {'阅读并同意携程的'}<a className={styles.agreeLink} href="#/">服务协议</a>{'和'}<a className={styles.agreeLink} href="#/">个人信息保护政策</a>
                   </span>
                 </label>
               </div>

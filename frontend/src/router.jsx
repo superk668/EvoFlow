@@ -27,10 +27,13 @@ export const router = createHashRouter([
     element: <MainLayout />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'orders', element: <Orders /> },
-      { path: 'orders/:orderId', element: <OrderDetail /> },
+      { path: 'user-center/orders', element: <Orders /> },
+      { path: 'user-center/orders/:orderId', element: <OrderDetail /> },
+      { path: 'orders', element: <Navigate to="/user-center/orders" replace /> },
+      { path: 'orders/:orderId', element: <Navigate to="/user-center/orders" replace /> },
       { path: 'search-results', element: <SearchResults /> },
-      { path: 'personal/my-info', element: <PersonalMyInfo /> },
+      { path: 'user-center/my-info', element: <PersonalMyInfo /> },
+      { path: 'personal/my-info', element: <Navigate to="/user-center/my-info" replace /> },
       { path: 'personal/common-travelers', element: <PersonalCommonTravelers /> },
       { path: 'personal/common-travelers/add', element: <PersonalAddTraveler /> },
       { path: 'user-center/common-info', element: <CommonInfoIndex /> },
@@ -64,6 +67,11 @@ export const router = createHashRouter([
       { path: 'step3', element: <BuyTicketStep3 /> },
       { path: 'step4', element: <BuyTicketStep4 /> },
     ],
+  },
+  {
+    path: '/booking',
+    element: <AuthLayout />,
+    children: [{ path: 'payment/:orderId', element: <BuyTicketStep3 /> }],
   },
   { path: '*', element: <Navigate to="/" replace /> },
 ])

@@ -97,6 +97,66 @@ describe('BuyTicketStep2 Scenarios', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('orderId=ORDER_001')
   })
 
+  it('Scenario 3.1.x 重复创建订单应直接进入支付', async () => {
+    const user = userEvent.setup()
+
+    sessionStorage.setItem(
+      'bookingDraft',
+      JSON.stringify({
+        flightId: 'MU5185',
+        packageId: '0',
+        departDate: new Date().toISOString().slice(0, 10),
+        priceVersion: 'v1',
+        passenger: { name: '张三', idType: '身份证', idNumber: '110105199001011234', phoneNumber: '' },
+        contact: { phoneNumber: '13800138000' },
+        services: [],
+        stage: 'services',
+      }),
+    )
+
+    localStorage.setItem(
+      'evoflow_orders',
+      JSON.stringify([
+        {
+          id: 'ORDER_DUP',
+          orderId: 'ORDER_DUP',
+          productType: 'flight',
+          status: 'pending_payment',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          amount: 518,
+          totalAmount: 518,
+          details: {
+            passenger: { name: '张三', idType: '身份证', idNumberMasked: maskId('110105199001011234') },
+            contact: { phoneNumberMasked: maskPhone('13800138000') },
+            priceItems: [{ name: '机票', unitPrice: 518, quantity: 1 }],
+          },
+        },
+      ]),
+    )
+
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Not found.' }), { status: 404 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Duplicate order create.' }), { status: 409 }))
+
+    renderWithAuth(<BuyTicketStep2 />, {
+      route: '/buy-ticket/step2?from=上海(SHA)&to=北京(BJS)&date=2026-01-17&flight=MU5185&fare=0&total=518',
+      routes: (
+        <>
+          <Route path="/buy-ticket/step1" element={<BuyTicketStep1 />} />
+          <Route path="/buy-ticket/step2" element={<BuyTicketStep2 />} />
+          <Route path="/buy-ticket/step3" element={<BuyTicketStep3 />} />
+        </>
+      ),
+    })
+
+    await user.click(screen.getByRole('button', { name: '去支付' }))
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/buy-ticket/step3'))
+    expect(screen.getByTestId('location')).toHaveTextContent('orderId=ORDER_DUP')
+    expect(screen.queryByText('订单已创建，请前往支付')).not.toBeInTheDocument()
+  })
+
   it('Scenario 3.1.2 状态异常（服务不可用）', async () => {
     const user = userEvent.setup()
 

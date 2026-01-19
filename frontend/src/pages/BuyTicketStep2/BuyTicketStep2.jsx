@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep2.module.css'
+import { useAuth } from '../../auth/AuthContext.jsx'
 
 const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
@@ -49,6 +50,14 @@ function readBookingDraft() {
   }
 }
 
+function readSession(key) {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
 function writeSession(key, value) {
   try {
     sessionStorage.setItem(key, value)
@@ -72,16 +81,58 @@ function writeOrders(next) {
   localStorage.setItem('evoflow_orders', JSON.stringify(next))
 }
 
+function findLatestPendingPaymentOrderId() {
+  const orders = readOrders()
+  const list = orders
+    .map((o) => {
+      if (!o || typeof o !== 'object') return null
+      const orderId = String(o.orderId ?? o.id ?? '').trim()
+      const status = String(o.status ?? '').trim()
+      const createdAt = Date.parse(String(o.createdAt ?? ''))
+      if (!orderId || status !== 'pending_payment') return null
+      return { orderId, createdAt: Number.isFinite(createdAt) ? createdAt : 0 }
+    })
+    .filter(Boolean)
+  list.sort((a, b) => b.createdAt - a.createdAt)
+  return list[0]?.orderId || ''
+}
+
+async function tryFetchLatestPendingPaymentOrderId(authToken) {
+  try {
+    const resp = await fetch('/api/orders?tab=pending_payment&productType=flight&page=1&pageSize=10', {
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    })
+    if (!resp.ok) return ''
+    const data = await resp.json()
+    const list = Array.isArray(data?.orders) ? data.orders : []
+    const first = list.find((o) => o && typeof o === 'object')
+    const orderId = String(first?.orderId ?? first?.id ?? '').trim()
+    return orderId
+  } catch {
+    return ''
+  }
+}
+
+function toDepartAtIso(isoDate) {
+  const s = String(isoDate ?? '').trim()
+  if (!s) return ''
+  const d = new Date(`${s}T00:00:00`)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toISOString()
+}
+
 export default function BuyTicketStep2() {
+  const { auth } = useAuth()
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
 
   const [serviceToast, setServiceToast] = useState('')
   const [servicesError, setServicesError] = useState('')
+  const [payError, setPayError] = useState('')
   const [isPaying, setIsPaying] = useState(false)
 
-  const date = searchParams.get('date') || '2026-01-17'
+  const date = searchParams.get('date') || new Date().toISOString().slice(0, 10)
   const from = searchParams.get('from') || '上海(SHA)'
   const to = searchParams.get('to') || '北京(BJS)'
   const flightNo = searchParams.get('flight') || 'KN5987'
@@ -115,7 +166,9 @@ export default function BuyTicketStep2() {
     fetch('/api/services/flight')
       .then((resp) => {
         if (!alive) return
-        if (!resp.ok) setServicesError('加载失败')
+        if (resp.ok) return
+        if (resp.status === 404) return
+        setServicesError('加载失败')
       })
       .catch(() => {
         if (!alive) return
@@ -140,14 +193,62 @@ export default function BuyTicketStep2() {
 
   async function goPay() {
     if (!draftValid) return
+    setPayError('')
     setIsPaying(true)
     try {
+      const fromCity = String(from).split('(')[0].trim()
+      const toCity = String(to).split('(')[0].trim()
+      const totalAmount = Number.parseFloat(String(total))
+      const draftForCreate = {
+        ...draft,
+        route: fromCity && toCity ? { fromCity, toCity } : undefined,
+        airline: String(airline || '').trim() || undefined,
+        cabin: String(cabin || '').trim() || undefined,
+        depTime: String(depTime || '').trim() || undefined,
+        arrTime: String(arrTime || '').trim() || undefined,
+        depAirport: String(depAirport || '').trim() || undefined,
+        arrAirport: String(arrAirport || '').trim() || undefined,
+        totalAmount: Number.isFinite(totalAmount) ? totalAmount : undefined,
+        priceItems: Number.isFinite(totalAmount) ? [{ name: '机票', unitPrice: totalAmount, quantity: 1 }] : undefined,
+      }
+
       const resp = await fetch('/api/orders/flight', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+        },
+        body: JSON.stringify({ draft: draftForCreate }),
       })
-      if (!resp.ok) return
+      if (resp.status === 401) {
+        const redirectTo = location.pathname + location.search
+        writeSession('postLoginRedirect', redirectTo)
+        navigate('/login', { state: { from: redirectTo } })
+        return
+      }
+      if (resp.status === 409) {
+        let existing = String(readSession('createdOrderId') || '').trim()
+        if (!existing) existing = String(findLatestPendingPaymentOrderId() || '').trim()
+        if (!existing) existing = String(await tryFetchLatestPendingPaymentOrderId(auth?.token)).trim()
+
+        if (existing) {
+          const qp = new URLSearchParams(searchParams)
+          qp.set('orderId', existing)
+          const search = qp.toString()
+          navigate({ pathname: '/buy-ticket/step3', search: search ? `?${search}` : '' })
+          return
+        }
+        navigate('/user-center/orders')
+        return
+      }
+      if (resp.status === 400 || resp.status === 422) {
+        setPayError('订单信息异常，请返回重新填写')
+        return
+      }
+      if (!resp.ok) {
+        setPayError('下单失败，请稍后重试')
+        return
+      }
       const data = await resp.json()
 
       const orderId = data.orderId
@@ -155,17 +256,32 @@ export default function BuyTicketStep2() {
       const expiresAt = data.expiresAt
       const nowIso = new Date().toISOString()
       const amount = Number.parseFloat(String(total))
+      const totalAmountValue = amount
+      const departAt = toDepartAtIso(draft?.departDate ?? date)
       const nextOrder = {
         id: orderId,
+        orderId,
         productType: 'flight',
         status,
         createdAt: nowIso,
         updatedAt: nowIso,
         expiresAt,
         amount: Number.isFinite(amount) ? amount : 0,
+        departAt,
+        totalAmount: Number.isFinite(totalAmountValue) ? totalAmountValue : 0,
         details: {
+          flightId: draftForCreate.flightId,
+          airline: draftForCreate.airline,
+          cabin: draftForCreate.cabin,
+          departDate: draftForCreate.departDate,
+          depTime: draftForCreate.depTime,
+          arrTime: draftForCreate.arrTime,
+          depAirport: draftForCreate.depAirport,
+          arrAirport: draftForCreate.arrAirport,
+          route: draftForCreate.route || null,
           passenger: { name: passengerName, idType: passengerIdType, idNumberMasked: maskId(passengerIdNumber) },
-          contact: { phoneNumberMasked: maskPhone(contactPhone) },
+          contact: { phoneNumber: maskPhone(contactPhone), phoneNumberMasked: maskPhone(contactPhone) },
+          priceItems: Array.isArray(draftForCreate.priceItems) ? draftForCreate.priceItems : [],
         },
       }
 
@@ -179,7 +295,7 @@ export default function BuyTicketStep2() {
       const search = qp.toString()
       navigate({ pathname: '/buy-ticket/step3', search: search ? `?${search}` : '' })
     } catch {
-      void 0
+      setPayError('网络异常，请稍后重试')
     } finally {
       setIsPaying(false)
     }
@@ -238,6 +354,7 @@ export default function BuyTicketStep2() {
             {!draftValid ? <div>订单信息异常，请返回重新填写</div> : null}
             {servicesError ? <div>{servicesError}</div> : null}
             {serviceToast ? <div>{serviceToast}</div> : null}
+            {payError ? <div>{payError}</div> : null}
 
             <div className={styles.serviceCard}>
               <div className={styles.serviceSide}>

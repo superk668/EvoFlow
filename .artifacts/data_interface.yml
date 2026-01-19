@@ -158,12 +158,16 @@
     - DB-GetBookingDraft
   acceptanceCriteria:
     - 订单写入 localStorage.evoflow_orders（数组）。
-    - 订单字段至少包含 id、productType=flight、status=pending_payment、createdAt、expiresAt、amount、details。
+    - 订单字段至少包含 orderId、productType=flight、status=pending_payment、createdAt、departAt、totalAmount、details。
+    - 如存在支付倒计时，订单包含 expiresAt（用于计算 15 分钟倒计时）。
+    - details 必须包含 route(fromCity/toCity)、passenger(name/idType/idNumberMasked)、contact(phoneNumber)、priceItems。
     - details.passenger 与 details.contact 必须由 bookingDraft.passenger/contact 生成快照，且证件号与手机号已脱敏后落盘。
     - 若写入失败返回错误原因（storage_error）。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "字段对齐订单中心（orderId/totalAmount/departAt/details 结构）。"
 
 - type: Database
   id: DB-GetOrderById
@@ -171,25 +175,33 @@
   dependencies:
     - none
   acceptanceCriteria:
-    - 从 localStorage.evoflow_orders 按 id 精确匹配返回订单。
+    - 从 localStorage.evoflow_orders 按 orderId 精确匹配返回订单。
     - 当订单不存在时返回空结果。
     - 读取失败或解析失败返回错误原因（parse_error/storage_error）。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "字段对齐订单中心（按 orderId 查询）。"
 
 - type: Database
   id: DB-ListOrders
-  description: 读取共享订单存储中的订单列表，并支持按 productType 过滤。
+  description: 读取共享订单存储中的订单列表，支持筛选、分页与近一年展示。
   dependencies:
     - none
   acceptanceCriteria:
     - 默认返回按 createdAt 倒序。
-    - 可选过滤条件 productType=flight。
+    - 默认仅返回近一年订单（按 createdAt 过滤）。
+    - 支持按 productType 过滤：flight/train/hotel。
+    - 支持按 tab 过滤：all/pending_payment/pending_travel/pending_review。
+    - pending_travel 与 pending_review 的归类必须基于 departAt 与当前时间动态判断。
+    - 支持分页参数 page(从1开始) 与 pageSize，并对越界页码回退到最后一页或第一页。
     - 解析失败时返回空列表与错误原因（parse_error）。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
+    - date: "2026-01-19"
+      description: "补充分页与按 tab/productType 过滤规则。"
 
 - type: Database
   id: DB-UpdateOrderStatus
@@ -198,9 +210,56 @@
     - DB-GetOrderById
   acceptanceCriteria:
     - 支持状态从 pending_payment 更新为 pending_travel。
+    - 支持取消订单：pending_payment 或 pending_travel(且 departAt > 当前时间) 更新为 canceled。
+    - 当订单状态不允许取消时返回 forbidden。
     - 更新时刷新 updatedAt。
     - 当订单不存在时返回 not_found。
     - 同一状态重复更新返回幂等成功。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+    - date: "2026-01-19"
+      description: "补充取消订单（canceled）与可取消条件。"
+
+- type: Database
+  id: DB-GenerateOrderTxt
+  description: 将订单快照生成用于下载的 TXT 文本内容。
+  dependencies:
+    - DB-GetOrderById
+  acceptanceCriteria:
+    - 生成内容至少包含：订单号、状态、下单时间、出发日期、行程(fromCity→toCity)、出行人、订单总金额。
+    - 当 details 或其子字段缺失时，使用“—”占位且仍可生成文件。
+    - 当订单不存在时返回 not_found。
+    - 生成失败时返回 generate_error。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-GenerateOrdersTxt
+  description: 生成多个订单的 TXT 文本内容（用于批量/历史订单下载）。
+  dependencies:
+    - DB-ListOrders
+    - DB-GenerateOrderTxt
+  acceptanceCriteria:
+    - 支持按 orderIds 生成批量 TXT；当 orderIds 为空时生成近一年全部订单 TXT。
+    - 输出内容按订单 createdAt 倒序排列，每个订单以固定分隔符分隔。
+    - 当某条订单不存在或生成失败时，该条以“—”占位并继续生成其他订单，不导致整体失败。
+    - 当订单列表读取/解析失败时返回 parse_error/storage_error。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+
+- type: Database
+  id: DB-ValidateOrderPriceTotal
+  description: 校验订单价格明细求和是否等于订单总金额。
+  dependencies:
+    - DB-GetOrderById
+  acceptanceCriteria:
+    - 当 details.priceItems 缺失或格式非法时返回 invalid_price_items。
+    - priceItems 求和口径为 sum(unitPrice * quantity)，与 totalAmount 不一致时返回 mismatch。
+    - 校验通过返回 ok。
+    - 当订单不存在时返回 not_found。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"
@@ -342,11 +401,33 @@
   acceptanceCriteria:
     - nickname 必填且长度不超过 20 字符，否则返回 invalid_nickname。
     - name 必填且长度不超过 30 字符，否则返回 invalid_name。
+    - name 不允许数字与特殊字符（允许中文/英文/空格/·），否则返回 invalid_name。
     - gender 必须为 男 或 女，否则返回 invalid_gender。
     - birthday 允许为空；非空时格式必须为 yyyy-MM-dd，否则返回 invalid_birthday。
+    - birthday 非空且晚于当前日期时返回 invalid_birthday。
     - 当 nicknameStatus=reviewing 时，不允许修改 nickname（返回 forbidden）。
     - 写入成功后刷新 updatedAt（如字段存在）。
     - 写入失败返回 storage_error 并保留用户输入用于再次提交。
+  changeLog:
+    - date: "2026-01-19"
+      description: "初始创建。"
+    - date: "2026-01-19"
+      description: "补充姓名合法字符与生日未来日期校验。"
+
+- type: Database
+  id: DB-UpdateUserProfile
+  description: 在后端持久化层更新用户个人信息（支持乐观锁冲突检测）。
+  dependencies:
+    - DB-FindUserByAccount
+  acceptanceCriteria:
+    - 以鉴权上下文解析出的 userId 为更新目标，不允许跨用户更新。
+    - nickname 必填且长度不超过 20 字符，否则返回 invalid_nickname。
+    - name 必填且长度不超过 30 字符，且不允许数字与特殊字符，否则返回 invalid_name。
+    - gender 必须为 男 或 女，否则返回 invalid_gender。
+    - birthday 允许为空；非空时格式必须为 yyyy-MM-dd 且不得为未来日期，否则返回 invalid_birthday。
+    - 当提供 profileVersion 时，若与当前记录版本不一致则返回 conflict（用于映射 HTTP 409）。
+    - 当 nicknameStatus=reviewing 时，不允许修改 nickname（返回 forbidden）。
+    - 更新成功后刷新 version 与 updatedAt。
   changeLog:
     - date: "2026-01-19"
       description: "初始创建。"

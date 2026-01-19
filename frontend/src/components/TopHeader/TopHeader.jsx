@@ -44,7 +44,7 @@ export default function TopHeader() {
 
                 <div className={menuOpen ? styles.menuPanelOpen : styles.menuPanel}>
                   <div className={styles.menuHeader}>
-                    <Link className={styles.menuHeaderMain} to="/personal/my-info">
+                    <Link className={styles.menuHeaderMain} to="/user-center/my-info">
                       <div className={styles.menuAvatar} aria-hidden="true" />
                       <div className={styles.menuHeaderText}>
                         <div className={styles.menuTitleRow}>
@@ -112,7 +112,7 @@ export default function TopHeader() {
 
           <div className={styles.vSep} aria-hidden="true" />
 
-          <Link className={styles.navItem} to="/orders">
+          <Link className={styles.navItem} to="/user-center/orders">
             我的订单
             <span className={styles.navCaret} aria-hidden="true">
               ▾

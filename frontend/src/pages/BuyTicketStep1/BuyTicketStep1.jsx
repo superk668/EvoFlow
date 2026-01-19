@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './BuyTicketStep1.module.css'
+import { useAuth } from '../../auth/AuthContext.jsx'
 
 const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
@@ -50,6 +51,7 @@ function writeBookingDraft(draft) {
 }
 
 export default function BuyTicketStep1() {
+  const { auth } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
@@ -60,7 +62,7 @@ export default function BuyTicketStep1() {
   const [fieldError, setFieldError] = useState({ name: '', idNumber: '', contactPhone: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const date = searchParams.get('date') || '2026-01-17'
+  const date = searchParams.get('date') || new Date().toISOString().slice(0, 10)
   const from = searchParams.get('from') || '上海(SHA)'
   const to = searchParams.get('to') || '北京(BJS)'
   const flightNo = searchParams.get('flight') || 'MU5185'
@@ -102,11 +104,18 @@ export default function BuyTicketStep1() {
     setFieldError(nextFieldError)
     if (nextFieldError.name || nextFieldError.idNumber || nextFieldError.contactPhone) return
 
+    const fromCity = String(from).split('(')[0].trim()
+    const toCity = String(to).split('(')[0].trim()
+    const totalAmount = Number.parseFloat(String(total))
+
     const currentDraft = existingDraft ?? {
       flightId: searchParams.get('flight') || null,
       packageId: searchParams.get('fare') || null,
       departDate: searchParams.get('date') || null,
       priceVersion: `v${Date.now()}`,
+      route: fromCity && toCity ? { fromCity, toCity } : null,
+      totalAmount: Number.isFinite(totalAmount) ? totalAmount : null,
+      priceItems: Number.isFinite(totalAmount) ? [{ name: '机票', unitPrice: totalAmount, quantity: 1 }] : [],
     }
 
     const nextDraft = {
@@ -125,7 +134,10 @@ export default function BuyTicketStep1() {
     try {
       const resp = await fetch('/api/booking/draft', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+        },
         body: JSON.stringify(nextDraft),
       })
       if (!resp.ok && resp.status !== 204) {
