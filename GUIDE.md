@@ -4,14 +4,6 @@
 
 本仓库作为'https://github.com/superk668/Ctrip-Replica'的子仓库，旨在提供一个标准化的multi-agent工作流，用于完全复现我们的工作。
 
-## 关于我们的工作流
-
-### 工作流介绍
-
-
-### 帮助我们改进工作流
-
-
 ## 开始复现
 
 ### 准备工作
@@ -33,16 +25,22 @@ To be added (Under construction)
 
 在agent运行过程中，请保持关注。在agent自主运行`npm test`时，终端可能无法正常退出，请在agent运行终端运行完成后手动点击跳过键或在终端中键入`q`退出。
 
+在每个板块的Web constructor阶段，我们需要使用图片输入，需要agent的多模态理解能力。但我们发现trae提供的模型有时会出现无法理解图片的“降智”现象，具体表现为尝试创建python程序使用OCR理解图片，这会对我们的工作流的性能产生严重影响。如遇到这种情况，请尝试新建任务或重启Trae，确保agent能正确理解图片。
+
+在所有端口初始化时，若报错，请先检查该端口是否已被占用。
+
+对于所有[.png]文件，请根据路径将其复制（拖曳）至prompt输入栏内。所有截图均可在`manual_prompt/`目录下找到。我们尝试了自动化的版本，但效果不佳，因此仍选择手动拖入的方式，对其带来的不便表示歉意。
+
 ### 登陆与注册界面
 
-对于所有[.png],请根据路径将其复制（拖曳）至prompt输入栏内。所有截图均可在`manual_prompt/`目录下找到。
 Step 1. Web Constructor：构建网页UI前端
 Step 1.0 构建首页prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
-首页
+[EvoFlow\manual_prompt\login_register\web_constructor_step_0\after_login.png]
+构建未登录的首页和登录后的首页（登陆注册按钮变为用户头像和昵称）
 ```
-### Step 1.1 构建底边栏prompt：
+Step 1.1 构建底边栏prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_1\bottom_bar.png]
 实现底边栏，该模块需要在所有页面中被添加至最低端
@@ -51,14 +49,16 @@ Step 1.2 构建登陆页prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_core.png]
-登录界面
+[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_sms_core.png]
+登录界面，使用两种登陆方式分为账户名密码登录和验证码登录，可以通过按钮互相跳转
 ```
 Step 1.3 构建注册页第一步prompt：
 ```
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core1.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core2.png]
-注册界面第一步
+[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_contract.png]
+注册界面第一步。其中，用户协议是刚进入该页面时的弹窗，点击同意后进入注册界面，否则跳转首页。
 ```
 Step 1.4 构建注册页第二步prompt：
 ```
@@ -68,27 +68,30 @@ Step 1.4 构建注册页第二步prompt：
 注册界面第二步
 ```
 
-### Step 2. Interface Designer：生成接口
+Step 2. Interface Designer：生成接口
 ```
 请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计登录与注册部分的接口
 ```
 
-### Step 3. Test Generator：生成测试用例
+Step 3. Test Generator：生成测试用例
 ```
-请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试代码
-```
-
-### Step 4. Developer：实现接口补全代码
-```
-请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成代码
+请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试代码,无需使所有测试样例通过
 ```
 
-### Step 5. Test Runner：运行测试用例
+Step 4. Developer：实现接口补全代码
 ```
-运行测试
+请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成设计登录与注册部分的代码
 ```
 
-### Step 6. 验证功能
+Step 5. Test Runner：运行测试用例
+```
+请你进行测试，同时确保后端可通过npm start正常启动并在某端口上等待并且能够在控制台打印发送的验证码，前端能通过npm run dev 正常启动。
+请你验证刚启动后端时处于未登录状态，主页为未登录版式。
+请你验证登陆后，登录状态成功保存并跳转至已登录的主页版式。
+请你检查路由：各界面间能否通过点击链接或按钮跳转。
+```
+
+Step 6. 验证功能
 现在可以对登录与注册功能进行验证。
 启动后端
 ```
@@ -100,41 +103,154 @@ npm start
 cd frontend
 npm run dev
 ```
-进行测试
+进行测试。
+若遇到严重问题，请向developer反馈，要求其修复。
 
+在端口初始化时，若报错，请先检查该端口是否已被占用。
 
-### 用于最终提交 Step 7. AutoDebugger(未实现)
+### 个人中心板块
 
-
-### 用于小组调试改进：Step 7. Workflow Refiner
-这是一个用于改进工作流的agent。它了解整个工作流的所有步骤，并根据用户反馈和错误信息，自动调整工作流，使得下一次从零生成时能够避免该错误再次发生。
-
-prompt：
+Step 1. Web Constructor
+Step 1.1 构建个人信息管理页prompt：
 ```
-{错误信息}+ “请你debug并改进工作流”
+[EvoFlow\manual_prompt\personal_center\web_constructor_step1\personal_center_page.png]
+[EvoFlow\manual_prompt\personal_center\web_constructor_step1\Dropdown_menu.png]
+构建个人信息管理页及左侧可下拉展开的导航栏。
 ```
-### 职责
-#### 步骤 1: 代码层面的修复 (Immediate Fix)
-*   **动作**: 分析报错信息或 Bug 描述，直接修改项目代码以修复当前问题。
-*   **标准**: 确保修改后的代码能通过现有测试，并解决报告的 Bug。
 
-#### 步骤 2: 根因分析 (Root Cause Analysis)
-*   **动作**: 深度思考为什么之前的工作流没能避免这个 Bug。
-*   **分析维度**:
-    *   **需求模糊**: `requirements.md` 是否缺少了对该边缘情况或逻辑的描述？
-    *   **提示词缺陷**: 某个 Agent 的 Prompt 是否不够明确？
-        *   例如：Developer 忘记了做输入验证，可能是 `developer_prompt.md` 缺少了“必须验证所有输入”的强指令。
-        *   例如：Test Generator 漏测了该场景，可能是 `test_generator_prompt.md` 缺乏对边界条件生成的指导。
+```
+[EvoFlow\manual_prompt\personal_center\web_constructor_step1\information_edit.png]
+构建个人信息管理页点击编辑后进入的个人信息编辑页面。
+```
 
-#### 步骤 3: 系统进化 (Evolution for Reproducibility) - **最关键步骤**
-*   **目标**: 确保如果其他人拿着**修改后的** `requirements.md` 和 `agent_prompts/` 重新从头运行工作流，这个 Bug **绝对不会**再次发生。
-*   **动作**:
-    *   **修改需求**: 如果是业务逻辑缺失，更新 `requirements.md`。
-    *   **优化 Prompt**: 如果是 Agent 的能力或执行力问题，你必须修改 `agent_prompts/` 下对应的 `.md` 文件。
-        *   *策略*: 增加特定的约束（Constraint）、思维链（Chain of Thought）示例或具体的“负面约束（Negative Constraints）”来指导 Agent。
+Step 1.2 构建常用旅客信息管理页prompt：
+```
+[EvoFlow\manual_prompt\personal_center\web_constructor_step2\common_information_page.png]
+[EvoFlow\manual_prompt\personal_center\web_constructor_step2\dropdown_menu.png]
+构建常用旅客信息管理页
+```
 
-#### 步骤 4: 测试闭环 (Test Coverage & Synchronization)
-*   **动作**:
-    1.  在 `requirements.md` 中添加或修改对应的“测试场景（Scenario）”描述（自然语言）。
-    2.  编写或更新对应的自动化测试代码，确保该 Bug 被永久覆盖。
-*   **约束**: 必须保持 `requirements.md` 中的描述与实际测试代码的一一对应关系。
+Step 1.3 构建常用旅客信息编辑页prompt：
+```
+[EvoFlow\manual_prompt\personal_center\web_constructor_step3\set_information.png]
+构建常用旅客信息编辑页
+```
+
+
+Step 2. Interface Designer：生成接口
+```
+请你根据需求文档#EvoFlow\requirements\personal_center_requirement.md，设计个人中心板块的接口
+```
+
+Step 3. Test Generator：生成测试用例
+```
+请你根据个人中心的需求文档#EvoFlow\requirements\personal_center_requirement.md，实现与Scenario一一对应的测试用例及测试代码,无需使所有测试样例通过
+```
+
+Step 4. Developer：实现接口补全代码
+```
+请你根据个人中心的需求文档#EvoFlow\requirements\personal_center_requirement.md，实现接口完成设计个人中心板块的代码
+```
+
+Step 5. Test Runner：运行测试用例
+```
+请你进行测试，同时确保后端可通过npm start正常启动，并可在个人信息/旅客信息编辑时前端输入栏中输入合法信息进行保存时，后端可正确记录保存数据，同时前端能通过npm run dev 正常启动。
+请你验证各页面之间的跳转是否正常，能够在已登录的主页点击用户昵称头像跳转至个人信息管理页。
+```
+
+Step 6. 验证功能
+现在可以对个人中心板块的功能进行验证。
+启动后端
+```
+cd backend
+npm start
+```
+启动前端
+```
+cd frontend
+npm run dev
+```
+进行测试。
+若遇到严重问题，请向developer反馈，要求其修复。
+
+在端口初始化时，若报错，请先检查该端口是否已被占用。
+
+### 机票预订板块
+
+Step 1. Web Constructor
+Step 1.1 构建机票预订搜索结果页prompt：
+```
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\search_result_overview.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\searching_bar.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\selecting_bar.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\ticket_pulldown_selection.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\booking_button.png]
+通过在主页（homepage）进行搜索进入搜索结果页面。请检查主页搜索栏构建（出发地下拉选择框，目的地下拉选择框，日期选择框）。构建搜索结果页面，具体航班信息使用日期、出发地和目的地随搜索改变的半硬编码。 构建搜索结果页面的搜索栏，点击出发地和目的地城市名会出现选择栏，构建出发地和目的地选择下拉栏，如果使用 useSearchParams，请先证明它不会改变 pathname；否则改用 useNavigate，添加交互路由。 构建筛选/排序栏。 构建搜索结果机票信息卡的订票展开按钮，点击后展开下拉面板，添加交互路由。
+```
+
+Step 1.2 构建订票第一步页面prompt：
+```
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\buy_ticket_step1.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\passenger.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\contacts.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\ticket_information.png]
+构建订票第一步页面，包含乘客信息卡，联系人信息和机票信息展示。
+```
+
+Step 1.3 构建订票第二步页面prompt：
+```
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\buy_ticket_step2.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\go_pay.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\ticket_information.png]
+构建订票第二步页面，包含顶部的保障展示，底部的“去支付”按钮和机票信息卡展示。
+```
+
+Step 1.4 构建订票第三步页面prompt：
+```
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_3\buy_ticket_step3.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_3\pay_selection.png]
+构建订票第三步支付页面。
+```
+
+Step 1.5 构建订票第四步页面prompt：
+```
+构建订票第四步支付完成页面，显示“支付完成”的提示和机票信息。
+```
+
+Step 2. Interface Designer：生成接口
+```
+请你根据需求文档#EvoFlow\requirements\buy_ticket_requirement.md，设计机票预订板块的接口
+```
+
+Step 3. Test Generator：生成测试用例
+```
+请你根据机票预订的需求文档#EvoFlow\requirements\buy_ticket_requirement.md，实现与Scenario一一对应的测试用例及测试代码,无需使所有测试样例通过。
+```
+
+Step 4. Developer：实现接口补全代码
+```
+请你根据机票预订的需求文档#EvoFlow\requirements\buy_ticket_requirement.md，实现接口完成设计机票预订板块的代码
+```
+
+Step 5. Test Runner：运行测试用例
+```
+请你进行测试，同时确保后端可通过npm start正常启动，并可在机票预订/乘客信息编辑时前端输入栏中输入合法信息进行保存时，或在机票下单成功后，后端可正确记录保存订单数据，同时前端能通过npm run dev 正常启动。
+请你验证各页面之间的跳转是否正常，能够在主页使用搜索功能跳转至机票搜索页。
+```
+
+Step 6. 验证功能
+现在可以对机票预订板块的功能进行验证。
+启动后端
+```
+cd backend
+npm start
+```
+启动前端
+```
+cd frontend
+npm run dev
+```
+进行测试。
+若遇到严重问题，请向developer反馈，要求其修复。
+
+在端口初始化时，若报错，请先检查该端口是否已被占用。
