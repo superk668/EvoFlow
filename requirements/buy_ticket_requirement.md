@@ -115,7 +115,7 @@
         Scenario: 正常选择套餐并进入订票页
             Given 用户在结果页展开某航班的套餐面板
             When 用户点击某套餐的“预订”按钮
-            Then 系统在本地生成预订草稿并写入会话，要求信息完整（`flightId`、`packageId`、`departDate`、`priceVersion`）
+            Then 系统在本地生成预订草稿并写入会话（`sessionStorage` 的 `bookingDraft`），要求信息完整（`flightId`、`packageId`、`departDate`、`priceVersion`）
             And 系统保存所选航班与套餐到会话
             And 跳转至 `booking` 页面开始填写信息
 
@@ -163,6 +163,17 @@
         - 联系人信息：`国家/地区码下拉`、`联系人手机号输入框`。
         - 操作：`下一步`按钮。
 
+        2.1.3 会话草稿结构与一致性约定（用于避免“订票与支付乘机人信息不一致”）
+        - 会话键名：`sessionStorage.bookingDraft`
+        - 订票页写入字段（字段名必须一致，后续页面不得自造同义字段）：
+          - `passenger`：`name`、`idType`、`idNumber`、`phoneNumber`（可为空）
+          - `contact`：`phoneNumber`
+        - 单一数据源：支付页、完成页、订单落盘时的“乘机人/联系人摘要”必须从 `bookingDraft.passenger` 与 `bookingDraft.contact` 读取或拷贝快照，不允许使用静态占位或其他缓存覆盖。
+        - 写入时机：订票页点击“下一步”且校验通过后，必须将当前表单值写入 `bookingDraft`；后续页面不得自行生成或改写乘机人与联系人信息。
+        - 读取与校验：进入增值服务页/支付页/完成页时，必须先读取 `bookingDraft` 并校验关键字段存在（`passenger.name`、`passenger.idType`、`passenger.idNumber`、`contact.phoneNumber`）；缺失或解析失败视为会话异常，按各页面“状态异常（草稿缺失）”处理。
+        - 展示与脱敏：除订票页输入框外，其他页面（增值服务/支付/完成/订单中心）展示证件号与手机号必须使用脱敏值；订单落盘 `details` 仅保存脱敏后的摘要字段。
+        - 禁止硬编码：增值服务页、支付页、完成页不得使用静态姓名/证件号/手机号占位来渲染或调试“乘机人信息摘要”，必须来自 `bookingDraft` 或其快照。
+
         Scenario: 正常填写并校验通过进入下一步
             Given 乘机人姓名非空且证件号合法
             And 联系人手机号合法
@@ -195,6 +206,7 @@
         3.1.2 页面元素：
         - 增值服务选项（示例占位）：`行李额升级`、`延误险/取消险`、`值机提醒`。
         - 航班摘要与价格清单。
+        - 乘机人/联系人摘要：展示乘机人姓名、证件类型与证件号脱敏、联系人手机号脱敏；必须从 `sessionStorage.bookingDraft` 读取且与订票页输入一致。
         - 操作：`下一步`按钮（进入支付）。
 
         Scenario: 正常选择服务进入支付
@@ -202,6 +214,8 @@
             When 用户点击“下一步”
             Then 系统生成订单号
             And 系统在本地创建订单并写入共享订单存储（`localStorage` 的 `evoflow_orders`），`productType` 为 `flight`，订单状态为 `pending_payment`
+            And 订单必须携带用于订单中心展示的快照信息 `details`（至少包含路线、乘机人、联系人与价格明细）
+            And `details.passenger` 与 `details.contact` 必须从 `sessionStorage.bookingDraft` 中已保存的数据生成（其中证件号与手机号需脱敏后落盘）
             And 跳转至 `booking/payment/:orderId` 支付页
             And 已选服务计入价格清单
 
@@ -215,6 +229,18 @@
             When 服务数据加载失败
             Then 显示加载失败占位并允许继续至支付
 
+        Scenario: 信息一致性（服务页乘机人摘要）
+            Given 用户已在订票页填写乘机人姓名与证件号并进入服务页
+            When 服务页渲染完成
+            Then 服务页展示的乘机人姓名与证件号（脱敏）应与订票页输入一致
+
+        Scenario: 状态异常（草稿缺失）
+            Given 用户进入服务页
+            When 会话中不存在 `sessionStorage.bookingDraft` 或解析失败
+            Then 提示“订单信息异常，请返回重新填写”
+            And 提供返回订票页入口
+            And 禁止进入支付页
+
 4. 支付页面
     4.1 支付下单与倒计时
         4.1.1 进入方式：
@@ -222,7 +248,10 @@
         4.1.2 页面元素：
         - 金额摘要与航班信息；`剩余时间倒计时（15:00）`；`支付方式`（已保存银行卡/新卡）。
         - 操作：`支付按钮`（根据所选方式显示文案）。
-        - 乘机人信息摘要：展示乘机人姓名与证件类型（身份证）及证件号脱敏；必须与订票页已填写并保存的内容一致。
+        - 乘机人信息摘要：展示乘机人姓名与证件类型（身份证）及证件号脱敏；必须与订票页已填写并保存的内容一致，且必须从 `sessionStorage.bookingDraft` 读取。
+        - 脱敏规则：
+          - 联系人手机号：保留前三位与后四位，中间以 `*` 替换
+          - 身份证号：保留前三位与后两位，中间以 `*` 替换
 
 
 
@@ -268,6 +297,7 @@
         - 支付成功后跳转至 `booking/complete`。
         5.1.2 页面元素：
         - 订单信息卡：`金额`、`路线`、`起降信息`、`乘机人摘要`、`联系人`、`价格明细`。
+        - 乘机人/联系人摘要：优先展示订单快照 `details.passenger` 与 `details.contact`（均为脱敏值）；若仅能读取到 `bookingDraft`，则以其生成脱敏摘要展示，但不得展示证件号与手机号原文。
         - 操作：`返回首页`。
 
         Scenario: 正常展示完成页并更新订单状态
@@ -288,6 +318,11 @@
             When 共享订单存储写入失败或发生异常
             Then 页面保持完成展示但提示“订单更新失败，稍后查看订单中心”
             And 不影响已完成的支付与页面 UI
+
+        Scenario: 信息一致性（完成页乘机人摘要）
+            Given 用户已完成支付并进入完成页
+            When 完成页渲染完成
+            Then 完成页展示的乘机人姓名与证件号（脱敏）应与订票页输入一致
 
 
 6. 全局购票进度条（Header）
@@ -325,5 +360,13 @@
       - 存储位置：`localStorage`
       - 键名：`evoflow_orders`
       - 数据结构：JSON 数组
-      - 最低字段：`orderId`、`productType`、`status`、`createdAt`、`departAt`、`totalAmount`
+      - 最低字段：`orderId`、`productType`、`status`、`createdAt`、`departAt`、`totalAmount`、`details`
+      - `details` 最低字段：
+        - `route`：`fromCity`、`toCity`
+        - `passenger`：`name`、`idType`、`idNumberMasked`
+        - `contact`：`phoneNumberMasked`
+        - `priceItems`：数组（项目名、单价、数量）
+    - 会话草稿约定：
+      - 存储位置：`sessionStorage`
+      - 键名：`bookingDraft`
     - 所有页面仅静态展示，不接入后端；交互校验按上述规则提示。
