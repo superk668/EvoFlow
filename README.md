@@ -27,36 +27,7 @@ The structure of this repo (main branch) is as follows:
 
 ## Reproduce the Ctrip-Replica Project using EvoFlow
 
-To reproduce our work on EvoFlow, please first clone and switch to the 'reproduce' branch. 
-```
-git clone https://github.com/superk668/EvoFlow.git
-cd EvoFlow
-git switch reproduce
-```
-Then follow the steps in our GUIDE.
+Follow the steps in our GUIDE.
 **GUIDE.html** is recommended (you will need a browser) for more support, visualization and readability. **GUIDE.md** is also provided for those who prefer to read in plain text.
 
 
-## Test our Ctrip-Replica Project built COMPLETELY with EvoFlow
-
-First start backend server:
-```
-cd backend
-npm install
-npm start
-```
-
-Then start frontend server:
-```
-cd frontend
-npm install
-npm run dev
-```
-
-We implement the following features in our Ctrip-Replica project:
-- login and registration
-- personal center
-- flight search/booking & payment
-- order management
-
-We also implement a version with extra human support for more UI support, edge case coverage and some minor improvements. See here [**Ctrip-Replica**](https://github.com/superk668/Ctrip-Replica) for more details.
