@@ -1,0 +1,8 @@
+{
+  "scope": "order_management/web_constructor_step0",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/order_management/web_constructor_step_0/order_management_page.png"
+  },
+  "implementedRoute": "/orders",
+  "notes": ["静态实现：订单管理页面", "包含左侧个人中心导航、订单状态 Tab、筛选条、订单列表与分页"]
+}

@@ -1,0 +1,221 @@
+.page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.body {
+  flex: 1;
+  background: #fff;
+}
+
+.container {
+  width: min(var(--container-width), calc(100% - 32px));
+  margin: 0 auto;
+  display: flex;
+}
+
+.main {
+  flex: 1;
+  padding: 14px 0 60px;
+}
+
+.card,
+.cardCompact {
+  width: min(980px, calc(100% - 24px));
+  margin: 0 auto;
+  border: 1px solid #cfd3d9;
+  background: #fff;
+}
+
+.card {
+  min-height: 310px;
+}
+
+.cardCompact {
+  margin-top: 18px;
+}
+
+.cardHeader {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #ddebff;
+  border-bottom: 1px solid #cfd3d9;
+}
+
+.cardTitle {
+  font-size: 14px;
+  color: #1f2329;
+  font-weight: 600;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerLink {
+  font-size: 12px;
+  color: #0a60ff;
+}
+
+.headerBtn {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #9aa1ab;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.headerMinus,
+.headerPlus {
+  width: 10px;
+  height: 2px;
+  background: #2b2f36;
+  border-radius: 2px;
+  position: relative;
+}
+
+.headerPlus::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: #2b2f36;
+  left: 4px;
+  top: -4px;
+  border-radius: 2px;
+}
+
+.cardBody {
+  padding: 20px 0 0;
+}
+
+.form {
+  width: 520px;
+  margin: 0 auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 110px 210px 120px;
+  align-items: center;
+  min-height: 34px;
+  font-size: 12px;
+  color: #1f2329;
+  margin: 14px 0;
+}
+
+.label {
+  text-align: right;
+  padding-right: 18px;
+  color: #1f2329;
+}
+
+.required {
+  color: #d62828;
+  margin-left: 2px;
+}
+
+.value {
+  text-align: left;
+}
+
+.valueMuted {
+  text-align: left;
+  color: #6b7280;
+}
+
+.action {
+  color: #0a60ff;
+  text-align: left;
+}
+
+.input {
+  height: 24px;
+  border: 1px solid #b7bcc4;
+  background: #fff;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #1f2329;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #9aa1ab;
+}
+
+.gender {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 24px;
+}
+
+.genderItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #1f2329;
+}
+
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 0 0 128px;
+}
+
+.saveBtn {
+  width: 62px;
+  height: 26px;
+  font-size: 12px;
+  color: #1f2329;
+  background: linear-gradient(#f2f2f2, #dcdcdc);
+  border: 1px solid #9aa1ab;
+  border-radius: 3px;
+}
+
+.tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tipIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid #7aa9ff;
+  color: #0a60ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  background: #eef5ff;
+}
+
+.tipText {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.backRow {
+  margin: 12px 0 0 128px;
+}
+
+.back {
+  font-size: 12px;
+  color: #0a60ff;
+}
+

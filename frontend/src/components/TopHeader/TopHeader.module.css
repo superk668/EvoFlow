@@ -1,0 +1,221 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--color-surface);
+  border-bottom: 1px solid #eef0f3;
+}
+
+.inner {
+  height: 56px;
+  width: min(var(--container-width), calc(100% - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 520px;
+}
+
+.logo {
+  width: 140px;
+  height: 28px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  width: 520px;
+  height: 36px;
+  border: 1px solid #2f7dff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.searchInput {
+  flex: 1;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #2b2f36;
+}
+
+.searchInput::placeholder {
+  color: #a3a9b3;
+}
+
+.searchBtn {
+  width: 44px;
+  height: 100%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  position: relative;
+}
+
+.searchIcon::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 2px;
+  background: #fff;
+  right: -7px;
+  bottom: -4px;
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.authedRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.authLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #2b2f36;
+}
+
+.authLink {
+  padding: 4px 2px;
+}
+
+.authDivider {
+  width: 1px;
+  height: 14px;
+  background: #d9dde3;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 6px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.nickname {
+  font-size: 14px;
+  color: #2b2f36;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #79808b;
+  margin-top: 2px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: #2b2f36;
+}
+
+.navItem {
+  padding: 4px 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navLabel {
+  line-height: 1;
+}
+
+.navCaret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #6d7480;
+  margin-top: 2px;
+}
+
+.navSplit {
+  width: 1px;
+  height: 14px;
+  background: #e3e6eb;
+}
+
+.iconBtn {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #9aa1ab;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.authIcons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.registerRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #2b2f36;
+}
+
+.homeIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid #9aa1ab;
+  background: #fff;
+}
+
+.headerIcon {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #9aa1ab;
+  border-radius: 4px;
+  background: #fff;
+}

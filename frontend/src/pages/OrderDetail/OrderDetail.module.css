@@ -1,0 +1,574 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #eef2f7;
+}
+
+
+.body {
+  flex: 1;
+}
+
+.container {
+  width: min(var(--container-width), calc(100% - 32px));
+  margin: 0 auto;
+  padding: 18px 0 42px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 12px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.breadcrumbLink {
+  color: #0a60ff;
+}
+
+.breadcrumbSep {
+  color: #a0a7b2;
+}
+
+.breadcrumbCurrent {
+  color: #6b7280;
+}
+
+.printLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #0a60ff;
+  text-decoration: none;
+}
+
+.printIcon {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #0a60ff;
+  border-radius: 2px;
+  position: relative;
+  background: #fff;
+}
+
+.printIcon::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 10px;
+  height: 5px;
+  border: 1px solid #0a60ff;
+  background: #fff;
+}
+
+.printIcon::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  width: 8px;
+  height: 5px;
+  border-top: 1px solid #0a60ff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 22px;
+  align-items: start;
+}
+
+.left {
+  min-width: 0;
+}
+
+.right {
+  min-width: 0;
+}
+
+.statusCard {
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(31, 35, 41, 0.08);
+  padding: 20px 22px 18px;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.statusHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.statusTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.statusReason {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #1f2329;
+}
+
+.rebookBtn {
+  margin-top: 14px;
+  height: 34px;
+  padding: 0 18px;
+  border: 1px solid #0a60ff;
+  color: #0a60ff;
+  background: #fff;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.statusActions {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cancelBtn {
+  height: 34px;
+  padding: 0 18px;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+  background: #fff;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.payBtn {
+  height: 34px;
+  padding: 0 18px;
+  border: 1px solid #0a60ff;
+  color: #fff;
+  background: #0a60ff;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.loading {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.error {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #ff4d4f;
+}
+
+.segmentCard,
+.travelerCard {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f7;
+}
+
+.segmentTitle,
+.travelerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.segmentRow {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.segmentMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.segmentNo {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a60ff;
+}
+
+.segmentStations {
+  font-size: 12px;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segmentMeta {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.travelerList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.travelerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.travelerName {
+  font-size: 12px;
+  color: #111827;
+}
+
+.travelerId {
+  font-size: 12px;
+  color: #9aa1ab;
+  white-space: nowrap;
+}
+
+.orderNo {
+  font-size: 12px;
+  color: #6b7280;
+  padding-top: 6px;
+  white-space: nowrap;
+}
+
+.statusDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 16px 0 14px;
+}
+
+.noticeStrip {
+  height: 42px;
+  background: #f7f8fa;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #eceff3;
+}
+
+.noticeDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ff7a00;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.noticeDot::after {
+  content: '!';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  font-size: 10px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.noticeStripText {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.noticeStrong {
+  color: #ff4d4f;
+  font-weight: 700;
+}
+
+.noticeMore {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #b8c0cc;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.npsCard {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(31, 35, 41, 0.08);
+  padding: 18px 22px 18px;
+}
+
+.npsTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.npsScale {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.npsBox {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+}
+
+.npsLabels {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.npsLabelLeft,
+.npsLabelRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.faceSad,
+.faceHappy {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffcd3c;
+  position: relative;
+}
+
+.faceSad::before,
+.faceHappy::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  width: 3px;
+  height: 3px;
+  background: #1f2329;
+  border-radius: 50%;
+  box-shadow: 7px 0 0 #1f2329;
+}
+
+.faceHappy::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  width: 8px;
+  height: 5px;
+  border-bottom: 2px solid #1f2329;
+  border-radius: 0 0 10px 10px;
+}
+
+.faceSad::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 12px;
+  width: 8px;
+  height: 5px;
+  border-top: 2px solid #1f2329;
+  border-radius: 10px 10px 0 0;
+}
+
+.payCard {
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(31, 35, 41, 0.08);
+  padding: 16px 16px 14px;
+}
+
+.payTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.payDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 12px 0 14px;
+}
+
+.payAmountRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.payAmountLabel {
+  font-size: 14px;
+  color: #111827;
+}
+
+.payAmountTime {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9aa1ab;
+}
+
+.payAmountValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0a60ff;
+}
+
+.currency {
+  font-weight: 800;
+}
+
+.amountText {
+  font-weight: 800;
+}
+
+.modalMask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modalCard {
+  width: min(380px, calc(100% - 32px));
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid rgba(31, 35, 41, 0.12);
+  padding: 16px;
+}
+
+.modalTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modalActions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalSecondary {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.modalPrimary {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #0a60ff;
+  background: #0a60ff;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.modalPrimary:disabled {
+  opacity: 0.6;
+}
+
+.payGroup {
+  margin-top: 16px;
+}
+
+.payGroupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.payGroupTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.payGroupTotal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.payLine {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #111827;
+}
+
+.payLineLabel {
+  color: #111827;
+}
+
+.payLineValue {
+  color: #9aa1ab;
+  white-space: nowrap;
+}
+
+.payDivider2 {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 14px 0 12px;
+}

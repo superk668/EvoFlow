@@ -1,0 +1,11 @@
+{
+  "scope": "login_register/web_constructor_step_4",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/login_register/web_constructor_step_4/register2_overview.png",
+    "core1": "manual_prompt/login_register/web_constructor_step_4/register2_core1.png",
+    "core2": "manual_prompt/login_register/web_constructor_step_4/register2_core2.png"
+  },
+  "implementedRoute": "/register/password",
+  "notes": ["静态实现：注册第二步设置密码页面", "包含返回上一步链接与密码强度视觉条"]
+}
+

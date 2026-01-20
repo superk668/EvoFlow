@@ -6,12 +6,57 @@
 
 <p align="center">A self-evolving multi-agent web development workflow.</p>
 
-Detailed description to be added here.
+EvoFlow is a self-evolving multi-agent web development workflow. It aims not only to help developers to build web applications more efficiently by automating the development process, but also to improve the reproducibility of the agent development workflow.
 
-This repo is an example of replicating the Ctrip website using EvoFlow.
 
-The structure of this repo is as follows:
-    - `GUIDE.md`: A step-by-step guide to reproduce the Ctrip-Replica project.
-    - `agent_prompt/`: The prompts for the agents in EvoFlow.
-    - `requirements/`: The requirements for the Ctrip-Replica website.
-    - `manual_prompt/`: The example of manual prompt needed for the agents.
+<p align="center">
+  <img src="assets/evoflow_illustration.png" alt="EvoFlow Logo" width="650" />
+</p>
+
+By learning from trial and error, EvoFlow can automatically refine the assets of the workflow, ensuring the workflow will not make the same mistakes the next time, thus enhancing the stability of the workflow.
+
+This repo is an example of replicating the Ctrip website using EvoFlow. If you would like to replicate our work, please switch to the 'reproduce' branch, where only the code for reproducing the Ctrip-Replica project is included.
+
+The structure of this repo (main branch) is as follows:
+
+- `agent_prompt/`: The prompts for the agents in EvoFlow.
+- `requirements/`: The requirements for the Ctrip-Replica website.
+- `manual_prompt/`: The example of manual prompt needed for the agents.
+- `GUIDE.html/GUIDE.md`: A step-by-step guide to reproduce the Ctrip-Replica project.
+- `frontend/`,`backend/`,`.artifacts/`,...: The code for the Ctrip-Replica website.
+
+## Reproduce the Ctrip-Replica Project using EvoFlow
+
+To reproduce our work on EvoFlow, please first clone and switch to the 'reproduce' branch. 
+```
+git clone https://github.com/superk668/EvoFlow.git
+cd EvoFlow
+git switch reproduce
+```
+Then follow the steps in our GUIDE.
+**GUIDE.html** is recommended (you will need a browser) for more support, visualization and readability. **GUIDE.md** is also provided for those who prefer to read in plain text.
+
+
+## Test our Ctrip-Replica Project built COMPLETELY with EvoFlow
+
+First start backend server:
+```
+cd backend
+npm install
+npm start
+```
+
+Then start frontend server:
+```
+cd frontend
+npm install
+npm run dev
+```
+
+We implement the following features in our Ctrip-Replica project:
+- login and registration
+- personal center
+- flight search/booking & payment
+- order management
+
+We also implement a version with extra human support for more UI support, edge case coverage and some minor improvements. See here [**Ctrip-Replica**](https://github.com/superk668/Ctrip-Replica) for more details.

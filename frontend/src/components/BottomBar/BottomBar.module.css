@@ -1,0 +1,106 @@
+.footer {
+  background: #f7f9fc;
+  border-top: 1px solid #eef0f3;
+  padding: 34px 0 42px;
+}
+
+.inner {
+  width: min(var(--container-width), calc(100% - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.sep {
+  width: 1px;
+  height: 168px;
+  background: #e6eaf0;
+  margin: 10px 28px 0;
+}
+
+.block {
+  width: 240px;
+}
+
+.blockAbout {
+  width: 260px;
+}
+
+.blockContact {
+  width: 260px;
+  padding-top: 34px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2329;
+  margin-bottom: 14px;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 34px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.link,
+.linkHot {
+  font-size: 13px;
+  color: #5c6470;
+  line-height: 1;
+}
+
+.linkHot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.linkHot::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #7b8390;
+  margin-top: 2px;
+}
+
+.contactLine {
+  font-size: 13px;
+  color: #5c6470;
+  line-height: 22px;
+}
+
+.contactStrong {
+  color: #1f2329;
+  font-weight: 700;
+}
+
+.qr {
+  width: 170px;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qrImg {
+  width: 120px;
+  height: 120px;
+}
+
+.qrText {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #1f2329;
+}
+

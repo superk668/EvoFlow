@@ -1,742 +1,811 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>EvoFlow · GUIDE</title>
-    <meta name="description" content="A Step-by-Step Guide to reproduce the Ctrip-Replica Project" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Step-by-Step Guide to reproduce the Ctrip-Replica Project</title>
     <style>
-      :root {
-        color-scheme: light;
-        --bg: #ffffff;
-        --surface: #f6f8fb;
-        --surface-2: #eef3ff;
-        --card: #ffffff;
-        --text: #101828;
-        --muted: #475467;
-        --muted-2: #667085;
-        --border: #e4e7ec;
-        --shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
-        --shadow-2: 0 6px 18px rgba(16, 24, 40, 0.08);
-        --brand: #155eef;
-        --brand-2: #7a5af8;
-        --ok: #12b76a;
-        --warn: #f79009;
-        --danger: #f04438;
-        --radius: 14px;
-        --radius-sm: 10px;
-        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
-          "Segoe UI Emoji";
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        margin: 0;
-        font-family: var(--sans);
-        color: var(--text);
-        background:
-          radial-gradient(1200px 520px at 20% -10%, rgba(21, 94, 239, 0.16), transparent 60%),
-          radial-gradient(900px 480px at 80% -15%, rgba(122, 90, 248, 0.16), transparent 60%),
-          linear-gradient(#ffffff, #ffffff);
-      }
-
-      a {
-        color: var(--brand);
-        text-decoration: none;
-      }
-
-      a:hover {
-        text-decoration: underline;
-      }
-
-      .page {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 24px 18px 64px;
-      }
-
-      .hero {
-        text-align: center;
-        padding: 26px 14px 18px;
-      }
-
-      .hero-logo {
-        width: min(360px, 78vw);
-        height: auto;
-        display: inline-block;
-        filter: drop-shadow(0 18px 18px rgba(16, 24, 40, 0.14));
-        user-select: none;
-      }
-
-      .hero-title {
-        font-size: clamp(28px, 3.2vw, 44px);
-        letter-spacing: -0.02em;
-        margin: 14px 0 10px;
-        font-weight: 800;
-      }
-
-      .hero-rule {
-        width: min(720px, 92vw);
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(16, 24, 40, 0.18), transparent);
-        margin: 14px auto 14px;
-      }
-
-      .hero-subtitle {
-        margin: 0 auto;
-        max-width: 900px;
-        font-size: 15px;
-        line-height: 1.7;
-        color: var(--muted);
-      }
-
-      .badges {
-        margin-top: 14px;
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.72);
-        box-shadow: var(--shadow-2);
-      }
-
-      .badge img {
-        height: 20px;
-        width: auto;
-        display: block;
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 22px;
-        align-items: start;
-        margin-top: 10px;
-      }
-
-      @media (max-width: 980px) {
-        .layout {
-          grid-template-columns: 1fr;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      }
 
-      .toc {
-        position: sticky;
-        top: 14px;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border-radius: var(--radius);
-        padding: 14px 14px 12px;
-        box-shadow: var(--shadow-2);
-      }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            display: flex;
+        }
 
-      .toc-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 700;
-        margin: 2px 0 10px;
-      }
+        /* 侧边栏导航 */
+        .sidebar {
+            width: 280px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #e0e0e0;
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+        }
 
-      .toc ul {
-        padding-left: 18px;
-        margin: 10px 0 0;
-        color: var(--muted-2);
-      }
+        .sidebar h3 {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-      .toc li {
-        margin: 7px 0;
-        line-height: 1.45;
-      }
+        .sidebar nav ul {
+            list-style: none;
+        }
 
-      .toc a {
-        color: var(--muted);
-      }
+        .sidebar nav ul li {
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-      .toc a:hover {
-        color: var(--brand);
-        text-decoration: none;
-      }
+        .sidebar nav ul li:hover {
+            background-color: #e8e8e8;
+        }
 
-      .content {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-      }
+        .sidebar nav ul li a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 14px;
+        }
 
-      .card {
-        border: 1px solid var(--border);
-        background: var(--card);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 18px 18px 16px;
-      }
+        .sidebar nav ul li.section {
+            font-weight: 600;
+            padding-left: 20px;
+        }
 
-      .card h2 {
-        margin: 2px 0 10px;
-        font-size: 22px;
-        letter-spacing: -0.01em;
-      }
+        .sidebar nav ul li.subsection {
+            padding-left: 40px;
+            font-size: 13px;
+        }
 
-      .card h3 {
-        margin: 16px 0 8px;
-        font-size: 18px;
-        letter-spacing: -0.01em;
-      }
+        /* 主内容区 */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 60px;
+            max-width: 1200px;
+            flex: 1;
+        }
 
-      .card h4 {
-        margin: 14px 0 6px;
-        font-size: 15px;
-      }
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+        }
 
-      .card p {
-        margin: 10px 0;
-        color: var(--muted);
-        line-height: 1.75;
-        font-size: 14.5px;
-      }
+        h2 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
 
-      .divider {
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(16, 24, 40, 0.14), transparent);
-        margin: 16px 0 10px;
-      }
+        h3 {
+            font-size: 20px;
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
 
-      .callout {
-        border-radius: var(--radius-sm);
-        padding: 14px 14px 12px;
-        border: 1px solid transparent;
-        margin: 12px 0;
-        display: grid;
-        grid-template-columns: 22px 1fr;
-        gap: 10px;
-      }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
 
-      .callout strong {
-        color: var(--text);
-      }
+        /* 信息框样式 */
+        .info-box {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
 
-      .callout p {
-        margin: 0;
-      }
+        .info-box.info {
+            background-color: #d9edf7;
+            border-color: #5bc0de;
+        }
 
-      .callout.info {
-        background: #eaf2ff;
-        border-color: #c7dcff;
-      }
+        .info-box.tip {
+            background-color: #dff0d8;
+            border-color: #5cb85c;
+        }
 
-      .callout.tip {
-        background: #e8fbf2;
-        border-color: #bff0d6;
-      }
+        .info-box.warning {
+            background-color: #fcf8e3;
+            border-color: #f0ad4e;
+        }
 
-      .callout.warn {
-        background: #fff4e6;
-        border-color: #fed7aa;
-      }
+        .info-box.important {
+            background-color: #f2dede;
+            border-color: #d9534f;
+        }
 
-      .icon {
-        width: 22px;
-        height: 22px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 7px;
-      }
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
 
-      .icon.info {
-        background: rgba(21, 94, 239, 0.12);
-        color: var(--brand);
-      }
+        .info-box-title::before {
+            content: "ⓘ";
+            margin-right: 8px;
+            font-size: 18px;
+        }
 
-      .icon.tip {
-        background: rgba(18, 183, 106, 0.12);
-        color: var(--ok);
-      }
+        .info-box.tip .info-box-title::before {
+            content: "💡";
+        }
 
-      .icon.warn {
-        background: rgba(247, 144, 9, 0.12);
-        color: var(--warn);
-      }
+        .info-box.warning .info-box-title::before {
+            content: "⚠";
+        }
 
-      .icon svg {
-        width: 16px;
-        height: 16px;
-      }
+        .info-box.important .info-box-title::before {
+            content: "❗";
+        }
 
-      ul,
-      ol {
-        margin: 10px 0 12px;
-        color: var(--muted);
-        line-height: 1.75;
-        font-size: 14.5px;
-      }
+        /* 代码块 */
+        .code-block-wrapper {
+            position: relative;
+            margin: 15px 0;
+        }
 
-      code {
-        font-family: var(--mono);
-        font-size: 0.95em;
-      }
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            padding-right: 50px;
+            overflow-x: auto;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
 
-      .inline-code {
-        padding: 2px 6px;
-        border-radius: 8px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: #1d2939;
-      }
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
 
-      pre {
-        margin: 12px 0;
-        background: #0b1220;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: #e6eaff;
-        border-radius: var(--radius-sm);
-        padding: 12px 12px 12px;
-        overflow: auto;
-        box-shadow: 0 10px 18px rgba(16, 24, 40, 0.12);
-        position: relative;
-      }
+        .copy-button:hover {
+            background-color: #2980b9;
+        }
 
-      pre code {
-        font-size: 12.8px;
-        line-height: 1.65;
-        display: block;
-        white-space: pre;
-      }
+        .copy-button.copied {
+            background-color: #27ae60;
+        }
 
-      .copy {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        background: rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.9);
-        padding: 6px 9px;
-        border-radius: 10px;
-        font-size: 12px;
-        cursor: pointer;
-      }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
 
-      .copy:active {
-        transform: translateY(1px);
-      }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
 
-      .footer {
-        margin-top: 28px;
-        text-align: center;
-        color: var(--muted-2);
-        font-size: 12.5px;
-      }
+        /* 列表 */
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 链接 */
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 图片 */
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
-  </head>
-  <body>
-    <div class="page">
-      <header class="hero">
-        <img class="hero-logo" src="assets/logo.png" alt="EvoFlow Logo" />
-        <div class="hero-title">A Step-by-Step Guide</div>
-        <div class="hero-rule"></div>
-        <p class="hero-subtitle">reproduce the Ctrip-Replica Project · EvoFlow 工作流复现指南</p>
-        <div class="badges" aria-label="badges">
-          <a class="badge" href="https://img.shields.io/badge/GitHub%20Pages-passing-brightgreen" target="_blank" rel="noreferrer">
-            <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-passing-brightgreen" />
-          </a>
-          <a class="badge" href="https://img.shields.io/badge/license-MulanPSL--2.0-blue" target="_blank" rel="noreferrer">
-            <img alt="License" src="https://img.shields.io/badge/license-MulanPSL--2.0-blue" />
-          </a>
-          <a class="badge" href="https://img.shields.io/badge/release-v23.03.1-blue" target="_blank" rel="noreferrer">
-            <img alt="Release" src="https://img.shields.io/badge/release-v23.03.1-blue" />
-          </a>
-        </div>
-      </header>
-
-      <div class="layout">
-        <nav class="toc" aria-label="Table of contents">
-          <div class="toc-title">
-            <span class="icon info" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                <path
-                  d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                  stroke="currentColor"
-                  stroke-width="2"
-                />
-              </svg>
-            </span>
-            目录
-          </div>
-          <ul>
-            <li><a href="#intro">概览</a></li>
-            <li><a href="#workflow">关于我们的工作流</a></li>
-            <li><a href="#reproduce">开始复现</a></li>
-            <li><a href="#login-register">登陆与注册界面</a></li>
-            <li><a href="#workflow-refiner">Workflow Refiner</a></li>
-          </ul>
-        </nav>
-
-        <main class="content">
-          <section class="card" id="intro">
-            <h2>概览</h2>
-            <div class="callout info">
-              <div class="icon info" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>
-                本仓库作为 <span class="inline-code">https://github.com/superk668/Ctrip-Replica</span> 的子仓库，旨在提供一个标准化的 multi-agent 工作流，
-                用于完全复现我们的工作。
-              </p>
-            </div>
-          </section>
-
-          <section class="card" id="workflow">
-            <h2>关于我们的工作流</h2>
-            <h3>工作流介绍</h3>
-            <div class="callout tip">
-              <div class="icon tip" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 2a7 7 0 0 0-4 12.75V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.25A7 7 0 0 0 12 2Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                  <path d="M10 22h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                </svg>
-              </div>
-              <p>该部分可继续扩展：建议在此补充工作流总览图、角色分工和输入输出约定。</p>
-            </div>
-
-            <h3>帮助我们改进工作流</h3>
-            <div class="callout warn">
-              <div class="icon warn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 9v5"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>如果你在复现过程中遇到问题，建议记录：错误信息、发生步骤、复现输入（prompt/截图路径）与环境信息。</p>
-            </div>
-          </section>
-
-          <section class="card" id="reproduce">
-            <h2>开始复现</h2>
-            <h3>准备工作</h3>
-            <p>
-              本工作流使用 Trae 作为 multi-agent 平台，你可以通过以下方式导入 agent：
-            </p>
-
-            <div class="divider"></div>
-
-            <h4>1. 导入 agent</h4>
-            <p><strong>方式 1：</strong>通过 Trae 链接导入 agent（Under construction）</p>
-            <pre><button class="copy" type="button">复制</button><code>To be added (Under construction)</code></pre>
-
-            <p><strong>方式 2：</strong>手动添加</p>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <h3>目录</h3>
+        <nav>
             <ul>
-              <li>所有 agent 的 prompt 均可在 <span class="inline-code">agent_prompt/</span> 目录下找到。</li>
-              <li>注意：请在 agent 创建界面打开所有工具的权限复选框，确保 agent 可以使用所有功能。</li>
+                <li class="section"><a href="#intro">前言</a></li>
+                <li class="section"><a href="#preparation">准备工作</a></li>
+                <li class="subsection"><a href="#import-agent">导入agent</a></li>
+                <li class="subsection"><a href="#prepare-files">准备文件</a></li>
+                <li class="section"><a href="#must-read">复刻前必读</a></li>
+                <li class="section"><a href="#additional-notes">额外说明</a></li>
+                <li class="section"><a href="#login-register">登陆与注册界面</a></li>
+                <li class="section"><a href="#personal-center">个人中心板块</a></li>
+                <li class="section"><a href="#buy-ticket">机票预订板块</a></li>
+                <li class="section"><a href="#order-management">订单管理板块</a></li>
+                <li class="section"><a href="#self-check">自查环节</a></li>
+                <li class="section"><a href="#completion">完成</a></li>
             </ul>
+        </nav>
+    </aside>
 
-            <h4>2. 准备文件</h4>
-            <p>在本仓库中，已为你准备好所有复现需要的文件（文件树可在此处补充）。</p>
+    <!-- 主内容 -->
+    <main class="main-content">
+        <h1 id="intro">A Step-by-Step Guide to reproduce the Ctrip-Replica Project</h1>
 
-            <h4>3. 额外说明</h4>
-            <div class="callout info">
-              <div class="icon info" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>
-                对于所有 agent，我们均使用 <span class="inline-code">GPT-5.2</span> 作为模型，不对其他模型的性能做出保证。
-              </p>
-            </div>
-            <div class="callout warn">
-              <div class="icon warn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 9v5"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>
-                在 agent 运行过程中请保持关注：当 agent 自主运行 <span class="inline-code">npm test</span> 时，终端可能无法正常退出。
-                请在运行完成后手动点击跳过键，或在终端中键入 <span class="inline-code">q</span> 退出。
-              </p>
-            </div>
-          </section>
+        <p>本仓库作为 '<a href="https://github.com/superk668/Ctrip-Replica" target="_blank">https://github.com/superk668/Ctrip-Replica</a>' 的子仓库，旨在提供一个标准化的multi-agent工作流，用于完全复现我们的工作。</p>
 
-          <section class="card" id="login-register">
-            <h2>登陆与注册界面</h2>
-            <div class="callout info">
-              <div class="icon info" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>
-                对于所有 <span class="inline-code">.png</span>，请根据路径将其复制（拖曳）至 prompt 输入栏内。所有截图均可在
-                <span class="inline-code">manual_prompt/</span> 目录下找到。
-              </p>
-            </div>
+        <h2 id="preparation">准备工作</h2>
 
-            <h3>Step 1. Web Constructor：构建网页 UI 前端</h3>
-            <p><strong>Step 1.0</strong> 构建首页 prompt：</p>
-            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
-首页</code></pre>
+        <h3 id="import-agent">导入agent</h3>
 
-            <p><strong>Step 1.1</strong> 构建底边栏 prompt：</p>
-            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_1\bottom_bar.png]
+        <p>本工作流使用Trae作为multi-agent平台，你可以通过以下方式导入agent：</p>
+
+        <p><strong>方式1(Recommended)</strong>：通过trae链接导入agent</p>
+
+        <ul>
+            <li>Web Constructor: <a href="https://s.trae.ai/a/ff433d?region=sg" target="_blank">https://s.trae.ai/a/ff433d?region=sg</a></li>
+            <li>Interface Designer: <a href="https://s.trae.ai/a/426337?region=sg" target="_blank">https://s.trae.ai/a/426337?region=sg</a></li>
+            <li>Test Generator: <a href="https://s.trae.ai/a/11fba7?region=sg" target="_blank">https://s.trae.ai/a/11fba7?region=sg</a></li>
+            <li>Developer: <a href="https://s.trae.ai/a/b993c6?region=sg" target="_blank">https://s.trae.ai/a/b993c6?region=sg</a></li>
+            <li>Test Runner: <a href="https://s.trae.ai/a/6225a1?region=sg" target="_blank">https://s.trae.ai/a/6225a1?region=sg</a></li>
+            <li>Web Fix Expert: <a href="https://s.trae.ai/a/240d9c?region=sg" target="_blank">https://s.trae.ai/a/240d9c?region=sg</a></li>
+        </ul>
+
+        <p><strong>方式2</strong>: 手动添加<br>所有agent的prompt均可在<code>agent_prompt/</code>目录下找到。</p>
+
+        <p>注意：请在agent创建界面打开所有工具的权限复选框，确保agent可以使用所有功能。</p>
+
+        <h3 id="prepare-files">准备文件</h3>
+
+        <p>您可直接从我们的压缩包中打开文件夹，或使用github克隆仓库并切换至复现用分支：</p>
+
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>git clone https://github.com/superk668/EvoFlow.git
+cd Evoflow
+git switch reproduce</code></pre>
+        </div>
+
+        <p>在本仓库中，已为你准备好所有复现需要的文件，文件树如下。</p>
+
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>.
+├── agent_prompt/   # 所有agent的prompt文件
+│   ├── developer_prompt.md
+│   ├── ...
+├── manual_prompt/   # 复刻过程中用于UI重建，需要手动拖曳入prompt输入栏的图片
+│   ├── login_register/   # 登陆与注册界面的prompt文件
+│       ├── web_constructor_step1 # 第一步需要的图片
+|           |── homepage.png 
+|       |── ...
+|   ├── ...
+├── requirements/   # 所有需求文件
+│   ├── login_register_requirement.md
+│   ├── ...
+├── README.md
+└── GUIDE.md # 本指南</code></pre>
+        </div>
+
+        <h2 id="must-read">复刻前必读</h2>
+
+        <ul>
+            <li>对于所有agent，我们均使用<code>GPT-5.2</code>作为模型，不对其他模型的性能做出保证。</li>
+            <li>在不同任务间，请牢记切换agent，确保每个任务都在正确的agent下运行。若错误使用agent，请使用回退功能。</li>
+            <li>在agent运行过程中，请保持关注。在agent自主运行<code>npm test</code>时，终端可能无法正常退出，请在agent运行终端运行完成后手动点击跳过键或在终端中键入<code>q</code>退出。</li>
+            <li>在所有端口初始化时，若报错，请先检查该端口是否已被占用。</li>
+        </ul>
+
+        <h2 id="additional-notes">额外说明</h2>
+        
+        <p>在使用Trae进行多次复刻测试的过程中，我们发现了一些trae所自带的问题（版本3.5.23，2026-01-19），会使得我们的工作流不够稳定，因此，我们建议您采用逐板块验收的方式。同时，请您在复刻过程中时刻保持关注，如遇到以下描述的问题，请及时中止并使用回退功能，随后新建任务：</p>
+
+        <ul>
+            <li>在每个板块的Web constructor阶段，我们需要使用图片输入，需要agent的多模态理解能力。但我们发现trae提供的模型有时会出现无法理解图片的"降智"现象，具体表现为尝试创建python程序使用OCR理解图片。</li>
+            <li>在每个板块的Test Generator阶段，我们需要根据需求文档生成测试用例。但我们发现trae提供的模型有时会出现无法理解其system prompt的只生成测试用例和代码的指令，具体表现为指令遵循能力欠缺，尝试实现接口以通过测试。</li>
+            <li>上下文管理系统问题A. 在trae的思考次数达到上限时，会强制终止并要求输入"继续"。若此时正好位于一个任务的结尾，可能会导致继续后agent丢失方向自行探索扰乱工作流，如图所示<br>
+                <img src="./assets/trae_continue_problem.png" alt="上下文管理系统问题">
+            </li>
+            <li>上下文管理系统问题B. 在trae的上下文长度达到上限时，会自行进行上下文压缩，但会丢失TODO中的任务进度，可能会导致agent重复完成已完成的工作，或agent丢失方向自行探索扰乱工作流，如图所示。<br>
+                <img src="./assets/trae_concentrate_problem.png" alt="上下文管理系统问题">
+            </li>
+        </ul>
+
+        <h2 id="login-register">登陆与注册界面</h2>
+
+        <p><strong>Step 1. Web Constructor：构建网页UI前端</strong></p>
+
+        <div class="info-box tip">
+            <div class="info-box-title">提示</div>
+            <p>如图所示，对于所有[.png]文件，请根据路径将其复制（拖曳）至prompt输入栏内。所有截图均可在<code>manual_prompt/</code>目录下找到。我们尝试了自动化的版本，但效果不佳，因此仍选择手动拖入的方式，对其带来的不便表示歉意。</p>
+            <img src=".\assets\web_constructor_example.png" alt="webconsturctor">
+        </div>
+
+        <p><strong>Step 1.0 构建首页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_0\homepage.png]
+[EvoFlow\manual_prompt\login_register\web_constructor_step_0\after_login.png]
+构建未登录的首页和登录后的首页（登陆注册按钮变为用户头像和昵称）</code></pre>
+        </div>
+
+        <p><strong>Step 1.1 构建底边栏prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_1\bottom_bar.png]
 实现底边栏，该模块需要在所有页面中被添加至最低端</code></pre>
+        </div>
 
-            <p><strong>Step 1.2</strong> 构建登陆页 prompt：</p>
-            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_overview.png]
+        <p><strong>Step 1.2 构建登陆页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_core.png]
-登录界面</code></pre>
+[EvoFlow\manual_prompt\login_register\web_constructor_step_2\login_sms_core.png]
+登录界面，使用两种登陆方式分为账户名密码登录和验证码登录，可以通过按钮互相跳转</code></pre>
+        </div>
 
-            <p><strong>Step 1.3</strong> 构建注册页第一步 prompt：</p>
-            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_overview.png]
+        <p><strong>Step 1.3 构建注册页第一步prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core1.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_core2.png]
-注册界面第一步</code></pre>
+[EvoFlow\manual_prompt\login_register\web_constructor_step_3\register_contract.png]
+注册界面第一步。其中，用户协议是刚进入该页面时的弹窗，点击同意后进入注册界面，否则跳转首页。</code></pre>
+        </div>
 
-            <p><strong>Step 1.4</strong> 构建注册页第二步 prompt：</p>
-            <pre><button class="copy" type="button">复制</button><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_overview.png]
+        <p><strong>Step 1.4 构建注册页第二步prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_overview.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core1.png]
 [EvoFlow\manual_prompt\login_register\web_constructor_step_4\register2_core2.png]
 注册界面第二步</code></pre>
+        </div>
 
-            <div class="divider"></div>
+        <p><strong>Step 2. Interface Designer：生成接口</strong></p>
 
-            <h3>Step 2. Interface Designer：生成接口</h3>
-            <pre><button class="copy" type="button">复制</button><code>请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计登录与注册部分的接口</code></pre>
+        <div class="info-box tip">
+            <div class="info-box-title">提示</div>
+            <p>相应的如图所示，对于所有prompt#{module_name}_requirement.md文件，均需要手动将其替换为文件链接（可通过拖曳文件，或将鼠标悬停在prompt栏中的该文件名上进行匹配）。</p>
+            <img src=".\assets\intfc_example.png" alt="intfc">
+        </div>
 
-            <h3>Step 3. Test Generator：生成测试用例</h3>
-            <pre><button class="copy" type="button">复制</button><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试代码</code></pre>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据需求文档#EvoFlow\requirements\login_register_requirement.md，设计登录与注册部分的接口</code></pre>
+        </div>
 
-            <h3>Step 4. Developer：实现接口补全代码</h3>
-            <pre><button class="copy" type="button">复制</button><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成代码</code></pre>
+        <p><strong>Step 3. Test Generator：生成测试用例</strong></p>
 
-            <h3>Step 5. Test Runner：运行测试用例</h3>
-            <pre><button class="copy" type="button">复制</button><code>运行测试</code></pre>
+        <div class="info-box important">
+            <div class="info-box-title">重要说明</div>
+            <p>对于每个板块的test generator环节，正常使用模型时能够做到指令遵循：只生成测试框架而不去实现接口。但我们在实际执行中遇到有时模型降级使指令遵循能力变差的情况，这会导致模型开始尝试实现接口以通过测试，这会导致严重的性能问题。如发现这种情况，请尝试新建任务或重启Trae，确保agent能正确理解指令。</p>
+        </div>
 
-            <h3>Step 6. 验证功能</h3>
-            <p>现在可以对登录与注册功能进行验证。</p>
-            <p><strong>启动后端</strong></p>
-            <pre><button class="copy" type="button">复制</button><code>cd backend
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现与Scenario一一对应的测试用例及测试框架,无需使所有测试样例通过</code></pre>
+        </div>
+
+        <p><strong>Step 4. Developer：实现接口补全代码</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据登陆与注册的需求文档#EvoFlow\requirements\login_register_requirement.md，实现接口完成设计登录与注册部分的代码</code></pre>
+        </div>
+
+        <p><strong>Step 5. Test Runner：运行测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你进行测试，同时确保后端可通过npm start正常启动并在某端口上等待并且能够在控制台打印发送的验证码，前端能通过npm run dev 正常启动。
+请你检查刚启动后端时处于未登录状态，主页为未登录版式。
+请你检查登陆后，登录状态成功保存并跳转至已登录的主页版式。
+请你检查路由：各界面间能否通过点击链接或按钮跳转，首页的“登录”和“注册”按钮能否正确跳转。
+请你检查：注册完成后可成功保存用户信息</code></pre>
+        </div>
+
+        <p><strong>Step 6. 验证功能</strong></p>
+
+        <p>现在可以对登录与注册功能进行验证。<br>启动后端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd backend
 npm start</code></pre>
-            <p><strong>启动前端</strong></p>
-            <pre><button class="copy" type="button">复制</button><code>cd frontend
+        </div>
+        <p>启动前端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd frontend
 npm run dev</code></pre>
-            <p>进行测试</p>
+        </div>
+        <p>进行测试。<br>若遇到严重问题，请向Web Fix Expert反馈，要求其修复。</p>
 
-            <div class="divider"></div>
+        <div class="info-box tip">
+            <div class="info-box-title">提示</div>
+            <p>在端口初始化时，若报错，请先检查该端口是否已被占用。</p>
+        </div>
 
-            <h3>用于最终提交 Step 7. AutoDebugger（未实现）</h3>
-            <div class="callout tip">
-              <div class="icon tip" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 2a7 7 0 0 0-4 12.75V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.25A7 7 0 0 0 12 2Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                  <path d="M10 22h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                </svg>
-              </div>
-              <p>该模块尚未实现，可作为后续迭代方向。</p>
-            </div>
-          </section>
+        <h2 id="personal-center">个人中心板块</h2>
 
-          <section class="card" id="workflow-refiner">
-            <h2>用于小组调试改进：Step 7. Workflow Refiner</h2>
-            <p>
-              这是一个用于改进工作流的 agent。它了解整个工作流的所有步骤，并根据用户反馈和错误信息，自动调整工作流，使得下一次从零生成时能够避免该错误再次发生。
-            </p>
+        <p><strong>Step 1. Web Constructor</strong></p>
 
-            <h3>prompt</h3>
-            <pre><button class="copy" type="button">复制</button><code>{错误信息}+ “请你debug并改进工作流”</code></pre>
+        <p><strong>Step 1.1 构建个人信息管理页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\personal_center\web_constructor_step1\personal_center_page.png]
+[EvoFlow\manual_prompt\personal_center\web_constructor_step1\Dropdown_menu.png]
+构建个人信息管理页及左侧可下拉展开的导航栏。</code></pre>
+        </div>
+        <p>随后：</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\personal_center\web_constructor_step1\information_edit.png]
+构建个人信息管理页点击编辑后进入的个人信息编辑页面。</code></pre>
+        </div>
 
-            <h3>职责</h3>
-            <div class="callout info">
-              <div class="icon info" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>下面四个步骤形成一个闭环：先修复问题，再分析根因，进化需求与提示词，并用测试永久覆盖。</p>
-            </div>
+        <p><strong>Step 1.2 构建常用旅客信息管理页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\personal_center\web_constructor_step2\common_information_page.png]
+[EvoFlow\manual_prompt\personal_center\web_constructor_step2\dropdown_menu.png]
+构建常用旅客信息管理页</code></pre>
+        </div>
 
-            <h4>步骤 1：代码层面的修复（Immediate Fix）</h4>
-            <ul>
-              <li><strong>动作</strong>：分析报错信息或 Bug 描述，直接修改项目代码以修复当前问题。</li>
-              <li><strong>标准</strong>：确保修改后的代码能通过现有测试，并解决报告的 Bug。</li>
-            </ul>
+        <p><strong>Step 1.3 构建常用旅客信息编辑页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\personal_center\web_constructor_step3\set_information.png]
+构建常用旅客信息编辑页</code></pre>
+        </div>
 
-            <h4>步骤 2：根因分析（Root Cause Analysis）</h4>
-            <ul>
-              <li><strong>动作</strong>：深度思考为什么之前的工作流没能避免这个 Bug。</li>
-              <li><strong>分析维度</strong>：</li>
-            </ul>
-            <ul>
-              <li><strong>需求模糊</strong>：<span class="inline-code">requirements.md</span> 是否缺少了对该边缘情况或逻辑的描述？</li>
-              <li><strong>提示词缺陷</strong>：某个 Agent 的 Prompt 是否不够明确？</li>
-              <li>例如：Developer 忘记了做输入验证，可能是 <span class="inline-code">developer_prompt.md</span> 缺少了“必须验证所有输入”的强指令。</li>
-              <li>例如：Test Generator 漏测了该场景，可能是 <span class="inline-code">test_generator_prompt.md</span> 缺乏对边界条件生成的指导。</li>
-            </ul>
+        <p><strong>Step 2. Interface Designer：生成接口</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据需求文档#EvoFlow\requirements\personal_center_requirement.md，设计个人中心板块的接口</code></pre>
+        </div>
 
-            <h4>步骤 3：系统进化（Evolution for Reproducibility）</h4>
-            <div class="callout warn">
-              <div class="icon warn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 9v5"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path d="M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p><strong>最关键步骤</strong>：确保重新从头运行工作流时，这个 Bug 绝对不会再次发生。</p>
-            </div>
-            <ul>
-              <li><strong>目标</strong>：确保如果其他人拿着修改后的 <span class="inline-code">requirements.md</span> 和 <span class="inline-code">agent_prompts/</span> 重新从头运行工作流，这个 Bug 绝对不会再次发生。</li>
-              <li><strong>动作</strong>：</li>
-            </ul>
-            <ul>
-              <li><strong>修改需求</strong>：如果是业务逻辑缺失，更新 <span class="inline-code">requirements.md</span>。</li>
-              <li><strong>优化 Prompt</strong>：如果是 Agent 的能力或执行力问题，修改 <span class="inline-code">agent_prompts/</span> 下对应的 <span class="inline-code">.md</span> 文件。</li>
-              <li><strong>策略</strong>：增加特定的约束、示例或负面约束，帮助 Agent 稳定执行。</li>
-            </ul>
+        <p><strong>Step 3. Test Generator：生成测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据个人中心的需求文档#EvoFlow\requirements\personal_center_requirement.md，实现与Scenario一一对应的测试用例及测试框架,无需使所有测试样例通过</code></pre>
+        </div>
 
-            <h4>步骤 4：测试闭环（Test Coverage &amp; Synchronization）</h4>
-            <ol>
-              <li>在 <span class="inline-code">requirements.md</span> 中添加或修改对应的测试场景（自然语言）。</li>
-              <li>编写或更新对应的自动化测试代码，确保该 Bug 被永久覆盖。</li>
-            </ol>
-            <div class="callout info">
-              <div class="icon info" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 18v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M12 7.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                  <path
-                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                </svg>
-              </div>
-              <p>约束：必须保持 <span class="inline-code">requirements.md</span> 中的描述与实际测试代码的一一对应关系。</p>
-            </div>
-          </section>
+        <p><strong>Step 4. Developer：实现接口补全代码</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据个人中心的需求文档#EvoFlow\requirements\personal_center_requirement.md，实现接口完成设计个人中心板块的代码</code></pre>
+        </div>
 
-          <div class="footer">Generated for EvoFlow · GUIDE.html（单文件，无需构建）</div>
-        </main>
-      </div>
-    </div>
+        <p><strong>Step 5. Test Runner：运行测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你进行测试，同时确保后端可通过npm start正常启动，并可在个人信息/旅客信息编辑时前端输入栏中输入合法信息进行保存时，后端可正确记录保存数据，同时前端能通过npm run dev 正常启动。
+请你验证各页面之间的跳转是否正常，能够通过主页点击用户名进入个人中心页面，能够通过个人中心中任意界面的左侧导航栏跳转至个人中心部分其他的板块，包括个人信息页，常用旅客信息页，订单管理页</code></pre>
+        </div>
+
+        <p><strong>Step 6. 验证功能</strong></p>
+        <p>现在可以对个人中心板块的功能进行验证。<br>启动后端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd backend
+npm start</code></pre>
+        </div>
+        <p>启动前端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd frontend
+npm run dev</code></pre>
+        </div>
+        <p>进行测试。<br>若遇到严重问题，请向Web Fix Expert反馈，要求其修复。</p>
+
+        <p>在端口初始化时，若报错，请先检查该端口是否已被占用。</p>
+
+        <h2 id="buy-ticket">机票预订板块</h2>
+
+        <p><strong>Step 1. Web Constructor</strong></p>
+
+        <p><strong>Step 1.1 构建机票预订搜索结果页prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\search_result_overview.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\searching_bar.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\selecting_bar.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\ticket_pulldown_selection.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_0\booking_button.png]
+通过在主页进行搜索进入搜索结果页面。请检查主页搜索栏构建（出发地下拉选择框，目的地下拉选择框，日期选择框）。构建搜索结果页面，具体航班信息使用日期、出发地和目的地随搜索改变的半硬编码。 构建搜索结果页面的搜索栏，点击出发地和目的地城市名会出现选择栏，构建出发地和目的地选择下拉栏，添加交互路由。 构建筛选/排序栏。 构建搜索结果机票信息卡的订票展开按钮，点击后展开下拉面板，添加交互路由。</code></pre>
+        </div>
+
+        <p><strong>Step 1.2 构建订票第一步页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\buy_ticket_step1.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\passenger.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\contacts.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_1\ticket_information.png]
+构建订票第一步页面，包含乘客信息卡，联系人信息和机票信息展示。</code></pre>
+        </div>
+
+        <p><strong>Step 1.3 构建订票第二步页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\buy_ticket_step2.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\go_pay.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_2\ticket_information.png]
+构建订票第二步页面，包含顶部的保障展示，底部的"去支付"按钮和机票信息卡展示。注意，其中的具体信息均为展示型，需要能够根据具体情况改变。</code></pre>
+        </div>
+
+        <p><strong>Step 1.4 构建订票第三步页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_3\buy_ticket_step3.png]
+[EvoFlow\manual_prompt\buy_ticket\web_constructor_step_3\pay_selection.png]
+构建订票第三步支付页面。</code></pre>
+        </div>
+
+        <p><strong>Step 1.5 构建订票第四步页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>构建订票第四步支付完成页面，显示"支付完成"的提示和机票信息。</code></pre>
+        </div>
+
+        <p><strong>Step 2. Interface Designer：生成接口</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据需求文档#EvoFlow\requirements\buy_ticket_requirement.md，设计机票预订板块的接口</code></pre>
+        </div>
+
+        <p><strong>Step 3. Test Generator：生成测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据机票预订的需求文档#EvoFlow\requirements\buy_ticket_requirement.md，实现与Scenario一一对应的测试用例及测试框架,无需使所有测试样例通过。</code></pre>
+        </div>
+
+        <p><strong>Step 4. Developer：实现接口补全代码</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据机票预订的需求文档#EvoFlow\requirements\buy_ticket_requirement.md，实现接口完成设计机票预订板块的代码</code></pre>
+        </div>
+
+        <p><strong>Step 5. Test Runner：运行测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你进行测试，同时确保后端可通过npm start正常启动，并可在机票预订/乘客信息编辑时前端输入栏中输入合法信息进行保存时，或在机票下单成功后，后端可正确记录保存订单数据，同时前端能通过npm run dev 正常启动。
+请你验证订票环节之间各步骤的跳转是否正常，能够在主页使用搜索功能跳转至机票搜索页。
+
+重要：请你确保默认搜索日期为当天！</code></pre>
+        </div>
+
+        <p><strong>Step 6. 验证功能</strong></p>
+
+        <p>现在可以对机票预订板块的功能进行验证。<br>启动后端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd backend
+npm start</code></pre>
+        </div>
+        <p>启动前端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd frontend
+npm run dev</code></pre>
+        </div>
+        <p>进行测试。<br>若遇到严重问题，请向Web Fix Expert反馈，要求其修复。</p>
+
+        <p>在端口初始化时，若报错，请先检查该端口是否已被占用。</p>
+
+        <h2 id="order-management">订单管理板块</h2>
+
+        <p><strong>Step 1. Web Constructor</strong></p>
+
+        <p><strong>Step 1.1 构建订单管理页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[manual_prompt\order_management\web_constructor_step_0\order_management_page.png]
+构建订单管理页面。</code></pre>
+        </div>
+
+        <p><strong>Step 1.2 构建订单详情页面prompt：</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>[manual_prompt\order_management\web_constructor_step_1\order_detail.png]
+构建订单详情页面。</code></pre>
+        </div>
+
+        <p><strong>Step 2. Interface Designer：生成接口</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据需求文档#EvoFlow\requirements\order_management_requirement.md，设计订单管理板块的接口</code></pre>
+        </div>
+
+        <p><strong>Step 3. Test Generator：生成测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据订单管理的需求文档#EvoFlow\requirements\order_management_requirement.md，实现与Scenario一一对应的测试用例及测试框架,无需使所有测试样例通过。</code></pre>
+        </div>
+
+        <p><strong>Step 4. Developer：实现接口补全代码</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据订单管理的需求文档#EvoFlow\requirements\order_management_requirement.md，实现接口完成设计订单管理板块的代码</code></pre>
+        </div>
+
+        <p><strong>Step 5. Test Runner：运行测试用例</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你进行测试，同时确保后端可通过npm start正常启动，同时前端能通过npm run dev 正常启动。
+请你确保订单管理板块能够正确从后端获取/修改订单数据，并在前端展示。
+请你验证各页面之间的跳转是否正常，能够在主页使用订单管理链接跳转至订单管理页面。</code></pre>
+        </div>
+
+        <p><strong>Step 6. 验证功能</strong></p>
+
+        <p>现在可以对机票预订板块的功能进行验证。<br>启动后端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd backend
+npm start</code></pre>
+        </div>
+        <p>启动前端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd frontend
+npm run dev</code></pre>
+        </div>
+        <p>进行测试。<br>若遇到严重问题，请向Web Fix Expert反馈，要求其修复。</p>
+
+        <p>在端口初始化时，若报错，请先检查该端口是否已被占用。</p>
+
+
+
+        <h2 id="completion">完成</h2>
+
+        <p>现在可对复刻的网站进行功能验证。<br>运行后端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd backend
+npm start</code></pre>
+        </div>
+        <p>启动前端</p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>cd frontend
+npm run dev</code></pre>
+        </div>
+
+        <p>我们通过该工作流复刻的结果已被给出。</p>
+
+        <p>如开头已经提到，由于trae本身提供模型在指令遵循能力上可能出现问题，导致复刻不够稳定，无法得到与我们同样的效果。为此我们提供了如下解决方案。</p>
+        
+        <h3 id="self-check">自查环节</h3>
+
+        <p><strong>Step 1. Web Fix Expert: 路由检查</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据路由要求文档#EvoFlow\requirements\route_navigation.md，检查所有设计的路由是否正确配置。</code></pre>
+        </div>
+
+        <p><strong>Step 2. Web Fix Expert: 易错问题检查</strong></p>
+        <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">复制</button>
+            <pre><code>请你根据错误自查文档#EvoFlow\requirements\final_check.md，严格检查其中的问题是否在本次复现过程中出现。如有请进行修复。</code></pre>
+        </div>
+
+        <p>如问题仍未被解决，您可手动向Web Fix Expert提交错误内容。</p>
+
+      </main>
 
     <script>
-      const copyButtons = Array.from(document.querySelectorAll("button.copy"));
-      const setCopyState = (button, label) => {
-        button.textContent = label;
-        window.setTimeout(() => {
-          button.textContent = "复制";
-        }, 900);
-      };
+        // 复制代码功能
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                button.textContent = '复制失败';
+                setTimeout(() => {
+                    button.textContent = '复制';
+                }, 2000);
+            });
+        }
 
-      for (const button of copyButtons) {
-        button.addEventListener("click", async () => {
-          const pre = button.closest("pre");
-          const code = pre ? pre.querySelector("code") : null;
-          const text = code ? code.textContent : "";
-          try {
-            await navigator.clipboard.writeText(text);
-            setCopyState(button, "已复制");
-          } catch {
-            try {
-              const textarea = document.createElement("textarea");
-              textarea.value = text;
-              textarea.style.position = "fixed";
-              textarea.style.left = "-9999px";
-              document.body.appendChild(textarea);
-              textarea.select();
-              document.execCommand("copy");
-              document.body.removeChild(textarea);
-              setCopyState(button, "已复制");
-            } catch {
-              setCopyState(button, "复制失败");
-            }
-          }
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
-      }
+
+        // 高亮当前导航
+        window.addEventListener('scroll', function() {
+            let current = '';
+            const sections = document.querySelectorAll('h2[id], h3[id]');
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.sidebar nav a').forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
     </script>
-  </body>
+</body>
 </html>

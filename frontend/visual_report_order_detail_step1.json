@@ -1,0 +1,8 @@
+{
+  "scope": "order_management/web_constructor_step_1",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/order_management/web_constructor_step_1/order_detail.png"
+  },
+  "implementedRoute": "/orders/:orderId",
+  "notes": ["静态实现：订单详情页面", "包含面包屑、打印订单入口、取消状态卡片、NPS 推荐打分与支付明细侧栏"]
+}

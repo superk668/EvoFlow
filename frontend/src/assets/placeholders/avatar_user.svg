@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <rect width="28" height="28" rx="14" fill="#d9dde3" />
+  <circle cx="14" cy="11" r="5" fill="#eef1f5" stroke="#c8ced8" />
+  <path d="M6 24c2.5-4.5 13.5-4.5 16 0" fill="#eef1f5" stroke="#c8ced8" />
+  <text x="14" y="16" text-anchor="middle" font-size="7" font-family="Arial, sans-serif" fill="#6b7280">
+    占位
+  </text>
+</svg>
+

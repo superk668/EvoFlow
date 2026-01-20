@@ -1,0 +1,9 @@
+{
+  "scope": "personal_center/web_constructor_step1",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/personal_center/web_constructor_step1/information_edit.png"
+  },
+  "implementedRoute": "/personal-center/edit",
+  "notes": ["静态实现：个人信息编辑页", "包含昵称/姓名输入框、性别单选、生日输入框与保存提示"]
+}
+

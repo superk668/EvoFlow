@@ -1,0 +1,70 @@
+{
+  "frontend": {
+    "src": {
+      "pages": {
+        "HomeGuest": ["HomeGuest.jsx", "HomeGuest.module.css"],
+        "HomeAuthed": ["HomeAuthed.jsx"],
+        "Login": ["Login.jsx", "Login.module.css"],
+        "RegisterStep1": ["RegisterStep1.jsx", "RegisterStep1.module.css"],
+        "RegisterStep2": ["RegisterStep2.jsx", "RegisterStep2.module.css"],
+        "OrderManagement": ["OrderManagement.jsx", "OrderManagement.module.css"],
+        "OrderDetail": ["OrderDetail.jsx", "OrderDetail.module.css"],
+        "BuyTicketStep1": ["BuyTicketStep1.jsx", "BuyTicketStep1.module.css"],
+        "BuyTicketStep2": ["BuyTicketStep2.jsx", "BuyTicketStep2.module.css"],
+        "BuyTicketStep3": ["BuyTicketStep3.jsx", "BuyTicketStep3.module.css"],
+        "BuyTicketStep4": ["BuyTicketStep4.jsx", "BuyTicketStep4.module.css"],
+        "PersonalCenter": [
+          "PersonalCenter.jsx",
+          "PersonalCenter.module.css",
+          "LocalComponents/PersonalCenterNav.jsx",
+          "LocalComponents/PersonalCenterNav.module.css"
+        ],
+        "PersonalCenterEdit": ["PersonalCenterEdit.jsx", "PersonalCenterEdit.module.css"],
+        "CommonTravelerInfo": [
+          "CommonTravelerInfo.jsx",
+          "CommonTravelerInfo.module.css",
+          "LocalComponents/CommonInfoNav.jsx",
+          "LocalComponents/CommonInfoNav.module.css"
+        ],
+        "CommonTravelerInfoEdit": ["CommonTravelerInfoEdit.jsx", "CommonTravelerInfoEdit.module.css"]
+      },
+      "components": {
+        "TopHeader": ["TopHeader.jsx", "TopHeader.module.css"],
+        "SideNav": ["SideNav.jsx", "SideNav.module.css"],
+        "BottomBar": ["BottomBar.jsx", "BottomBar.module.css"],
+        "OrderCard": ["OrderCard.jsx", "OrderCard.module.css"]
+      },
+      "styles": ["reset.css", "tokens.css", "globals.css"],
+      "assets": {
+        "placeholders": [
+          "logo_ctrip.svg",
+          "avatar_user.svg",
+          "banner_home.svg",
+          "thumb_ticket.svg",
+          "qr_download_app.svg",
+          "login_illustration.svg"
+        ],
+        "image_mapping.json": true
+      },
+      "entry": ["main.jsx", "App.jsx", "router.jsx"]
+    },
+    "root": [
+      "index.html",
+      "vite.config.js",
+      "eslint.config.js",
+      "package.json",
+      "tsconfig.json",
+      "visual_report_login_register_step0.json",
+      "visual_report_login_register_step1.json",
+      "visual_report_login_register_step2.json",
+      "visual_report_login_register_step3.json",
+      "visual_report_login_register_step4.json",
+      "visual_report_order_management_step0.json",
+      "visual_report_order_detail_step1.json",
+      "visual_report_personal_center_step1.json",
+      "visual_report_personal_center_step2.json",
+      "visual_report_personal_center_step3.json",
+      "visual_report_personal_center_step4.json"
+    ]
+  }
+}

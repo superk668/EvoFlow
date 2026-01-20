@@ -1,0 +1,32 @@
+{
+  "logo_ctrip": {
+    "path": "./placeholders/logo_ctrip.svg",
+    "size": [140, 28],
+    "usage": "TopHeader logo"
+  },
+  "avatar_user": {
+    "path": "./placeholders/avatar_user.svg",
+    "size": [28, 28],
+    "usage": "TopHeader user avatar"
+  },
+  "banner_home": {
+    "path": "./placeholders/banner_home.svg",
+    "size": [760, 140],
+    "usage": "Home banner"
+  },
+  "thumb_ticket": {
+    "path": "./placeholders/thumb_ticket.svg",
+    "size": [62, 42],
+    "usage": "Low price list thumbnails"
+  },
+  "qr_download_app": {
+    "path": "./placeholders/qr_download_app.svg",
+    "size": [120, 120],
+    "usage": "BottomBar QR code"
+  },
+  "login_illustration": {
+    "path": "./placeholders/login_illustration.svg",
+    "size": [520, 220],
+    "usage": "Login page background illustration"
+  }
+}

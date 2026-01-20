@@ -1,0 +1,62 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  margin: 12px 0;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.label {
+  color: #5c6470;
+  font-size: 13px;
+}
+
+.value {
+  color: #1f2329;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.backBtn {
+  margin-top: 16px;
+  height: 40px;
+  width: 100%;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid #dfe3ea;
+}
+

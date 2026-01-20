@@ -1,0 +1,10 @@
+{
+  "scope": "personal_center/web_constructor_step2",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/personal_center/web_constructor_step2/common_information_page.png",
+    "core1": "manual_prompt/personal_center/web_constructor_step2/dropdown_menu.png"
+  },
+  "implementedRoute": "/common-info/travelers",
+  "notes": ["静态实现：常用旅客信息管理页", "左侧常用信息为展开状态（无交互）"]
+}
+

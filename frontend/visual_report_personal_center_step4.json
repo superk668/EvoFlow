@@ -1,0 +1,9 @@
+{
+  "scope": "personal_center/web_constructor_step3",
+  "sourceScreenshots": {
+    "overview": "manual_prompt/personal_center/web_constructor_step3/set_information.png"
+  },
+  "implementedRoute": "/common-info/travelers/edit",
+  "notes": ["静态实现：常用旅客信息编辑页", "包含中文名/证件类型/证件号必填项与保存/取消"]
+}
+
